@@ -104,8 +104,8 @@ pointing into the main (largest) recurrent class.
 
 ```
 === Orphan pages (bottom 10% by stationary distribution) ===
-  quantum-draft                             π=0.000312  → add inbound links
-  error-correction                          π=0.000418  → add inbound links
+  how-to-add-a-new-gate                     π=0.001603  → add inbound links
+  gate-zoo                                  π=0.001749  → add inbound links
 ```
 
 Orphans are pages in the **bottom N% by [[stationary-distribution|stationary probability]]**
@@ -131,8 +131,8 @@ section title tells you the exact remedy: "add inbound links".
 
 ```
 === Sink pages (no outgoing links) ===
-  appendix-a                                → add outgoing links
-  glossary-terms                            → add outgoing links
+  algorithm-comparison                      → add outgoing links
+  fuzz-testing                              → add outgoing links
 ```
 
 [[sink-page|Sinks]] have **no outbound wikilinks at all**. In the [[markov-model]], a visitor
@@ -147,11 +147,11 @@ related page. Even one link is enough to stop it being a sink.
 
 ```
 === Most central (top 5 by stationary distribution) ===
-  1. machine-learning                       π=0.084231
-  2. neural-networks                        π=0.071509
-  3. linear-algebra                         π=0.063812
-  4. probability                            π=0.058201
-  5. calculus                               π=0.047388
+  1. composite-gates                        π=0.096414
+  2. gate-application                       π=0.090011
+  3. quantum-linear-algebra                 π=0.076762
+  4. simulator-optimizations                π=0.067835
+  5. quantum-dsl                            π=0.057854
 ```
 
 These are your **hubs**: pages that a random walker visits most often. They
@@ -167,11 +167,12 @@ Use this list to:
 
 ```
 === Suggested missing links (lowest commute time, not yet linked) ===
-  machine-learning:
-    → linear-algebra                        (commute: 4.21)
-    → probability                           (commute: 5.83)
-  neural-networks:
-    → backpropagation                       (commute: 6.10)
+  quantum-linear-algebra:
+    → composite-gates                       (commute: 21.43)
+    → quantum-dsl                           (commute: 31.80)
+  simulator-optimizations:
+    → quantum-dsl                           (commute: 36.06)
+    → grovers-algorithm                     (commute: 39.46)
 ```
 
 For each of the top-N pages (by centrality), this section lists unlinked
@@ -204,6 +205,32 @@ wikigraph analyze ~/quantum-go/wiki \
   --suggest-top 10 \
   --exclude index --exclude log --exclude AGENTS --exclude README
 ```
+
+### 9. Summarise the report with an LLM
+
+Capture the full output and paste it into your preferred LLM with this prompt:
+
+```
+wikigraph analyze ~/quantum-go/wiki > analyze-report.txt
+```
+
+**Suggested prompt:**
+
+```
+Below is the output of `wikigraph analyze` on my wiki. Please:
+
+1. State in one sentence whether the wiki is structurally healthy or needs work,
+   citing the entropy rate relative to log₂(pages) and the class count.
+2. List the top 3 highest-impact actions, ordered by urgency. For each action,
+   name the specific page slug(s) to act on and what to do (add inbound link,
+   add outbound link, merge page, etc.).
+3. From the Suggested missing links section, pick the single best link to add
+   and explain in one sentence why that pair is structurally close.
+
+<paste contents of analyze-report.txt here>
+```
+
+The prompt asks for slug-level specifics because vague advice ("improve your orphan pages") is not actionable. The entropy rate framing (see [[entropy-rate]]) gives the LLM the right benchmark: log₂(36) ≈ 5.17 bits is the theoretical maximum for a 36-page wiki; a healthy wiki sits above 70% of that.
 
 ## Verification
 
