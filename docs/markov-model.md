@@ -55,7 +55,7 @@ chain well-defined, `buildAdjacency` gives sinks a **uniform row**: equal
 probability of jumping to any page. This is the same teleportation trick
 used in PageRank.
 
-The resulting Kernel is aperiodic and (within each communicating class)
+The resulting Kernel is aperiodic and (within each [[communicating-classes|communicating class]])
 irreducible, which guarantees a unique stationary distribution per class.
 See [[analyze]] for what communicating classes mean for wiki health.
 

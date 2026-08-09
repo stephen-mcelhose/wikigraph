@@ -20,3 +20,5 @@ timestamp: 2026-08-09T06:54:46Z
 | [[architecture]]             | `concept`  | Seven Go files, catrace dependency, and data-flow pipeline     |
 | [[markov-model]]             | `concept`  | How wikilinks become a row-stochastic Markov kernel            |
 | [[mfpt]]                     | `concept`  | Mean first passage time — used by goal and analyze             |
+| [[communicating-classes]]    | `concept`  | Maximal mutually-reachable page sets; the wiki connectivity test |
+| [[recurrent-class]]          | `concept`  | Recurrent vs transient classes — what gets π, what doesn't     |

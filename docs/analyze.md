@@ -60,7 +60,7 @@ Classes:      3
 | **Pages**      | Total number of `.md` files loaded (after exclusions)                              |
 | **Edges**      | Number of directed links with probability > 1e-10                                 |
 | **Entropy rate** | Bits per step of the random walk. Higher = more evenly spread link structure.   |
-| **Classes**    | Number of communicating classes (see next section)                                |
+| **Classes**    | Number of [[communicating-classes]] (see next section)                            |
 
 A high entropy rate (close to log₂(Pages)) means the walker has genuine choice
 at each step — a sign of a well-connected wiki. A low entropy rate means a few
@@ -81,11 +81,11 @@ Class 3 (recurrent): 1 page(s)
   appendix-a
 ```
 
-A **recurrent** class is a strongly connected component: every page in it can
+A **[[recurrent-class|recurrent]]** class is a strongly connected component: every page in it can
 reach every other page. The random walker eventually settles into recurrent
 classes permanently.
 
-A **transient** class is a cluster that has no links back to the main graph.
+A **[[recurrent-class|transient]]** class is a cluster that has no links back to the main graph.
 Once the random walker leaves, it never returns. Pages in transient classes
 are structurally isolated — add at least one outbound link from the cluster
 to the main graph to fix this.

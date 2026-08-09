@@ -31,7 +31,7 @@ never implements its own linear algebra. The `catrace.Kernel` struct exposes:
 
 - `P` (`mat.Dense`) — the n×n row-stochastic transition matrix
 - `Stationary(tol, maxIter)` — power iteration to find π
-- `Classes(tol)` — Tarjan SCC decomposition → recurrent vs transient sets
+- `Classes(tol)` — Tarjan SCC decomposition → [[communicating-classes|recurrent vs transient sets]]
 - `EntropyRate(base)` — H = −Σᵢ πᵢ Σⱼ Pᵢⱼ log Pᵢⱼ
 - `MeanFirstPassage(i, j)` — MFPT via fundamental matrix
 - `CommuteTime(i, j)` — MFPT(i,j) + MFPT(j,i)

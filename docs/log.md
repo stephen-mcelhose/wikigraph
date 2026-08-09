@@ -25,3 +25,7 @@
 - Added [[How to find a learning path through your wiki]] link to adr/001-embedding-layer (missing cross-reference)
 - Added Completed Guides section to proposal/how-to-docs-plan (orphan — only linked from index)
 - Added See Also section to testing-runbook (orphan — only linked from index)
+## [2026-08-09] ingest | communicating-classes, recurrent-class concept pages
+- communicating-classes: Tarjan SCC, recurrent/transient labelling, how to read analyze output, failure modes
+- recurrent-class: recurrent vs transient distinction, π implications, practical fix guide
+- cross-refs added: analyze, architecture, markov-model all link to new pages
