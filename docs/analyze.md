@@ -2,7 +2,7 @@
 type: how-to
 title: How to analyse your wiki's health
 description: Use wikigraph analyze to find orphaned pages, dead ends, structural clusters, and pages that would benefit most from new links.
-tags: [analyze, health, orphans, sinks, markov, entropy]
+tags: [how-to, analyze, health, orphans, sinks, markov, entropy]
 resource: cmd_analyze.go
 timestamp: 2026-08-09T07:31:56Z
 ---
@@ -31,6 +31,10 @@ A terminal report that tells you:
 ## Prerequisites
 
 - `wikigraph` installed and on your PATH
+- The example wiki cloned locally:
+  ```bash
+  git clone https://github.com/stephen-mcelhose/quantum-go ~/quantum-go
+  ```
 - A wiki directory: one `.md` file per page, named `<slug>.md`, with
   `[[slug]]` wikilinks in the body
 
@@ -39,11 +43,10 @@ A terminal report that tells you:
 ### 1. Run the basic health report
 
 ```bash
-wikigraph analyze ~/notes
+wikigraph analyze ~/quantum-go/wiki
 ```
 
-You will see six sections printed to stdout. stderr shows `Pages: N` as a
-sanity check.
+You will see six sections printed to stdout.
 
 ### 2. Read the Overview section
 
@@ -112,7 +115,7 @@ The default threshold is the bottom 10% (`--orphan-pct 0.10`). Widen it to
 see more candidates:
 
 ```bash
-wikigraph analyze ~/notes --orphan-pct 0.20
+wikigraph analyze ~/quantum-go/wiki --orphan-pct 0.20
 ```
 
 **Action:** For each orphan, find pages in your wiki whose *content* is related
@@ -179,13 +182,13 @@ them. A low commute time means the two pages are already structurally close
 The default is the top 5 pages (`--suggest-top 5`). Increase it:
 
 ```bash
-wikigraph analyze ~/notes --suggest-top 10
+wikigraph analyze ~/quantum-go/wiki --suggest-top 10
 ```
 
 Disable suggestions entirely (faster on large wikis):
 
 ```bash
-wikigraph analyze ~/notes --suggest-top 0
+wikigraph analyze ~/quantum-go/wiki --suggest-top 0
 ```
 
 **Action:** For each suggestion, read both pages. If the topic connection is
@@ -196,7 +199,7 @@ for MFPT-based subgraph visualisation. The commute-time algorithm is explained i
 ### 8. Full example with all flags
 
 ```bash
-wikigraph analyze ~/notes \
+wikigraph analyze ~/quantum-go/wiki \
   --orphan-pct 0.15 \
   --suggest-top 10 \
   --exclude index --exclude log --exclude AGENTS --exclude README
@@ -204,9 +207,26 @@ wikigraph analyze ~/notes \
 
 ## Verification
 
-- Stderr shows `Pages: N` matching the number of `.md` files you expect
-- Each of the six sections appears in stdout
-- The Communicating classes section shows at least one class
+Run against a known wiki and check stdout directly:
+
+```
+wikigraph analyze ~/quantum-go/wiki
+```
+
+Expected stdout begins with:
+
+```
+=== Overview ===
+Pages:        36
+Edges:        295
+Entropy rate: 2.2003 bits
+Classes:      1
+```
+
+Confirm:
+- All six sections (`Overview`, `Communicating classes`, `Orphan pages`, `Sink pages`, `Most central`, `Suggested missing links`) appear in stdout
+- `Pages:` matches the number of `.md` files in your wiki
+- The Communicating classes section lists at least one class
 
 ## Interpreting the numbers together
 
