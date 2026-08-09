@@ -64,7 +64,7 @@ xdg-open wiki_graph.html      # Linux
 wikigraph graph ~/quantum-go/wiki -o ~/quantum-go.html --title "quantum-go"
 ```
 
-The title appears in the browser tab and as an `<h1>` in the page.
+The title appears in the browser tab and as an overlay label in the top-left of the graph.
 
 ### 3. Reduce visual noise with `--min-edge`
 
@@ -75,14 +75,13 @@ is `0.005`. Raise it to show only the strongest links:
 wikigraph graph ~/quantum-go/wiki --min-edge 0.05
 ```
 
-Lower it to see every edge (including tenuous ones from teleportation):
+Lower it to expose weak edges that the default filters out:
 
 ```bash
 wikigraph graph ~/quantum-go/wiki --min-edge 0.001
 ```
 
-Open `wiki_graph.html` — the edge count visible in the graph should be
-noticeably higher or lower than with the default.
+Open `wiki_graph.html` — raising the threshold should visibly reduce the number of edges.
 
 ### 4. Post-process the HTML with `--sed` (macOS / Linux)
 
@@ -90,13 +89,15 @@ Inject custom CSS or replace text without modifying the source:
 
 ```bash
 # Change the background colour
-wikigraph graph ~/quantum-go/wiki -s 's/background:#1a1a2e/background:#0f172a/'
+wikigraph graph ~/quantum-go/wiki -s 's/background: #1a1a2e/background: red/'
 
-# Apply multiple expressions
+# Rename the title and enlarge the tooltip font
 wikigraph graph ~/quantum-go/wiki \
-  -s 's/wiki_graph/My Wiki/' \
-  -s 's/font-size:12px/font-size:14px/'
+  -s 's/wiki wiki/My Wiki/' \
+  -s 's/font-size: 12px/font-size: 32px/'
 ```
+
+> `wiki wiki` is the title when your wiki directory is named `wiki`. Use `--title "My Wiki"` for a reliable rename that works with any directory name.
 
 `--sed` is not available on Windows. Use `--title` and `--min-edge` instead.
 
@@ -129,7 +130,7 @@ Written: wiki_graph.html
 
 Open the HTML and confirm:
 - Nodes are visible and draggable
-- Multiple colours appear if your wiki has separate clusters
+- Multiple colours appear if your wiki has more than one communicating class (quantum-go has one class, so all nodes share a colour)
 - Hovering a node shows its slug and π value
 
 ## Troubleshooting
