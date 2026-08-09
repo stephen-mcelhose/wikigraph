@@ -21,7 +21,13 @@ directed edge, with size and colour encoding graph-theoretic properties.
 ## Prerequisites
 
 - `wikigraph` installed and on your PATH
-- A wiki directory: one `.md` file per page, named `<slug>.md`, with
+- `quantum-go` cloned as the example wiki (see [[adr-004-quantum-go-example-wiki]]):
+
+```bash
+git clone https://github.com/stephen-mcelhose/quantum-go ~/quantum-go
+```
+
+- Or any wiki directory: one `.md` file per page, named `<slug>.md`, with
   `[[slug]]` wikilinks in the body
 
 ## What the graph encodes
@@ -42,7 +48,7 @@ how to act on them, see [[analyze]].
 ### 1. Basic graph
 
 ```bash
-wikigraph graph ~/go-quantum
+wikigraph graph ~/quantum-go/wiki
 ```
 
 Writes `wiki_graph.html` to the current directory. Open it:
@@ -55,7 +61,7 @@ xdg-open wiki_graph.html      # Linux
 ### 2. Set a custom output path and title
 
 ```bash
-wikigraph graph ~/go-quantum -o ~/go-quantum.html --title "go-quantum"
+wikigraph graph ~/quantum-go/wiki -o ~/quantum-go.html --title "quantum-go"
 ```
 
 The title appears in the browser tab and as an `<h1>` in the page.
@@ -66,13 +72,13 @@ Very small transition probabilities clutter the graph. The default threshold
 is `0.005`. Raise it to show only the strongest links:
 
 ```bash
-wikigraph graph ~/go-quantum --min-edge 0.05
+wikigraph graph ~/quantum-go/wiki --min-edge 0.05
 ```
 
 Lower it to see every edge (including tenuous ones from teleportation):
 
 ```bash
-wikigraph graph ~/go-quantum --min-edge 0.001
+wikigraph graph ~/quantum-go/wiki --min-edge 0.001
 ```
 
 Open `wiki_graph.html` — the edge count visible in the graph should be
@@ -84,10 +90,10 @@ Inject custom CSS or replace text without modifying the source:
 
 ```bash
 # Change the background colour
-wikigraph graph ~/go-quantum -s 's/background:#1a1a2e/background:#0f172a/'
+wikigraph graph ~/quantum-go/wiki -s 's/background:#1a1a2e/background:#0f172a/'
 
 # Apply multiple expressions
-wikigraph graph ~/go-quantum \
+wikigraph graph ~/quantum-go/wiki \
   -s 's/wiki_graph/My Wiki/' \
   -s 's/font-size:12px/font-size:14px/'
 ```
@@ -100,14 +106,14 @@ background colour or text changed as specified).
 ### 5. Exclude meta-pages
 
 ```bash
-wikigraph graph ~/go-quantum --exclude index --exclude log --exclude README
+wikigraph graph ~/quantum-go/wiki --exclude index --exclude log --exclude README
 ```
 
 `index`, `log`, and `AGENTS` are excluded by default. This replaces the
 defaults, so re-add them if needed:
 
 ```bash
-wikigraph graph ~/go-quantum -e index -e log -e AGENTS -e README
+wikigraph graph ~/quantum-go/wiki -e index -e log -e AGENTS -e README
 ```
 
 Open `wiki_graph.html` and confirm the excluded slugs no longer appear as nodes.
@@ -117,7 +123,7 @@ Open `wiki_graph.html` and confirm the excluded slugs no longer appear as nodes.
 After the run you should see on stderr:
 
 ```
-Pages: 20
+Pages: 36
 Written: wiki_graph.html
 ```
 
