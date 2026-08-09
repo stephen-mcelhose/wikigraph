@@ -8,10 +8,14 @@ timestamp: 2026-08-09T06:54:46Z
 
 # wikigraph — Manual Test Runbook
 
+## Overview
+
+Comprehensive manual test plan covering all `wikigraph` subcommands (`graph`, `analyze`, `goal`, `export`) and edge cases against the repository's `docs/` wiki.
+
 **Binary:** built locally from `~/repos/wikigraph/`  
 **Wiki under test:** `docs/` in this repo (23 content pages)  
 **Run all commands from:** `~/repos/wikigraph/` (the repo root)  
-**Last verified:** 2026-08-09 against current wiki state (23 pages, 145 edges, 1 recurrent class)
+**Last verified:** 2026-08-09 against current wiki state (23 pages, 146 edges, 1 recurrent class)
 
 ---
 
@@ -41,6 +45,8 @@ wikigraph --help         # must list graph, goal, export, analyze
 ```
 
 ---
+
+## Test Cases
 
 ## TC-01 · Root help and persistent flag
 
@@ -286,9 +292,9 @@ wikigraph analyze docs/
 
 | Section         | Expected                                                                              |
 | --------------- | ------------------------------------------------------------------------------------- |
-| Overview        | Pages: 23, Edges: 145, Entropy rate: ~2.76 bits, Classes: 1                          |
+| Overview        | Pages: 23, Edges: 146, Entropy rate: ~2.80 bits, Classes: 1                          |
 | Classes         | 1 recurrent (23 pages)                                                                |
-| Orphans (≤10%)  | `adr-003-orphan-threshold` (π=0.006842), `adr-001-embedding-layer` (π=0.015985), `adr-005-page-type-conventions-and-proposal-storage` (π=0.016319) |
+| Orphans (≤10%)  | `adr-003-orphan-threshold` (π=0.006970), `adr-005-page-type-conventions-and-proposal-storage` (π=0.008867), `page-type-conventions` (π=0.013301) |
 | Sinks           | `(none)`                                                                              |
 | Most central #1 | `analyze` (π=0.103308)                                                               |
 | Suggestions     | At least one page with 3 suggestions listed                                           |
