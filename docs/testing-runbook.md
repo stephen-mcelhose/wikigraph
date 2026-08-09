@@ -382,3 +382,12 @@ wikigraph graph /tmp/tinywiki -o /tmp/tiny.html
 - Exit code 0
 - Stderr prints `Pages: 1`
 - HTML file written (single-node graph)
+
+---
+
+## See Also
+
+- [[How to generate an interactive wiki graph]]
+- [[How to analyse your wiki's health]]
+- [[How to find a learning path through your wiki]]
+- [[How to export your wiki graph for external tools]]

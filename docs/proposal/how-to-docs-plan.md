@@ -49,3 +49,12 @@ Create detailed, step-by-step how-to guides for each of the four subcommands. Ea
 
 - Use the OKF `how-to` format for each individual guide once they are written.
 - Start with the simpler ones (`export`, `graph`), tackle the complex `analyze` guide, and draft `goal`.
+
+## Completed Guides
+
+All four guides were delivered on 2026-08-09:
+
+- [[How to export your wiki graph for external tools]]
+- [[How to generate an interactive wiki graph]]
+- [[How to analyse your wiki's health]]
+- [[How to find a learning path through your wiki]] *(draft)*

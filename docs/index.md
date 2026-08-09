@@ -16,3 +16,4 @@ timestamp: 2026-08-09T06:54:46Z
 | [[Embedding Layer for Semantic Wiki Search]]                      | `decision` | ADR: chromem-go + Ollama chosen for semantic goal resolution        |
 | [[wikigraph Manual Test Runbook]]                                 | `runbook`  | Manual test plan covering all subcommands and edge cases            |
 | [[Create How-To Documentation for Subcommands]]                   | `proposal` | Proposal tracking the how-to docs initiative (GitHub issue #3)      |
+| [[How-To Guides]]                                                  | `index`    | Index of all how-to guides by subcommand                            |
