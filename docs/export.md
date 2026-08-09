@@ -3,6 +3,8 @@ type: how-to
 title: How to export your wiki graph for external tools
 description: Export the Markov kernel of your wiki as JSON, CSV, or DOT so you can analyse or visualise it outside wikigraph.
 tags: [export, json, csv, dot, d3, graphviz]
+resource: cmd_export.go
+timestamp: 2026-08-09T07:31:56Z
 ---
 
 # How to export your wiki graph for external tools
@@ -145,3 +147,8 @@ stderr during the run prints `Pages: N` and `Written: <file>` — if you see tho
 | Output file has 0 edges              | `--min-edge` too high for your wiki            | Lower with `--min-edge 0.001` or `--min-edge 0`  |
 | A page you expect is missing         | It has no `.md` extension, or it's in `--exclude` | Check filename and exclude list              |
 | `Pages: 1` on stderr                 | Only one page found — likely wrong directory   | Double-check the path to your wiki              |
+
+## Sources
+
+- `cmd_export.go`
+- `wiki.go`

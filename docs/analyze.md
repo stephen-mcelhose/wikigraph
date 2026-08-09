@@ -3,6 +3,8 @@ type: how-to
 title: How to analyse your wiki's health
 description: Use wikigraph analyze to find orphaned pages, dead ends, structural clusters, and pages that would benefit most from new links.
 tags: [analyze, health, orphans, sinks, markov, entropy]
+resource: cmd_analyze.go
+timestamp: 2026-08-09T07:31:56Z
 ---
 
 # How to analyse your wiki's health
@@ -129,7 +131,7 @@ section title tells you the exact remedy: "add inbound links".
   glossary-terms                            → add outgoing links
 ```
 
-Sinks have **no outbound wikilinks at all**. In the Markov model, a visitor
+Sinks have **no outbound wikilinks at all**. In the [[markov-model]], a visitor
 landing on a sink teleports uniformly to any page. This is handled gracefully
 by wikigraph, but sinks are usually an oversight — pages that were written
 in isolation and never linked forward.
@@ -188,7 +190,7 @@ wikigraph analyze ~/notes --suggest-top 0
 **Action:** For each suggestion, read both pages. If the topic connection is
 genuine, add `[[target-slug]]` to the source page's body. If you want to
 explore why two pages are close, see [[goal]]
-for MFPT-based subgraph visualisation.
+for MFPT-based subgraph visualisation. The commute-time algorithm is explained in [[mfpt]].
 
 ### 8. Full example with all flags
 
@@ -226,3 +228,8 @@ A healthy wiki typically looks like this:
 | Expected page is missing from the report     | Wrong directory or not a `.md` file          | Check file extension and directory path           |
 | π values for all pages are identical         | Wiki has only one page, or all sinks         | Add real wikilinks between pages                  |
 | `commute: +Inf` in suggestions               | Page is unreachable from target (transient)  | Fix the transient class first                     |
+
+## Sources
+
+- `cmd_analyze.go`
+- `wiki.go`

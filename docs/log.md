@@ -8,6 +8,12 @@
 
 ## [2026-08-09] lint | 11 pages checked, 4 issues found, 4 fixed
 ## [2026-08-09] edit | testing-runbook — added inline links at TC-02, TC-07, TC-11, TC-16 (first TC of each subcommand group)
+## [2026-08-09] ingest | wikigraph source code — 3 concept pages (architecture, markov-model, mfpt)
+- Lint: added resource: + ## Sources to all 4 how-to pages; fixed both orphans (testing-runbook, how-to-docs-plan)
+- architecture: 7-file map, catrace API, data-flow pipeline, --exclude behaviour
+- markov-model: loadPages → buildAdjacency → buildKernel; wikilink regex; sink teleportation
+- mfpt: MFPT definition; use in goal (ranking + trace kernel); use in analyze (commute time suggestions)
+- Result: 11 pages, 36 edges, 1 recurrent class (was 3 classes), entropy 1.65 bits
 ## [2026-08-09] refactor | flatten wiki — remove subdirectories, use basename slugs
 - docs/ is now flat: analyze, export, goal, graph, adr-001-embedding-layer, testing-runbook, how-to-docs-plan
 - all [[wikilinks]] updated to [[slug]] format (slug = filename without .md)

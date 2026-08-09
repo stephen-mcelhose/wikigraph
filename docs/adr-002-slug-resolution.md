@@ -62,6 +62,7 @@ confirming the design was wrong.
 - Wikilinks are `[[slug]]` — never `[[dir/slug]]`
 - `AGENTS.md` and `llm-wiki` SKILL updated to enforce the flat rule
 - `wiki.go` needs no change — `os.ReadDir` on a flat directory already does the right thing
+- The how-to guide series that triggered this decision is tracked in [[how-to-docs-plan]]
 
 ## Sources
 

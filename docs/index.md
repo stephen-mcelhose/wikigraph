@@ -17,3 +17,6 @@ timestamp: 2026-08-09T06:54:46Z
 | [[adr-002-slug-resolution]]  | `decision` | ADR: flat wiki layout with basename slugs over path-qualified  |
 | [[testing-runbook]]          | `runbook`  | Manual test plan covering all subcommands and edge cases       |
 | [[how-to-docs-plan]]         | `proposal` | Proposal tracking the how-to docs initiative (GitHub issue #3) |
+| [[architecture]]             | `concept`  | Seven Go files, catrace dependency, and data-flow pipeline     |
+| [[markov-model]]             | `concept`  | How wikilinks become a row-stochastic Markov kernel            |
+| [[mfpt]]                     | `concept`  | Mean first passage time — used by goal and analyze             |

@@ -3,6 +3,8 @@ type: how-to
 title: How to generate an interactive wiki graph
 description: Turn your markdown wiki into a browsable force-directed graph that shows page centrality, link clusters, and transition probabilities.
 tags: [graph, visualisation, html, force-directed]
+resource: cmd_graph.go
+timestamp: 2026-08-09T07:31:56Z
 ---
 
 # How to generate an interactive wiki graph
@@ -125,3 +127,13 @@ Open the HTML and confirm:
 | Graph is a hairball of edges         | `--min-edge` too low                       | Raise to `0.02` or higher                            |
 | `--sed` flag not recognised          | Running on Windows                         | Use `--title` / `--min-edge` instead                 |
 | Output HTML is blank in browser      | Very large wiki (1000+ pages)              | Filter with `--min-edge 0.02` to reduce render load  |
+
+## See also
+
+- [[analyze]] — interpret the communicating classes and centrality shown in the graph
+- [[testing-runbook]] — end-to-end verification steps for the `graph` subcommand
+
+## Sources
+
+- `cmd_graph.go`
+- `wiki.go`

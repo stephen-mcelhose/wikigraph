@@ -4,6 +4,8 @@ title: How to find a learning path through your wiki
 status: draft
 description: Use wikigraph goal to surface the pages closest to a target topic and visualise the route your wiki suggests for getting there.
 tags: [goal, learning-path, mfpt, subgraph]
+resource: cmd_goal.go
+timestamp: 2026-08-09T07:31:56Z
 ---
 
 > **Draft** — `wikigraph goal` is a prototype. Goals must currently be exact
@@ -16,7 +18,7 @@ tags: [goal, learning-path, mfpt, subgraph]
 `wikigraph goal` answers the question: *given a topic I want to understand,
 which pages in my wiki are the most structurally relevant stepping stones?*
 
-It uses **Mean First Passage Time (MFPT)** — a Markov chain metric that
+It uses **[[mfpt|Mean First Passage Time]] (MFPT)** — a Markov chain metric that
 measures how quickly a random walker starting at page X will reach your goal
 page. The same random-walk model underlies [[analyze]]
 (commute time suggestions) and [[graph]]
@@ -145,3 +147,8 @@ mastering them first will naturally lead you to the goal.
 | Goal page missing from HTML                  | Shouldn't happen — goal is always included      | File a bug                                       |
 | All nodes the same size                      | Single-page subset or uniform trace distribution | Increase `--top`                                |
 | MFPT computation is very slow                | Large wiki, many goals                          | Reduce `--top` or number of `--goal` flags       |
+
+## Sources
+
+- `cmd_goal.go`
+- https://github.com/stephen-mcelhose/wikigraph/issues/1
