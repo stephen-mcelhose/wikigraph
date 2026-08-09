@@ -75,3 +75,65 @@ func TestLoadPagesDuplicateSlugError(t *testing.T) {
 		t.Fatalf("expected error on duplicate slug, got nil")
 	}
 }
+
+func TestBuildKernelSampleNestedVault(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Build sample vault layout
+	// tmpDir/
+	//   root_notes/index-note.md
+	//   projects/quantum/quantum-intro.md
+	//   archive/2025/old-notes.md
+	//   .obsidian/config-note.md
+	dirs := []string{
+		filepath.Join(tmpDir, "root_notes"),
+		filepath.Join(tmpDir, "projects", "quantum"),
+		filepath.Join(tmpDir, "archive", "2025"),
+		filepath.Join(tmpDir, ".obsidian"),
+	}
+	for _, d := range dirs {
+		if err := os.MkdirAll(d, 0755); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	os.WriteFile(filepath.Join(tmpDir, "root_notes", "index-note.md"), []byte("[[quantum-intro]] and [[old-notes]]"), 0644)
+	os.WriteFile(filepath.Join(tmpDir, "projects", "quantum", "quantum-intro.md"), []byte("[[index-note]] and [[old-notes]]"), 0644)
+	os.WriteFile(filepath.Join(tmpDir, "archive", "2025", "old-notes.md"), []byte("[[quantum-intro]]"), 0644)
+	os.WriteFile(filepath.Join(tmpDir, ".obsidian", "config-note.md"), []byte("[[index-note]]"), 0644)
+
+	exclude := makeExcludeMap(nil)
+
+	// Flat scan on root -> no pages error
+	_, _, _, err := buildKernel(tmpDir, false, exclude)
+	if err == nil {
+		t.Fatalf("expected error on flat scan with no root .md files, got nil")
+	}
+
+	// Recursive scan -> 3 pages found, .obsidian ignored
+	kern, pages, _, err := buildKernel(tmpDir, true, exclude)
+	if err != nil {
+		t.Fatalf("recursive buildKernel failed: %v", err)
+	}
+
+	if len(pages) != 3 {
+		t.Fatalf("expected 3 pages, got %d (%v)", len(pages), pages)
+	}
+
+	expectedPages := []string{"index-note", "old-notes", "quantum-intro"}
+	for i, p := range pages {
+		if p != expectedPages[i] {
+			t.Errorf("expected page %d to be %s, got %s", i, expectedPages[i], p)
+		}
+	}
+
+	pi, err := kern.Stationary(1e-12, 5000)
+	if err != nil {
+		t.Fatalf("stationary distribution failed: %v", err)
+	}
+
+	// quantum-intro has inbound links from both index-note and old-notes, so it should have highest pi
+	if pi[2] <= pi[0] || pi[2] <= pi[1] {
+		t.Errorf("expected quantum-intro to be most central, got pi=%v", pi)
+	}
+}
