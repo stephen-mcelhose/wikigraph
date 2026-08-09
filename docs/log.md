@@ -22,7 +22,7 @@
 - testing-runbook: all TCs updated to docs/ path and real output values (7 pages, verified)
 - ADR-002: documents slug resolution decision (basename over path-qualified)
 - Added how-to/index.md to master index (index gap)
-- Added [[How to find a learning path through your wiki]] link to adr/001-embedding-layer (missing cross-reference)
+- Added [[How to find a learning path through your wiki]] link to [[adr-001-embedding-layer]] (missing cross-reference)
 - Added Completed Guides section to proposal/how-to-docs-plan (orphan — only linked from index)
 - Added See Also section to testing-runbook (orphan — only linked from index)
 ## [2026-08-09] ingest | communicating-classes, recurrent-class concept pages

@@ -125,7 +125,7 @@ covering all subcommands and edge cases.
 
 ## Architecture
 
-See [docs/adr/001-embedding-layer.md](docs/adr/001-embedding-layer.md) for the decision
+See [docs/adr-001-embedding-layer.md](docs/adr-001-embedding-layer.md) for the decision
 record on the planned `wikigraph vectorize` semantic search feature.
 
 ## License
