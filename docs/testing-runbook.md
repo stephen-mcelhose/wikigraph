@@ -433,6 +433,32 @@ wikigraph analyze /tmp/dupwiki -r 2>&1
 
 ---
 
+## TC-25 · multiple isolated communicating classes (knowledge silos)
+
+**Goal:** Verify `wikigraph analyze` correctly detects and reports multiple isolated communicating classes (strongly connected components) across disconnected topic clusters. See [[communicating-classes]].
+
+```bash
+rm -rf /tmp/isolatedwiki
+mkdir -p /tmp/isolatedwiki/clusterA /tmp/isolatedwiki/clusterB
+
+# Cluster A: Physics (quantum-a <-> quantum-b)
+printf '# Quantum A\n\n[[quantum-b]]\n' > /tmp/isolatedwiki/clusterA/quantum-a.md
+printf '# Quantum B\n\n[[quantum-a]]\n' > /tmp/isolatedwiki/clusterA/quantum-b.md
+
+# Cluster B: Cooking (pasta-recipe <-> sauce-recipe)
+printf '# Pasta Recipe\n\n[[sauce-recipe]]\n' > /tmp/isolatedwiki/clusterB/pasta-recipe.md
+printf '# Sauce Recipe\n\n[[pasta-recipe]]\n' > /tmp/isolatedwiki/clusterB/sauce-recipe.md
+
+wikigraph analyze /tmp/isolatedwiki -r --suggest-top 0
+```
+
+**Pass criteria:**
+- Overview reports `Pages: 4` and `Classes: 2`
+- Communicating classes section lists two distinct recurrent classes (`Class 1` with 2 pages, `Class 2` with 2 pages)
+- Exit code 0
+
+---
+
 ## See Also
 
 - [[graph]]
