@@ -17,12 +17,12 @@ Topics in scope:
 
 ## Conventions
 
-- **Page slugs**: kebab-case, directory-prefixed where needed (e.g., `how-to/analyze`, `adr/001-embedding-layer`)
+- **Page slugs**: kebab-case, flat — all pages live directly in `docs/`, never in subdirectories (e.g., `analyze.md`, `adr-001-embedding-layer.md`)
 - **Frontmatter**: OKF — `type`, `title`, `description`, `timestamp` required; `resource`, `tags`, `status` optional
 - **Types**: `concept` | `how-to` | `decision` | `runbook` | `proposal` | `spike`
-- **Cross-references**: `[[Page Title]]` wikilinks — use the page's `title` frontmatter value
+- **Cross-references**: `[[slug]]` wikilinks — the slug is the filename without `.md`
 - **Sources section**: every page ends with `## Sources` listing URLs or file paths it was derived from
-- **No raw/ folder**: sources are referenced inline via `resource:` frontmatter or `## Sources` sections
+- **No subdirectories**: filesystem layout is flat. Organisation emerges from wikilinks and the graph, not from folders.
 
 ## Operations
 
