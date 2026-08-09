@@ -19,6 +19,7 @@ timestamp: 2026-08-09T06:54:46Z
 | [[adr-004-quantum-go-example-wiki]] | `decision` | ADR: Use quantum-go as the canonical example wiki in how-to docs |
 | [[testing-runbook]]          | `runbook`  | Manual test plan covering all subcommands and edge cases       |
 | [[how-to-docs-plan]]         | `proposal` | Proposal tracking the how-to docs initiative (GitHub issue #3) |
+| [[page-type-conventions]]    | `proposal` | Proposal to define required sections for each wiki page type   |
 | [[architecture]]             | `concept`  | Seven Go files, catrace dependency, and data-flow pipeline     |
 | [[markov-model]]             | `concept`  | How wikilinks become a row-stochastic Markov kernel            |
 | [[mfpt]]                     | `concept`  | Mean first passage time — used by goal and analyze             |

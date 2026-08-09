@@ -58,6 +58,8 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 - index: Fixed index gap by registering adr-004-quantum-go-example-wiki
 - testing-runbook: Updated hardcoded page counts, edge counts, and spot-check values to stay synchronized with the expanded 21-page wiki state
 
+## [2026-08-09] ingest | issue #24 — per-type structural conventions proposal → page-type-conventions.md
+
 ## [2026-08-09] review | 7 pages critically reviewed — 9 issues fixed, 3 advisory
 - goal: Added [[stationary-distribution]] link at "large nodes" description
 - mfpt: Removed backticks from inside [[catrace]] wikilink alias; added [[recurrent-class]] and [[communicating-classes]] links in Infinite MFPT section
