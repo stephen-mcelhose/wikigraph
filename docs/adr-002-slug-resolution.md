@@ -55,13 +55,31 @@ a page moved between subdirectories, all inbound wikilinks broke silently.
 The regex extension needed to support `/` in slugs was a code smell
 confirming the design was wrong.
 
+## Implementation note — recursive scanning attempt
+
+During implementation we attempted to support subdirectory-organised wikis by
+replacing `os.ReadDir` with `filepath.Walk` in `loadPages`. This would have
+allowed pages at arbitrary depths (e.g. `docs/how-to/analyze.md`) to be
+discovered automatically.
+
+**Reverted.** Recursive scanning directly violates the flat-layout standard:
+it makes subdirectories a valid place to put pages, which re-introduces the
+slug ambiguity problem (two files at different paths with the same basename),
+undermines the "organisation emerges from wikilinks not folders" principle,
+and silently breaks the moment any file moves. The standard is `os.ReadDir`
+on a single flat directory — no recursion, ever.
+
+This experience is why the standard is now **encoded** in `AGENTS.md` and
+the `llm-wiki` skill: future LLM sessions must not re-introduce recursive
+scanning as a "helpful improvement".
+
 ## Consequences
 
 - All pages live at `docs/<slug>.md` — no subdirectories ever
 - Slugs are kebab-case basenames: `analyze`, `adr-001-embedding-layer`, `testing-runbook`
 - Wikilinks are `[[slug]]` — never `[[dir/slug]]`
 - `AGENTS.md` and `llm-wiki` SKILL updated to enforce the flat rule
-- `wiki.go` needs no change — `os.ReadDir` on a flat directory already does the right thing
+- `wiki.go` uses `os.ReadDir` (non-recursive) — `filepath.Walk` was tried and reverted
 - The how-to guide series that triggered this decision is tracked in [[how-to-docs-plan]]
 
 ## Sources
