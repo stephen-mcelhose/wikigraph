@@ -2,7 +2,7 @@
 type: how-to
 title: How to generate an interactive wiki graph
 description: Turn your markdown wiki into a browsable force-directed graph that shows page centrality, link clusters, and transition probabilities.
-tags: [graph, visualisation, html, force-directed]
+tags: [how-to, graph, visualisation, html, force-directed]
 resource: cmd_graph.go
 timestamp: 2026-08-09T07:31:56Z
 ---
@@ -28,7 +28,7 @@ directed edge, with size and colour encoding graph-theoretic properties.
 
 | Visual property | What it means                                                                 |
 | --------------- | ----------------------------------------------------------------------------- |
-| **Node size**   | Stationary distribution π — how often a random walker lands on this page     |
+| **Node size**   | Stationary distribution π — how often a random walker lands on this page; a proxy for systemic importance |
 | **Node colour** | Communicating class — pages that can all reach each other share a colour      |
 | **Edge width**  | Transition probability — how likely the walker follows that specific link     |
 
@@ -75,6 +75,9 @@ Lower it to see every edge (including tenuous ones from teleportation):
 wikigraph graph ~/notes --min-edge 0.001
 ```
 
+Open `wiki_graph.html` — the edge count visible in the graph should be
+noticeably higher or lower than with the default.
+
 ### 4. Post-process the HTML with `--sed` (macOS / Linux)
 
 Inject custom CSS or replace text without modifying the source:
@@ -91,6 +94,9 @@ wikigraph graph ~/notes \
 
 `--sed` is not available on Windows. Use `--title` and `--min-edge` instead.
 
+Open `wiki_graph.html` and confirm the substitution took effect (e.g. the
+background colour or text changed as specified).
+
 ### 5. Exclude meta-pages
 
 ```bash
@@ -103,6 +109,8 @@ defaults, so re-add them if needed:
 ```bash
 wikigraph graph ~/notes -e index -e log -e AGENTS -e README
 ```
+
+Open `wiki_graph.html` and confirm the excluded slugs no longer appear as nodes.
 
 ## Verification
 
@@ -122,6 +130,8 @@ Open the HTML and confirm:
 
 | Symptom                              | Cause                                      | Fix                                                  |
 | ------------------------------------ | ------------------------------------------ | ---------------------------------------------------- |
+| `wikigraph: command not found`        | Binary not on PATH                         | Run `go install github.com/stephen-mcelhose/wikigraph@latest` or add its bin dir to PATH |
+| No `Written:` line on stderr          | Bad output path or write-permission error  | Omit `-o` to write to the current directory, or check permissions on the target path |
 | `Pages: 1` — almost empty graph      | Wrong directory, or only one `.md` file    | Check the path; ensure files use `.md` extension     |
 | All nodes the same size              | Wiki may be a single communicating class   | Expected — add more cross-links to differentiate     |
 | Graph is a hairball of edges         | `--min-edge` too low                       | Raise to `0.02` or higher                            |
