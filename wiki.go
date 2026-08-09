@@ -90,6 +90,9 @@ func loadPages(dir string, recursive bool, exclude map[string]bool) ([]string, m
 // Markov kernel stays well-defined and the stationary distribution can be computed.
 func buildAdjacency(pages []string, idx map[string]int, paths map[string]string) (*mat.Dense, []string, error) {
 	n := len(pages)
+	if n == 0 {
+		return nil, nil, fmt.Errorf("no .md pages found")
+	}
 	adj := mat.NewDense(n, n, nil)
 	var sinks []string
 	for i, slug := range pages {
