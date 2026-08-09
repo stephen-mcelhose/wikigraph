@@ -33,7 +33,7 @@ directed edge, with size and colour encoding graph-theoretic properties.
 Pages that are large and central are your wiki's hubs. Pages that are small
 and isolated need more inbound links. Pages sharing a colour form a
 self-contained cluster. For a full breakdown of what these properties mean and
-how to act on them, see [[how-to/analyze]].
+how to act on them, see [[How to analyse your wiki's health]].
 
 ## Steps
 

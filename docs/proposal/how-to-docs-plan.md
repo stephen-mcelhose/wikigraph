@@ -54,7 +54,7 @@ Create detailed, step-by-step how-to guides for each of the four subcommands. Ea
 
 All four guides were delivered on 2026-08-09:
 
-- [[how-to/export]]
-- [[how-to/graph]]
-- [[how-to/analyze]]
-- [[how-to/goal]] *(draft)*
+- [[How to export your wiki graph for external tools]]
+- [[How to generate an interactive wiki graph]]
+- [[How to analyse your wiki's health]]
+- [[How to find a learning path through your wiki]] *(draft)*

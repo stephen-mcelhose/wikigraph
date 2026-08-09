@@ -88,4 +88,4 @@ Ollama requires a local daemon (`ollama serve`), but it is widely installed and 
 - **`wikigraph goal --semantic`** will load the chromem-go index and perform cosine-similarity lookup to resolve a natural-language query to slugs, then feed those into the existing MFPT machinery.
 - **Embedding backend** defaults to Ollama (`--host http://localhost:11434`, `--model nomic-embed-text`). The interface allows future backends (LocalAI, OpenAI-compatible, custom).
 - **Searching does not require Ollama** — the stored vectors are used directly. Only `wikigraph vectorize` needs the daemon running.
-- **Plain slug-based `goal`** remains fully self-contained with no new dependencies. See [[how-to/goal]] for current usage.
+- **Plain slug-based `goal`** remains fully self-contained with no new dependencies. See [[How to find a learning path through your wiki]] for current usage.
