@@ -54,7 +54,7 @@ wikigraph --help
 
 ## TC-02 · graph — baseline render
 
-**Goal:** Full wiki renders to a valid HTML file.
+**Goal:** Full wiki renders to a valid HTML file. See [[How to generate an interactive wiki graph]].
 
 ```bash
 wikigraph graph . -o /tmp/wg_graph.html
@@ -131,7 +131,7 @@ wikigraph graph /tmp/does-not-exist
 
 ## TC-07 · goal — learning path to shors-algorithm
 
-**Goal:** 12-node subgraph centred on Shor's algorithm.
+**Goal:** 12-node subgraph centred on Shor's algorithm. See [[How to find a learning path through your wiki]].
 
 ```bash
 wikigraph goal . --goal shors-algorithm --top 12 -o /tmp/wg_goal.html
@@ -193,7 +193,7 @@ wikigraph goal . -o /tmp/x.html
 
 ## TC-11 · export — JSON
 
-**Goal:** Valid node-link JSON with correct shape.
+**Goal:** Valid node-link JSON with correct shape. See [[How to export your wiki graph for external tools]].
 
 ```bash
 wikigraph export . --format json -o /tmp/wg
@@ -271,7 +271,7 @@ jq '.links | length' /tmp/wg_sparse.json
 
 ## TC-16 · analyze — full report
 
-**Goal:** All six sections printed; known facts match.
+**Goal:** All six sections printed; known facts match. See [[How to analyse your wiki's health]].
 
 ```bash
 wikigraph analyze .
