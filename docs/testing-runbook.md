@@ -9,9 +9,9 @@ timestamp: 2026-08-09T06:54:46Z
 # wikigraph — Manual Test Runbook
 
 **Binary:** built locally from `~/repos/wikigraph/`  
-**Wiki under test:** `docs/` in this repo (21 content pages)  
+**Wiki under test:** `docs/` in this repo (23 content pages)  
 **Run all commands from:** `~/repos/wikigraph/` (the repo root)  
-**Last verified:** 2026-08-09 against current wiki state (21 pages, 133 edges, 1 recurrent class)
+**Last verified:** 2026-08-09 against current wiki state (23 pages, 145 edges, 1 recurrent class)
 
 ---
 
@@ -31,12 +31,8 @@ All commands use `docs/` as the wiki path. Run from `~/repos/wikigraph`:
 cd ~/repos/wikigraph
 ```
 
-The 20 content pages (after default exclusions of `index`, `log`, `AGENTS`):
-`analyze`, `architecture`, `adr-001-embedding-layer`, `adr-002-slug-resolution`,
-`adr-003-orphan-threshold`, `catrace`, `commute-time`, `communicating-classes`,
-`entropy-rate`, `export`, `goal`, `graph`, `how-to-docs-plan`, `markov-model`,
-`mfpt`, `random-walk`, `recurrent-class`, `sink-page`, `stationary-distribution`,
-`testing-runbook`
+The 22 content pages (after default exclusions of `index`, `log`, `AGENTS`):
+`adr-001-embedding-layer`, `adr-002-slug-resolution`, `adr-003-orphan-threshold`, `adr-004-quantum-go-example-wiki`, `adr-005-page-type-conventions-and-proposal-storage`, `analyze`, `architecture`, `catrace`, `communicating-classes`, `commute-time`, `entropy-rate`, `export`, `goal`, `graph`, `how-to-docs-plan`, `markov-model`, `mfpt`, `page-type-conventions`, `random-walk`, `recurrent-class`, `sink-page`, `stationary-distribution`, `testing-runbook`
 
 Verify:
 
@@ -290,11 +286,11 @@ wikigraph analyze docs/
 
 | Section         | Expected                                                                              |
 | --------------- | ------------------------------------------------------------------------------------- |
-| Overview        | Pages: 21, Edges: 133, Entropy rate: ~2.73 bits, Classes: 1                          |
-| Classes         | 1 recurrent (21 pages)                                                                |
-| Orphans (≤10%)  | `adr-003-orphan-threshold` (π=0.008269), `adr-004-quantum-go-example-wiki` (π=0.018599), `testing-runbook` (π=0.018599) |
+| Overview        | Pages: 23, Edges: 145, Entropy rate: ~2.77 bits, Classes: 1                          |
+| Classes         | 1 recurrent (23 pages)                                                                |
+| Orphans (≤10%)  | `adr-003-orphan-threshold` (π=0.006887), `adr-005-page-type-conventions-and-proposal-storage` (π=0.013676), `adr-001-embedding-layer` (π=0.015725) |
 | Sinks           | `(none)`                                                                              |
-| Most central #1 | `analyze` (π=0.110755)                                                               |
+| Most central #1 | `analyze` (π=0.103308)                                                               |
 | Suggestions     | At least one page with 3 suggestions listed                                           |
 
 - Exit code 0
@@ -322,7 +318,7 @@ wikigraph analyze docs/ --orphan-pct 0 --suggest-top 0
 ```
 
 **Pass criteria:**
-- Orphan section shows `adr-003-orphan-threshold` (π=0.008269) — the single lowest-π page
+- Orphan section shows `adr-003-orphan-threshold` (π=0.006887) — the single lowest-π page
 - Section header says `bottom 0%`
 
 ---
@@ -334,7 +330,7 @@ wikigraph analyze docs/ --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "
 ```
 
 **Pass criteria:**
-- Count equals 21 (all pages shown as orphans at 100th percentile)
+- Count equals 23 (all pages shown as orphans at 100th percentile)
 
 ---
 

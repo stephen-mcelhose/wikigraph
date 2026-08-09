@@ -59,6 +59,8 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 - testing-runbook: Updated hardcoded page counts, edge counts, and spot-check values to stay synchronized with the expanded 21-page wiki state
 
 ## [2026-08-09] ingest | issue #24 — per-type structural conventions proposal → page-type-conventions.md
+- adr-005: Added ADR-005 establishing per-type required section schemas, Y-statements, redundant status heading deprecation, and deferred proposal storage subdirectories.
+- AGENTS.md: Updated conventions section to point to [[page-type-conventions]] for structural schemas.
 
 ## [2026-08-09] review | 7 pages critically reviewed — 9 issues fixed, 3 advisory
 - goal: Added [[stationary-distribution]] link at "large nodes" description

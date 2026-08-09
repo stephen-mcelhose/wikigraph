@@ -1,51 +1,43 @@
 ---
 type: proposal
 title: Per-Type Structural Conventions for Wiki Pages
-description: Proposal to define required and optional sections for each of the six wiki page types, making authorship consistent for both humans and the LLM.
+description: Proposal defining required sections for each wiki page type, progressive discovery via AGENTS.md, and proposal/spike retention strategy.
 resource: https://github.com/stephen-mcelhose/wikigraph/issues/24
 tags: [documentation, conventions, wiki, llm-wiki]
-timestamp: 2026-08-09T21:00:52Z
+timestamp: 2026-08-09T22:30:00Z
 ---
 
 # Per-Type Structural Conventions for Wiki Pages
 
-The wiki uses six page types — `concept`, `how-to`, `decision`, `runbook`, `proposal`, `spike` — but only defines them by name. No structural conventions exist: no required sections, no ordering, no tone guidance. This proposal defines the work needed to fill that gap.
+The wiki uses six page types (`concept`, `how-to`, `decision`, `runbook`, `proposal`, `spike`), but structural requirements were previously informal. This page defines exact section schemas, progressive discovery mechanics, and proposal/spike retention policies.
 
-## Current state
+## Decision Summary
 
-Structure has emerged inconsistently from practice:
+1. **Progressive Discovery**: `AGENTS.md` remains lean and points to `[[page-type-conventions]]` (or `[[adr-005-page-type-conventions-and-proposal-storage]]`). `llm-wiki` checks required section rules prior to page creation/editing.
+2. **Redundant Heading Removal**: `## Status` in markdown body is deprecated/dropped for `decision` pages because OKF frontmatter `status` (`proposed|accepted|deprecated`) is the single source of truth.
+3. **Upfront Y-Statement**: `decision` pages MUST begin `## Decision` with the standard Y-Statement pattern.
+4. **Minimal `concept` Skeleton**: Enforces structure while retaining authoring flow.
+5. **Proposal/Spike History Retention**: Deferred moving proposals/spikes into code subdirectories for now (would break flat `docs/*.md` layout invariant). Captured via [[adr-005-page-type-conventions-and-proposal-storage]]; to be revisited if tooling expands directory awareness.
 
-| Type       | Observed sections                                                              | Formalised? |
-| ---------- | ------------------------------------------------------------------------------ | ----------- |
-| `how-to`   | Goal → Prerequisites → Steps → Verification → Troubleshooting → Sources       | Partially — rubric exists in [[how-to-docs-plan]] but not in [[AGENTS.md]] |
-| `decision` | Varies by ADR — no consistent Status / Context / Decision / Consequences shape | No |
-| `runbook`  | Prerequisites → TC-## test cases (inferred from [[testing-runbook]])           | No |
-| `proposal` | Problem → Proposed Solution → Alternatives → Open Questions → Sources          | No |
-| `concept`  | Fully freeform — each page organises itself differently                        | No |
-| `spike`    | No pages exist yet                                                             | N/A |
+## Required Sections by Page Type
 
-## What needs to be decided
+| Page Type | Required Sections (Canonical Order) | Key Requirements |
+| :--- | :--- | :--- |
+| **`decision`** | 1. `## Context`<br>2. `## Decision`<br>3. `## Consequences`<br>4. `## Sources` | • Markdown `## Status` omitted (frontmatter `status:` is canonical)<br>• `## Decision` MUST start with Y-Statement:<br>`In the context of <X>, facing <Y>, we decided <Z>, to achieve <A>, accepting <B>.` |
+| **`how-to`** | 1. `## Goal`<br>2. `## Prerequisites`<br>3. `## Steps`<br>4. `## Verification`<br>5. `## Troubleshooting`<br>6. `## Sources` | • Strictly complies with 24-point how-to rubric |
+| **`concept`** | 1. `## Overview`<br>2. `## Key Properties`<br>3. `## Related Concepts`<br>4. `## Sources` | • Minimal skeleton to ensure graph interlinking without restricting mathematical flow |
+| **`proposal`** | 1. `## Problem`<br>2. `## Proposed Solution`<br>3. `## Alternatives Considered`<br>4. `## Open Questions`<br>5. `## Sources` | • Value: Architectural design decisions before consensus |
+| **`spike`** | 1. `## Question`<br>2. `## Method`<br>3. `## Findings`<br>4. `## Conclusions`<br>5. `## Sources` | • Value: Timeboxed technical investigation with empirical code/data findings |
+| **`runbook`** | 1. `## Overview`<br>2. `## Prerequisites`<br>3. `## Test Cases`<br>4. `## Sources` | • Operational test procedures and assertions |
 
-For each type, agree on:
+## Enforcement
 
-1. **Required sections** — must be present; lint should flag absence
-2. **Optional sections** — expected but not mandatory
-3. **Section order** — canonical top-to-bottom sequence
-4. **Tone and scope** — e.g. "concept pages explain the idea to a reader unfamiliar with Markov chains"
-
-## Open questions
-
-- **`decision`**: standard ADR format (Status / Context / Decision / Consequences) or something lighter? Standard ADR has Status as the first field — useful for scanning open vs. accepted decisions.
-- **`concept`**: is freeform acceptable, or should we enforce a minimal skeleton (Definition → Properties → Related concepts)? Risk of over-constraining pages that have natural narrative flow.
-- **`spike`**: what distinguishes a spike from a proposal? A proposal is a design question seeking a decision; a spike is an investigation with findings. The natural shape is Question → Method → Findings → Conclusions → Open questions.
-- **`how-to`**: the existing rubric (issue #11) should be the source of truth — does it need to be resolved into this work or tracked separately?
-- **Where do conventions live?** Inline in `AGENTS.md` (one authoritative place, always read by the LLM), or a separate `conventions.md` page that `AGENTS.md` references?
-
-## Out of scope
-
-- Rewriting existing pages to conform (follow-on task, tracked separately)
-- Changing OKF frontmatter fields
+- **`llm-wiki lint`**: Blocking enforcement. Audits page type against required top-level section headings and reports violations as errors.
+- **`llm-wiki ingest`**: Blocking enforcement. Validates generated/edited pages before writing.
 
 ## Sources
 
 - [GitHub issue #24 — docs: define per-type structural conventions for wiki pages](https://github.com/stephen-mcelhose/wikigraph/issues/24)
+- [[adr-005-page-type-conventions-and-proposal-storage]]
+- [[how-to-docs-plan]]
+- [[index]]
