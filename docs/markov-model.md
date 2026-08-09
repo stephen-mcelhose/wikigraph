@@ -1,7 +1,7 @@
 ---
 type: concept
 title: Markov Model of a Wiki
-description: How wikigraph translates [[wikilinks]] into a row-stochastic transition matrix — the loadPages and buildAdjacency pipeline in wiki.go.
+description: How wikigraph translates `[[wikilinks]]` into a row-stochastic transition matrix — the loadPages and buildAdjacency pipeline in wiki.go.
 resource: wiki.go
 tags: [markov, transition-matrix, wikilinks, adjacency, sink, teleportation]
 timestamp: 2026-08-09T07:31:56Z
@@ -10,7 +10,7 @@ timestamp: 2026-08-09T07:31:56Z
 # Markov Model of a Wiki
 
 wikigraph models a wiki as a **discrete-time Markov chain**: pages are
-states, and outgoing `[[wikilinks]]` define the transitions. A
+states, and outgoing wikilinks (`[[slug]]` syntax) define the transitions. A
 [[random-walk|random walker]] follows links at random; the long-run fraction
 of time spent on each page is its [[stationary-distribution|stationary distribution]]
 π — used as centrality throughout the tool.
@@ -51,13 +51,15 @@ probability of moving from page i to page j in one step.
 ## Sink handling — teleportation
 
 A page with no outgoing links (a **[[sink-page|sink]]**) would produce a zero row —
-an absorbing state from which a [[random-walk|random walk]] never escapes. To keep the
+making the matrix substochastic (row sum = 0, violating the stochastic property). To keep the
 chain well-defined, `buildAdjacency` gives sinks a **uniform row**: equal
 probability of jumping to any page. This is the same teleportation trick
 used in PageRank.
 
-The resulting Kernel is aperiodic and (within each [[communicating-classes|communicating class]])
-irreducible, which guarantees a unique stationary distribution per class.
+Within each [[communicating-classes|communicating class]] the Kernel is irreducible, which
+guarantees a unique stationary distribution per class. The Kernel is also aperiodic for any
+class that contains at least one sink page, since the uniform teleportation row carries a
+self-loop. Classes with no sinks may be periodic if the underlying link graph is bipartite.
 See [[analyze]] for what communicating classes mean for wiki health.
 
 ## What the matrix represents

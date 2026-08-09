@@ -140,7 +140,7 @@ Open the HTML and confirm:
 | `wikigraph: command not found`        | Binary not on PATH                         | Run `go install github.com/stephen-mcelhose/wikigraph@latest` or add its bin dir to PATH |
 | No `Written:` line on stderr          | Bad output path or write-permission error  | Omit `-o` to write to the current directory, or check permissions on the target path |
 | `Pages: 1` — almost empty graph      | Wrong directory, or only one `.md` file    | Check the path; ensure files use `.md` extension     |
-| All nodes the same size              | Wiki may be a single communicating class   | Expected — add more cross-links to differentiate     |
+| All nodes the same size              | All pages have near-equal π — happens when every page is a sink (uniform teleportation) or the link graph is highly symmetric | Add pages with varied out-degree; check for widespread sink pages with `wikigraph analyze` |
 | Graph is a hairball of edges         | `--min-edge` too low                       | Raise to `0.02` or higher                            |
 | `--sed` flag not recognised          | Running on Windows                         | Use `--title` / `--min-edge` instead                 |
 | Output HTML is blank in browser      | Very large wiki (1000+ pages)              | Filter with `--min-edge 0.02` to reduce render load  |

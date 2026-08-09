@@ -144,8 +144,7 @@ Lower it (or set to `0`) to include everything:
 wikigraph export ~/quantum-go/wiki --format dot -o /tmp/wiki --min-edge 0
 ```
 
-**Action:** Confirm the edge count changes — run `wc -l /tmp/wiki_edges.csv` before
-and after adjusting `--min-edge` to see the difference.
+**Action:** Confirm the link count changes — `cat /tmp/wiki.json | jq '.links | length'` before and after adjusting `--min-edge` to see the difference.
 
 ### 5. Exclude meta-pages
 
@@ -195,7 +194,7 @@ head -4 /tmp/wiki_nodes.csv
 head -5 /tmp/wiki.dot
 ```
 
-If `Pages: 36` appears on stderr and all five output files exist, the export succeeded.
+If `Pages: 36` appears on stderr for each run and all four output files exist (`wiki.json`, `wiki_nodes.csv`, `wiki_edges.csv`, `wiki.dot`), the export succeeded.
 
 ## Troubleshooting
 

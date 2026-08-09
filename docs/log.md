@@ -51,3 +51,15 @@ cross-references in markov-model, mfpt, communicating-classes, recurrent-class,
 architecture, and analyze. Corrected SCC algorithm attribution from Tarjan to
 Kosaraju in communicating-classes and architecture. Registered all six pages
 in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
+
+## [2026-08-09] lint | 21 pages checked, 4 issues found, 4 fixed
+- adr-004-quantum-go-example-wiki: Changed non-standard type to decision, added missing description field, and resolved sink status by linking to graph, analyze, goal, and export
+- goal: Adjusted tags list to start with how-to per rubric
+- index: Fixed index gap by registering adr-004-quantum-go-example-wiki
+- testing-runbook: Updated hardcoded page counts, edge counts, and spot-check values to stay synchronized with the expanded 21-page wiki state
+
+## [2026-08-09] lint | 21 pages checked, 4 issues found, 4 fixed
+- adr-004-quantum-go-example-wiki: Changed non-standard type to decision, added missing description field, and resolved sink status by linking to graph, analyze, goal, and export
+- goal: Adjusted tags list to start with how-to per rubric
+- index: Fixed index gap by registering adr-004-quantum-go-example-wiki
+- testing-runbook: Updated hardcoded page counts, edge counts, and spot-check values to stay synchronized with the expanded 21-page wiki state

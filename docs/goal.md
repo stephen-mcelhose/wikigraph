@@ -3,7 +3,7 @@ type: how-to
 title: How to find a learning path through your wiki
 status: draft
 description: Use wikigraph goal to surface the pages closest to a target topic and visualise the route your wiki suggests for getting there.
-tags: [goal, learning-path, mfpt, subgraph]
+tags: [how-to, goal, learning-path, mfpt, subgraph]
 resource: cmd_goal.go
 timestamp: 2026-08-09T07:31:56Z
 ---
@@ -103,6 +103,8 @@ wikigraph goal ~/quantum-go/wiki --goal error-correction --top 5
 If `--top` is larger than the number of reachable pages, wikigraph uses
 whatever it can reach.
 
+**Action:** Open the output file and confirm the node count in the title bar or page matches the `--top` value you passed.
+
 ### 5. Save to a specific file
 
 ```bash
@@ -110,7 +112,8 @@ wikigraph goal ~/quantum-go/wiki \
   --goal error-correction \
   --top 12 \
   -o /tmp/goal-path.html
-```
+
+**Action:** Confirm the file landed: `ls -l /tmp/goal-path.html`
 
 ### 6. Filter weak edges
 
@@ -120,6 +123,8 @@ wikigraph goal ~/quantum-go/wiki --goal error-correction --min-edge 0.02
 
 Raises the edge visibility threshold (default: 0.005). Useful if the
 subgraph is cluttered.
+
+**Action:** Open `goal_graph.html` and confirm the graph has fewer visible edges than the default run.
 
 ## Verification
 
