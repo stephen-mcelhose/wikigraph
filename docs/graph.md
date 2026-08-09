@@ -2,7 +2,7 @@
 type: how-to
 title: How to generate an interactive wiki graph
 description: Turn your markdown wiki into a browsable force-directed graph that shows page centrality, link clusters, and transition probabilities.
-tags: [graph, visualisation, html, force-directed]
+tags: [how-to, graph, visualisation, html, force-directed]
 resource: cmd_graph.go
 timestamp: 2026-08-09T07:31:56Z
 ---
@@ -28,7 +28,7 @@ directed edge, with size and colour encoding graph-theoretic properties.
 
 | Visual property | What it means                                                                 |
 | --------------- | ----------------------------------------------------------------------------- |
-| **Node size**   | Stationary distribution π — how often a random walker lands on this page     |
+| **Node size**   | Stationary distribution π — how often a random walker lands on this page; a proxy for systemic importance |
 | **Node colour** | Communicating class — pages that can all reach each other share a colour      |
 | **Edge width**  | Transition probability — how likely the walker follows that specific link     |
 
@@ -42,10 +42,10 @@ how to act on them, see [[analyze]].
 ### 1. Basic graph
 
 ```bash
-wikigraph graph ~/notes
+wikigraph graph ~/go-quantum
 ```
 
-Opens a file called `wiki_graph.html` in the current directory. Open it:
+Writes `wiki_graph.html` to the current directory. Open it:
 
 ```bash
 open wiki_graph.html          # macOS
@@ -55,7 +55,7 @@ xdg-open wiki_graph.html      # Linux
 ### 2. Set a custom output path and title
 
 ```bash
-wikigraph graph ~/notes -o docs/graph.html --title "my notes"
+wikigraph graph ~/go-quantum -o ~/go-quantum.html --title "go-quantum"
 ```
 
 The title appears in the browser tab and as an `<h1>` in the page.
@@ -66,14 +66,17 @@ Very small transition probabilities clutter the graph. The default threshold
 is `0.005`. Raise it to show only the strongest links:
 
 ```bash
-wikigraph graph ~/notes --min-edge 0.05
+wikigraph graph ~/go-quantum --min-edge 0.05
 ```
 
 Lower it to see every edge (including tenuous ones from teleportation):
 
 ```bash
-wikigraph graph ~/notes --min-edge 0.001
+wikigraph graph ~/go-quantum --min-edge 0.001
 ```
+
+Open `wiki_graph.html` — the edge count visible in the graph should be
+noticeably higher or lower than with the default.
 
 ### 4. Post-process the HTML with `--sed` (macOS / Linux)
 
@@ -81,35 +84,40 @@ Inject custom CSS or replace text without modifying the source:
 
 ```bash
 # Change the background colour
-wikigraph graph ~/notes -s 's/background:#1a1a2e/background:#0f172a/'
+wikigraph graph ~/go-quantum -s 's/background:#1a1a2e/background:#0f172a/'
 
 # Apply multiple expressions
-wikigraph graph ~/notes \
+wikigraph graph ~/go-quantum \
   -s 's/wiki_graph/My Wiki/' \
   -s 's/font-size:12px/font-size:14px/'
 ```
 
 `--sed` is not available on Windows. Use `--title` and `--min-edge` instead.
 
+Open `wiki_graph.html` and confirm the substitution took effect (e.g. the
+background colour or text changed as specified).
+
 ### 5. Exclude meta-pages
 
 ```bash
-wikigraph graph ~/notes --exclude index --exclude log --exclude README
+wikigraph graph ~/go-quantum --exclude index --exclude log --exclude README
 ```
 
 `index`, `log`, and `AGENTS` are excluded by default. This replaces the
 defaults, so re-add them if needed:
 
 ```bash
-wikigraph graph ~/notes -e index -e log -e AGENTS -e README
+wikigraph graph ~/go-quantum -e index -e log -e AGENTS -e README
 ```
+
+Open `wiki_graph.html` and confirm the excluded slugs no longer appear as nodes.
 
 ## Verification
 
 After the run you should see on stderr:
 
 ```
-Pages: 42
+Pages: 20
 Written: wiki_graph.html
 ```
 
@@ -122,6 +130,8 @@ Open the HTML and confirm:
 
 | Symptom                              | Cause                                      | Fix                                                  |
 | ------------------------------------ | ------------------------------------------ | ---------------------------------------------------- |
+| `wikigraph: command not found`        | Binary not on PATH                         | Run `go install github.com/stephen-mcelhose/wikigraph@latest` or add its bin dir to PATH |
+| No `Written:` line on stderr          | Bad output path or write-permission error  | Omit `-o` to write to the current directory, or check permissions on the target path |
 | `Pages: 1` — almost empty graph      | Wrong directory, or only one `.md` file    | Check the path; ensure files use `.md` extension     |
 | All nodes the same size              | Wiki may be a single communicating class   | Expected — add more cross-links to differentiate     |
 | Graph is a hairball of edges         | `--min-edge` too low                       | Raise to `0.02` or higher                            |
