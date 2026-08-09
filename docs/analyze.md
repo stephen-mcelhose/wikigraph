@@ -140,7 +140,7 @@ section title tells you the exact remedy: "add inbound links".
   fuzz-testing                              → add outgoing links
 ```
 
-[[sink-page|Sinks]] have **no outbound wikilinks at all**. In the [[markov-model]], a visitor
+[[sink-page|Sinks]] have **no outbound wikilinks at all**. In the [[markov-model]], a [[random-walk|random walker]]
 landing on a sink teleports uniformly to any page. This is handled gracefully
 by wikigraph, but sinks are usually an oversight — pages that were written
 in isolation and never linked forward.
@@ -269,7 +269,7 @@ A healthy wiki typically looks like this:
 | Classes                         | 1 recurrent class  | Multiple classes, any transient |
 | Orphan π values                 | > 0.005            | < 0.001                         |
 | Sink count                      | 0                  | Many sinks                      |
-| [[entropy-rate\|Entropy rate]] vs log₂(pages) | > 70%  | < 50%                           |
+| [[entropy-rate]] vs log₂(pages)               | > 70%  | < 50%                           |
 | Top hub π                       | < 0.15             | > 0.25 (one page dominates)     |
 
 ## Troubleshooting

@@ -112,6 +112,7 @@ wikigraph goal ~/quantum-go/wiki \
   --goal error-correction \
   --top 12 \
   -o /tmp/goal-path.html
+```
 
 **Action:** Confirm the file landed: `ls -l /tmp/goal-path.html`
 
@@ -151,7 +152,7 @@ The subgraph uses the **trace kernel** on the selected subset — the effective
 transition probabilities *within* those pages, accounting for paths that
 leave and re-enter the subset.
 
-- **Large nodes** — high stationary probability *within the subgraph*. These
+- **Large nodes** — high [[stationary-distribution|stationary probability]] *within the subgraph*. These
   are the most-visited pages on the path to your goal.
 - **Wide edges** — high probability that the random walker follows that link
   next. These are the canonical stepping stones.

@@ -44,7 +44,7 @@ Each page is read and matched against:
 ## Step 3 — Adjacency matrix
 
 A `gonum/mat.Dense` n×n matrix is filled with 1.0 for each outgoing link.
-`catrace.NewRandomWalkKernel` then **row-normalises**: each row is divided
+[[catrace|catrace.NewRandomWalkKernel]] then **row-normalises**: each row is divided
 by its sum, producing a row-stochastic matrix where each entry Pᵢⱼ is the
 probability of moving from page i to page j in one step.
 

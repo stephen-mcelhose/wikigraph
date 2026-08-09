@@ -22,7 +22,7 @@ centrality measure throughout [[analyze]], [[export]], and [[graph]].
 
 ## Power iteration algorithm
 
-[[catrace|`catrace.Kernel.Stationary`]]`(tol, maxIter)` computes π iteratively:
+[[catrace|catrace.Kernel.Stationary]](tol, maxIter) computes π iteratively:
 
 1. Start with a uniform vector v⁰ = [1/N, 1/N, …, 1/N]
 2. Multiply: vᵏ⁺¹ = vᵏ P
@@ -65,7 +65,7 @@ from well-connected pages.
 
 | Command     | Use of π                                                         |
 | ----------- | ---------------------------------------------------------------- |
-| [[analyze]] | Orphan detection, most-central ranking, commute-time weighting  |
+| [[analyze]] | Orphan detection, most-central ranking, [[commute-time]] weighting  |
 | [[export]]  | `pi` field in JSON/CSV per page                                 |
 | [[graph]]   | Node size in the force-directed visualisation encodes π         |
 

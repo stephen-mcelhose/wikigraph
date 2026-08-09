@@ -12,7 +12,7 @@ timestamp: 2026-08-09T07:31:56Z
 **MFPT(i, j)** is the expected number of steps a [[random-walk|random walker]] starting at
 page i needs before it first lands on page j. It is computed from the
 **fundamental matrix** of the Markov chain; the implementation lives in
-[[catrace|`catrace.Kernel.MeanFirstPassage`]].
+[[catrace|catrace.Kernel.MeanFirstPassage]].
 
 Low MFPT means pages are structurally close — the random walk naturally
 travels between them quickly. High or infinite MFPT means pages are in
@@ -58,9 +58,9 @@ which can save significant computation on large wikis.
 ## Infinite MFPT
 
 MFPT(i, j) is infinite when page j is not reachable from page i. This
-happens in two situations: i is in a recurrent class that does not contain
+happens in two situations: i is in a [[recurrent-class|recurrent class]] that does not contain
 j (recurrent classes are closed — a walker never leaves), or i is in a
-transient class with no directed path toward j's class. In `goal`, such
+transient class with no directed path toward j's class. See [[communicating-classes]] for how classes are defined. In `goal`, such
 pages are left with score `1e18` and typically excluded from the top-N
 selection. In `analyze`, `CommuteTime` returns an error for such pairs
 and the pair is skipped.

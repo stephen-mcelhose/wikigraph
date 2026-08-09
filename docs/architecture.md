@@ -26,7 +26,7 @@ kernel and then hand off to the `catrace` library for all the maths.
 
 ## The catrace dependency
 
-All Markov maths lives in [[catrace|`github.com/stephen-mcelhose/catrace`]]. wikigraph
+All Markov maths lives in [[catrace|github.com/stephen-mcelhose/catrace]]. wikigraph
 never implements its own linear algebra. The `catrace.Kernel` struct exposes:
 
 - `P` (`mat.Dense`) — the n×n row-stochastic transition matrix
@@ -39,7 +39,7 @@ never implements its own linear algebra. The `catrace.Kernel` struct exposes:
 - `ToHTML(opts)` — D3-based force-directed graph
 
 See [[markov-model]] for how the kernel is built; see [[mfpt]] for how MFPT
-and commute time are used.
+and [[commute-time]] are used.
 
 ## Data-flow pipeline
 
@@ -50,7 +50,7 @@ docs/*.md
 sorted []string slugs + slug→index map
   │
   ▼ buildAdjacency (wiki.go)
-mat.Dense  n×n adjacency (0/1 + sink teleportation)
+mat.Dense  n×n adjacency (0/1 + [[sink-page|sink]] teleportation)
   │
   ▼ catrace.NewRandomWalkKernel
 catrace.Kernel  (P is now row-stochastic)
