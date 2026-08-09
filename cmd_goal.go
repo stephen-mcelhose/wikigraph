@@ -20,8 +20,12 @@ var (
 
 var goalCmd = &cobra.Command{
 	Use:   "goal <wiki-dir>",
-	Short: "Compute a learning-path subgraph toward goal pages",
+	Short: "Compute a learning-path subgraph toward goal pages [PROTOTYPE]",
 	Long: `goal builds a subgraph focused on navigating toward one or more goal pages.
+
+PROTOTYPE: goals must currently be exact page slugs. Semantic natural-language
+goals ("understand quantum error correction") are planned — see
+https://github.com/stephen-mcelhose/wikigraph/issues/1
 
 For each page, mean first-passage time to any goal is computed. The top N
 closest pages (by minimum MFPT across all goals) form a subgraph whose
