@@ -22,8 +22,8 @@ outside each class.
 
 ## How it is computed
 
-wikigraph uses Tarjan's strongly connected components (SCC) algorithm, via
-`catrace.Kernel.Classes`. Tarjan's algorithm runs in O(V + E) — linear in
+wikigraph uses Kosaraju's strongly connected components (SCC) algorithm, via
+`catrace.Kernel.Classes`. Kosaraju's algorithm runs in O(V + E) — linear in
 pages and links — and produces a partition of all pages into SCCs. Each SCC
 is a communicating class.
 
@@ -65,12 +65,12 @@ classes — mean the wiki has structural gaps.
 
 ## Relationship to π and entropy
 
-Only recurrent-class pages receive non-zero stationary probability π — the
-long-run visit frequency of the [[markov-model]] random walk. Transient pages
-are visited finitely often and then never again, so their π is 0 regardless
-of how many internal links they have.
+Only recurrent-class pages receive non-zero [[stationary-distribution|stationary probability]]
+π — the long-run visit frequency of the [[markov-model]] [[random-walk|random walk]].
+Transient pages are visited finitely often and then never again, so their π is
+0 regardless of how many internal links they have.
 
-Entropy rate is computed over the recurrent class(es). A single large
+[[entropy-rate|Entropy rate]] is computed over the recurrent class(es). A single large
 recurrent class with varied out-degrees produces a healthy mid-range entropy
 (wikigraph docs: 1.65 bits on 11 pages). See [[mfpt]] for how mean first
 passage time uses the same Markov structure to measure distance between pages.

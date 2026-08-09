@@ -90,3 +90,9 @@ Ollama requires a local daemon (`ollama serve`), but it is widely installed and 
 - **Searching does not require Ollama** — the stored vectors are used directly. Only `wikigraph vectorize` needs the daemon running.
 - **Plain slug-based `goal`** remains fully self-contained with no new dependencies. See [[goal]] for current usage.
 - **Slug naming convention** for all wiki pages is documented in [[adr-002-slug-resolution]].
+
+## Sources
+
+- [GitHub issue #6](https://github.com/stephen-mcelhose/wikigraph/issues/6)
+- [chromem-go](https://github.com/philippgille/chromem-go)
+- [sqlite-lembed](https://github.com/asg017/sqlite-lembed)

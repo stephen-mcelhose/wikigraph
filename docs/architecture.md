@@ -26,13 +26,13 @@ kernel and then hand off to the `catrace` library for all the maths.
 
 ## The catrace dependency
 
-All Markov maths lives in `github.com/stephen-mcelhose/catrace`. wikigraph
+All Markov maths lives in [[catrace|`github.com/stephen-mcelhose/catrace`]]. wikigraph
 never implements its own linear algebra. The `catrace.Kernel` struct exposes:
 
 - `P` (`mat.Dense`) — the n×n row-stochastic transition matrix
-- `Stationary(tol, maxIter)` — power iteration to find π
-- `Classes(tol)` — Tarjan SCC decomposition → [[communicating-classes|recurrent vs transient sets]]
-- `EntropyRate(base)` — H = −Σᵢ πᵢ Σⱼ Pᵢⱼ log Pᵢⱼ
+- `Stationary(tol, maxIter)` — power iteration to find [[stationary-distribution|π]]
+- `Classes(tol)` — Kosaraju SCC decomposition → [[communicating-classes|recurrent vs transient sets]]
+- `EntropyRate(base)` — [[entropy-rate|H]] = −Σᵢ πᵢ Σⱼ Pᵢⱼ log Pᵢⱼ
 - `MeanFirstPassage(i, j)` — MFPT via fundamental matrix
 - `CommuteTime(i, j)` — MFPT(i,j) + MFPT(j,i)
 - `Trace(subset, tol)` — effective kernel on a subset of states

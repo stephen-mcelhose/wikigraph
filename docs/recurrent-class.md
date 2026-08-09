@@ -11,13 +11,13 @@ timestamp: 2026-08-09T07:31:56Z
 
 Every [[communicating-classes|communicating class]] in a Markov chain is
 either **recurrent** or **transient**. The distinction determines whether a
-page gets a share of the stationary distribution π — and therefore whether it
-appears in centrality rankings, commute-time suggestions, and [[mfpt]]
-calculations.
+page gets a share of the [[stationary-distribution|stationary distribution]] π
+— and therefore whether it appears in centrality rankings,
+[[commute-time|commute-time]] suggestions, and [[mfpt]] calculations.
 
 ## Recurrent class
 
-A class is **recurrent** if, once the random walk enters it, the probability
+A class is **recurrent** if, once the [[random-walk|random walk]] enters it, the probability
 of ever leaving is zero. The walk returns to every page in the class infinitely
 often. Formally: for any state i in a recurrent class, the walk returns to i
 with probability 1.

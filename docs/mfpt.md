@@ -9,10 +9,10 @@ timestamp: 2026-08-09T07:31:56Z
 
 # Mean First Passage Time
 
-**MFPT(i, j)** is the expected number of steps a random walker starting at
+**MFPT(i, j)** is the expected number of steps a [[random-walk|random walker]] starting at
 page i needs before it first lands on page j. It is computed from the
 **fundamental matrix** of the Markov chain; the implementation lives in
-`catrace.Kernel.MeanFirstPassage`.
+[[catrace|`catrace.Kernel.MeanFirstPassage`]].
 
 Low MFPT means pages are structurally close — the random walk naturally
 travels between them quickly. High or infinite MFPT means pages are in
@@ -31,14 +31,14 @@ The `goal` subcommand finds the N pages closest to one or more target pages:
 After selection, a **trace kernel** (`kern.Trace(subset, tol)`) projects the
 full transition matrix onto the subset, producing a self-contained Markov
 chain for visualization. Node size in the rendered graph reflects the
-stationary distribution of the trace kernel — not the original full chain.
+[[stationary-distribution|stationary distribution]] of the trace kernel — not the original full chain.
 
 See [[goal]] for the user-facing interface; see [[markov-model]] for how the
 underlying kernel is built.
 
 ## Use in `analyze` — commute time (cmd_analyze.go)
 
-**Commute time** CT(i, j) = MFPT(i, j) + MFPT(j, i) is symmetric and acts
+**[[commute-time|Commute time]]** CT(i, j) = MFPT(i, j) + MFPT(j, i) is symmetric and acts
 as a graph distance metric. It is used in the *Suggested missing links*
 section:
 

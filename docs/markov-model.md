@@ -10,10 +10,10 @@ timestamp: 2026-08-09T07:31:56Z
 # Markov Model of a Wiki
 
 wikigraph models a wiki as a **discrete-time Markov chain**: pages are
-states, and outgoing `[[wikilinks]]` define the transitions. A random
-walker follows links at random; the long-run fraction of time spent on each
-page is its stationary distribution π — used as centrality throughout the
-tool.
+states, and outgoing `[[wikilinks]]` define the transitions. A
+[[random-walk|random walker]] follows links at random; the long-run fraction
+of time spent on each page is its [[stationary-distribution|stationary distribution]]
+π — used as centrality throughout the tool.
 
 The full pipeline is in `wiki.go` and detailed in [[architecture]].
 
@@ -23,6 +23,7 @@ The full pipeline is in `wiki.go` and detailed in [[architecture]].
 is not in the exclude set becomes a **slug** (filename without `.md`).
 Slugs are sorted alphabetically; their sorted position is their matrix
 index. Sorting gives a deterministic matrix regardless of filesystem order.
+The rationale for the flat slug convention is in [[adr-002-slug-resolution]].
 
 The exclude set is built from the `--exclude` flag (defaults: `index`,
 `log`, `AGENTS`).
@@ -49,8 +50,8 @@ probability of moving from page i to page j in one step.
 
 ## Sink handling — teleportation
 
-A page with no outgoing links (a **sink**) would produce a zero row —
-an absorbing state from which a random walk never escapes. To keep the
+A page with no outgoing links (a **[[sink-page|sink]]**) would produce a zero row —
+an absorbing state from which a [[random-walk|random walk]] never escapes. To keep the
 chain well-defined, `buildAdjacency` gives sinks a **uniform row**: equal
 probability of jumping to any page. This is the same teleportation trick
 used in PageRank.

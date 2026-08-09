@@ -9,9 +9,9 @@ timestamp: 2026-08-09T06:54:46Z
 # wikigraph — Manual Test Runbook
 
 **Binary:** built locally from `~/repos/wikigraph/`  
-**Wiki under test:** `docs/` in this repo (7 content pages)  
+**Wiki under test:** `docs/` in this repo (19 content pages)  
 **Run all commands from:** `~/repos/wikigraph/` (the repo root)  
-**Last verified:** 2026-08 against commit `53bb531`
+**Last verified:** 2026-08-09 against current wiki state (19 pages, 111 edges, 1 recurrent class)
 
 ---
 
@@ -31,8 +31,11 @@ All commands use `docs/` as the wiki path. Run from `~/repos/wikigraph`:
 cd ~/repos/wikigraph
 ```
 
-The 8 content pages (after default exclusions of `index`, `log`, `AGENTS`):
-`analyze`, `export`, `goal`, `graph`, `adr-001-embedding-layer`, `adr-002-slug-resolution`, `testing-runbook`, `how-to-docs-plan`
+The 19 content pages (after default exclusions of `index`, `log`, `AGENTS`):
+`analyze`, `architecture`, `adr-001-embedding-layer`, `adr-002-slug-resolution`,
+`catrace`, `commute-time`, `communicating-classes`, `entropy-rate`, `export`,
+`goal`, `graph`, `how-to-docs-plan`, `markov-model`, `mfpt`, `random-walk`,
+`recurrent-class`, `sink-page`, `stationary-distribution`, `testing-runbook`
 
 Verify:
 
@@ -67,10 +70,10 @@ open /tmp/wg_graph.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 8` and `Written: /tmp/wg_graph.html`
+- Stderr prints `Pages: 19` and `Written: /tmp/wg_graph.html`
 - File exists and opens in browser showing a force-directed graph
-- 7 labelled nodes visible; nodes sized differently (stationary dist)
-- 3 colours visible (3 communicating classes)
+- 19 labelled nodes visible; nodes sized differently (stationary dist)
+- 1 colour (1 recurrent class)
 - Exit code 0
 
 ---
@@ -84,7 +87,7 @@ wikigraph graph docs/ -e index -e log -e AGENTS -e testing-runbook -o /tmp/wg_ex
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 6`
+- Stderr prints `Pages: 18`
 - `testing-runbook` node absent from rendered graph
 
 ---
@@ -144,7 +147,7 @@ open /tmp/wg_goal.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 8` and `Written: /tmp/wg_goal.html (5 nodes)`
+- Stderr prints `Pages: 19` and `Written: /tmp/wg_goal.html (5 nodes)`
 - Browser shows exactly 5 nodes
 - `analyze` node is present
 - Exit code 0
@@ -227,7 +230,7 @@ head /tmp/wg_edges.csv
 **Pass criteria:**
 - `wg_nodes.csv` header: `slug,pi,class`
 - `wg_edges.csv` header: `source,target,probability`
-- Both have 7 data rows in nodes (one per page)
+- Both have 19 data rows in nodes (one per page)
 - Values are numeric floats; no empty cells
 
 ---
@@ -286,11 +289,11 @@ wikigraph analyze docs/
 
 | Section         | Expected                                                                              |
 | --------------- | ------------------------------------------------------------------------------------- |
-| Overview        | Pages: 8, Edges: 22, Entropy rate: ~1.09 bits, Classes: 3                            |
-| Classes         | 1 recurrent (6 pages), 2 transient (1 page each: `testing-runbook`, `how-to-docs-plan`) |
-| Orphans (≤10%)  | `how-to-docs-plan` and `testing-runbook` (π=0.000000)                                |
+| Overview        | Pages: 19, Edges: 111, Entropy rate: ~2.55 bits, Classes: 1                          |
+| Classes         | 1 recurrent (19 pages)                                                                |
+| Orphans (≤10%)  | `how-to-docs-plan` (π=0.003875) and `adr-002-slug-resolution` (π=0.008860)           |
 | Sinks           | `(none)`                                                                              |
-| Most central #1 | `analyze` (π=0.375000)                                                               |
+| Most central #1 | `analyze` (π=0.133331)                                                               |
 | Suggestions     | At least one page with 3 suggestions listed                                           |
 
 - Exit code 0
@@ -318,7 +321,7 @@ wikigraph analyze docs/ --orphan-pct 0 --suggest-top 0
 ```
 
 **Pass criteria:**
-- Orphan section shows `how-to-docs-plan` and `testing-runbook` (both π=0.000000)
+- Orphan section shows `how-to-docs-plan` (π=0.003875) — the single lowest-π page
 - Section header says `bottom 0%`
 
 ---
@@ -330,7 +333,7 @@ wikigraph analyze docs/ --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "
 ```
 
 **Pass criteria:**
-- Count equals 8 (all pages shown as orphans at 100th percentile)
+- Count equals 19 (all pages shown as orphans at 100th percentile)
 
 ---
 
@@ -347,7 +350,7 @@ wikigraph analyze docs/ -e index -e log -e AGENTS -e how-to-docs-plan --suggest-
 ```
 
 **Pass criteria:**
-- All four lines print `Pages: 6`
+- All four lines print `Pages: 18`
 - `how-to-docs-plan` absent from exported JSON nodes list:
   ```bash
   jq -e '[.nodes[].id] | index("how-to-docs-plan") | not' /tmp/excl.json
@@ -396,3 +399,10 @@ wikigraph graph /tmp/tinywiki -o /tmp/tiny.html
 - [[analyze]]
 - [[goal]]
 - [[export]]
+
+## Sources
+
+- [`cmd_analyze.go`](https://github.com/stephen-mcelhose/wikigraph/blob/main/cmd_analyze.go)
+- [`cmd_graph.go`](https://github.com/stephen-mcelhose/wikigraph/blob/main/cmd_graph.go)
+- [`cmd_goal.go`](https://github.com/stephen-mcelhose/wikigraph/blob/main/cmd_goal.go)
+- [`cmd_export.go`](https://github.com/stephen-mcelhose/wikigraph/blob/main/cmd_export.go)

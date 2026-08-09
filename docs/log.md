@@ -29,3 +29,25 @@
 - communicating-classes: Tarjan SCC, recurrent/transient labelling, how to read analyze output, failure modes
 - recurrent-class: recurrent vs transient distinction, π implications, practical fix guide
 - cross-refs added: analyze, architecture, markov-model all link to new pages
+## [2026-08-09] lint | 19 pages checked, 8 issues found, 8 fixed; 1 risk accepted
+- Missing ## Sources: added to adr-001-embedding-layer, how-to-docs-plan, testing-runbook
+- Stale content: testing-runbook page counts and expected output values updated (was 8 pages, now 19)
+- Orphans: resolved how-to-docs-plan and adr-002-slug-resolution via targeted inbound links from higher-π pages
+- Added [[catrace]] wikilinks in mfpt, stationary-distribution, commute-time, sink-page
+- Added [[architecture]] to analyze Sources section
+- Sources sections in analyze.md upgraded from bare filenames to GitHub URLs
+- Risk accepted: ADR/proposal pages structurally land in bottom 10% by π — documented in [[adr-003-orphan-threshold]]
+
+## [2026-08-09] ingest | adr-003-orphan-threshold — accept low π for governance pages
+- Decision: low π on ADR/proposal pages is expected, not a defect requiring artificial cross-links
+- Triggered by lint pass finding how-to-docs-plan and adr-001-embedding-layer in orphan band
+- Final state: 20 pages, 125 edges, 1 recurrent class, 0 sinks
+
+## [2026-08-09] ingest | concept pages for issue #6
+
+Created six new concept pages: [[random-walk]], [[stationary-distribution]],
+[[entropy-rate]], [[sink-page]], [[commute-time]], [[catrace]]. Updated
+cross-references in markov-model, mfpt, communicating-classes, recurrent-class,
+architecture, and analyze. Corrected SCC algorithm attribution from Tarjan to
+Kosaraju in communicating-classes and architecture. Registered all six pages
+in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.

@@ -105,8 +105,8 @@ pointing into the main (largest) recurrent class.
   error-correction                          π=0.000418  → add inbound links
 ```
 
-Orphans are pages in the **bottom N% by stationary probability** — pages the
-random walker rarely visits because few other pages link to them.
+Orphans are pages in the **bottom N% by [[stationary-distribution|stationary probability]]**
+— pages the [[random-walk|random walker]] rarely visits because few other pages link to them.
 
 The default threshold is the bottom 10% (`--orphan-pct 0.10`). Widen it to
 see more candidates:
@@ -121,7 +121,8 @@ section title tells you the exact remedy: "add inbound links".
 
 > Note: orphans are identified by *low π*, not by zero in-degree. A page can
 > have several inbound links and still have a low π if those links come only
-> from other low-traffic pages.
+> from other low-traffic pages. ADR and proposal pages are expected to score
+> low by this metric — see [[adr-003-orphan-threshold]] for the rationale.
 
 ### 5. Read the Sink pages section
 
@@ -131,7 +132,7 @@ section title tells you the exact remedy: "add inbound links".
   glossary-terms                            → add outgoing links
 ```
 
-Sinks have **no outbound wikilinks at all**. In the [[markov-model]], a visitor
+[[sink-page|Sinks]] have **no outbound wikilinks at all**. In the [[markov-model]], a visitor
 landing on a sink teleports uniformly to any page. This is handled gracefully
 by wikigraph, but sinks are usually an oversight — pages that were written
 in isolation and never linked forward.
@@ -171,7 +172,7 @@ Use this list to:
 ```
 
 For each of the top-N pages (by centrality), this section lists unlinked
-pairs sorted by **commute time** — how quickly the random walk bounces between
+pairs sorted by **[[commute-time|commute time]]** — how quickly the [[random-walk|random walk]] bounces between
 them. A low commute time means the two pages are already structurally close
 (many indirect paths), so adding a direct link would be a natural improvement.
 
@@ -216,7 +217,7 @@ A healthy wiki typically looks like this:
 | Classes                         | 1 recurrent class  | Multiple classes, any transient |
 | Orphan π values                 | > 0.005            | < 0.001                         |
 | Sink count                      | 0                  | Many sinks                      |
-| Entropy rate vs log₂(pages)     | > 70%              | < 50%                           |
+| [[entropy-rate\|Entropy rate]] vs log₂(pages) | > 70%  | < 50%                           |
 | Top hub π                       | < 0.15             | > 0.25 (one page dominates)     |
 
 ## Troubleshooting
@@ -231,5 +232,7 @@ A healthy wiki typically looks like this:
 
 ## Sources
 
-- `cmd_analyze.go`
-- `wiki.go`
+- [`cmd_analyze.go`](https://github.com/stephen-mcelhose/wikigraph/blob/main/cmd_analyze.go)
+- [`wiki.go`](https://github.com/stephen-mcelhose/wikigraph/blob/main/wiki.go)
+- [[architecture]] — full data-flow pipeline from wikilinks to Markov output
+- [[how-to-docs-plan]] — proposal that drove the creation of these guides

@@ -58,3 +58,7 @@ All four guides were delivered on 2026-08-09:
 - [[graph]]
 - [[analyze]]
 - [[goal]] *(draft)*
+
+## Sources
+
+- [GitHub issue #3](https://github.com/stephen-mcelhose/wikigraph/issues/3)
