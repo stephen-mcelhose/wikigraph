@@ -71,7 +71,7 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 - markov-model: Added [[catrace]] link on catrace.NewRandomWalkKernel
 - Advisory (not fixed): index.md could group pages by type; architecture.md ASCII diagram subcommand files could be linked; stationary-distribution.md Sources has hardcoded GitHub URLs
 
-## [2026-08-09] lint | 24 pages checked, 4 issues found, 4 fixed
+## [2026-08-09] lint | 23 pages checked, 11 concept pages migrated to required section schema (Overview -> Key Properties -> Related Concepts -> Sources); 0 remaining schema violations.
 - goal: Fixed unclosed code block at section 5 (Action text was inside the fenced block)
 - architecture: Added [[commute-time]] link (prose said "commute time" without linking); added [[sink-page|sink]] link in data-flow pipeline
 - stationary-distribution: Added [[commute-time]] link in command table

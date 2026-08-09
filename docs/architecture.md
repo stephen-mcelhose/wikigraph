@@ -8,26 +8,27 @@ timestamp: 2026-08-09T07:31:56Z
 
 # wikigraph Architecture
 
-wikigraph is ~850 lines of Go across seven files. The design is deliberately
-thin: the tool's job is to translate a wiki's `[[wikilinks]]` into a Markov
-kernel and then hand off to the `catrace` library for all the maths.
+## Overview
 
-## File map
+wikigraph is ~850 lines of Go across seven files. The design is deliberately thin: the tool's job is to translate a wiki's `[[wikilinks]]` into a Markov kernel and then hand off to the `catrace` library for all linear algebra and graph analysis.
 
-| File             | Role                                                                   |
-| ---------------- | ---------------------------------------------------------------------- |
-| `main.go`        | Cobra root command, `--exclude` persistent flag, subcommand wiring     |
-| `wiki.go`        | `loadPages`, `buildAdjacency`, `buildKernel` — the translation layer  |
-| `cmd_graph.go`   | `graph` subcommand — renders full kernel as interactive HTML           |
-| `cmd_analyze.go` | `analyze` subcommand — prints health report with six sections          |
-| `cmd_goal.go`    | `goal` subcommand — MFPT ranking + trace kernel for a target subgraph  |
-| `cmd_export.go`  | `export` subcommand — serialises kernel as JSON, CSV, or DOT           |
-| `sed.go`         | `applySed` — applies arbitrary sed expressions to HTML output          |
+### File map
 
-## The catrace dependency
+| File | Role |
+| --- | --- |
+| `main.go` | Cobra root command, `--exclude` persistent flag, subcommand wiring |
+| `wiki.go` | `loadPages`, `buildAdjacency`, `buildKernel` — the translation layer |
+| `cmd_graph.go` | `graph` subcommand — renders full kernel as interactive HTML |
+| `cmd_analyze.go` | `analyze` subcommand — prints health report with six sections |
+| `cmd_goal.go` | `goal` subcommand — MFPT ranking + trace kernel for a target subgraph |
+| `cmd_export.go` | `export` subcommand — serialises kernel as JSON, CSV, or DOT |
+| `sed.go` | `applySed` — applies arbitrary sed expressions to HTML output |
 
-All Markov maths lives in [[catrace|github.com/stephen-mcelhose/catrace]]. wikigraph
-never implements its own linear algebra. The `catrace.Kernel` struct exposes:
+## Key Properties
+
+### The catrace dependency
+
+All Markov maths lives in [[catrace|github.com/stephen-mcelhose/catrace]]. wikigraph never implements its own linear algebra. The `catrace.Kernel` struct exposes:
 
 - `P` (`mat.Dense`) — the n×n row-stochastic transition matrix
 - `Stationary(tol, maxIter)` — power iteration to find [[stationary-distribution|π]]
@@ -38,10 +39,7 @@ never implements its own linear algebra. The `catrace.Kernel` struct exposes:
 - `Trace(subset, tol)` — effective kernel on a subset of states
 - `ToHTML(opts)` — D3-based force-directed graph
 
-See [[markov-model]] for how the kernel is built; see [[mfpt]] for how MFPT
-and [[commute-time]] are used.
-
-## Data-flow pipeline
+### Data-flow pipeline
 
 ```
 docs/*.md
@@ -61,21 +59,18 @@ catrace.Kernel  (P is now row-stochastic)
   └──▶ cmd_export.go  → Stationary + Classes → JSON / CSV / DOT
 ```
 
-## Persistent --exclude flag
+### Persistent --exclude flag
 
-`main.go` declares `--exclude` (`-e`) as a `PersistentFlag` on the root
-command. Cobra makes it available to all subcommands. The default value is
-`["index", "log", "AGENTS"]` — the three meta-files used by `llm-wiki`.
-When a user passes `-e`, the default is replaced entirely, so they must
-re-specify the defaults alongside any custom exclusions.
+`main.go` declares `--exclude` (`-e`) as a `PersistentFlag` on the root command. Cobra makes it available to all subcommands. The default value is `["index", "log", "AGENTS"]` — the three meta-files used by `llm-wiki`.
 
-## Wiki conventions
+## Related Concepts
 
-The tool operates on flat wiki directories — all pages at one level, slugs
-are bare filenames without path prefixes (e.g., `analyze`, not `how-to/analyze`).
-The rationale is documented in [[adr-002-slug-resolution]].
-The how-to documentation series that drove the flat structure was planned in
-[[how-to-docs-plan]].
+- [[markov-model]] — How wikilinks are parsed into a row-stochastic Markov kernel
+- [[catrace]] — Go package providing Markov chain linear algebra
+- [[mfpt]] — Mean first passage time calculations for goal paths
+- [[commute-time]] — Symmetric distance metric used for link suggestions
+- [[adr-002-slug-resolution]] — Rationale for flat slug layout
+- [[how-to-docs-plan]] — Documentation initiative driving subcommand interface
 
 ## Sources
 

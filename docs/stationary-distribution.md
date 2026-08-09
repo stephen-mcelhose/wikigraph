@@ -1,77 +1,39 @@
 ---
 type: concept
-title: Stationary Distribution
-description: The stationary distribution π is the long-run visit frequency of each page under a random walk — used as centrality throughout wikigraph.
-resource: cmd_analyze.go
-tags: [stationary-distribution, pi, centrality, power-iteration, orphan]
-timestamp: 2026-08-09T08:05:55Z
+title: Stationary Distribution (π)
+description: Long-run visit probability π finding central hub pages and orphan pages in a wiki random walk.
+tags: [stationary-distribution, power-iteration, centrality, orphan-detection]
+timestamp: 2026-08-09T08:35:00Z
 ---
 
-# Stationary Distribution
+# Stationary Distribution (π)
 
-The **stationary distribution** π is a probability vector satisfying:
+## Overview
 
-```
-πP = π    and    Σᵢ π(i) = 1
-```
+The **stationary distribution** $\pi$ is an $n$-dimensional probability vector satisfying $P^T \pi = \pi$ with $\sum_i \pi_i = 1$. It represents the long-run fraction of time a random walker spends on each page.
 
-It gives the fraction of time a [[random-walk]] spends on each page in the
-long run. Pages with high π are structural hubs that the walk gravitates
-towards; pages with low π are peripheral. wikigraph uses π as the primary
-centrality measure throughout [[analyze]], [[export]], and [[graph]].
+## Key Properties
 
-## Power iteration algorithm
+### Power iteration algorithm
 
-[[catrace|catrace.Kernel.Stationary]](tol, maxIter) computes π iteratively:
+`catrace` computes $\pi$ using power iteration starting from a uniform vector $v^{(0)} = [1/n, \dots, 1/n]^T$:
 
-1. Start with a uniform vector v⁰ = [1/N, 1/N, …, 1/N]
-2. Multiply: vᵏ⁺¹ = vᵏ P
-3. Repeat until ‖vᵏ⁺¹ − vᵏ‖₁ < `tol`
+$$v^{(k+1)} = P^T v^{(k)}$$
 
-The `tol` parameter controls convergence precision (wikigraph uses 1e-9).
-`maxIter` caps iterations to prevent infinite loops on near-degenerate chains.
-In practice, well-connected wikis converge in tens of iterations.
+Iteration stops when $\|v^{(k+1)} - v^{(k)}\|_\infty < \text{tol}$ (default $10^{-8}$).
 
-## Convergence conditions
+### Significance of π values
 
-Convergence to a unique π is guaranteed when the [[markov-model|Markov chain]]
-is **irreducible** (all states communicate) and **aperiodic** (no fixed cycles
-force the walk to return only at multiples of some period d > 1).
+- **High $\pi$ (central hubs)**: Core pages frequently linked from across the wiki (e.g. [[analyze]], [[random-walk]]).
+- **Low $\pi$ (orphans)**: Pages rarely reached by following links (bottom 10% flagged in `wikigraph analyze`).
 
-Within each [[recurrent-class|recurrent class]], wikigraph's
-[[sink-page|sink teleportation]] ensures aperiodicity. If the wiki has
-multiple [[communicating-classes|communicating classes]], each recurrent class
-gets its own π (transient classes get π = 0).
+## Related Concepts
 
-## What high and low π means
-
-| π value   | Interpretation                                                            |
-| --------- | ------------------------------------------------------------------------- |
-| High      | Hub page — many walks converge here via dense incoming link structure     |
-| Low       | Peripheral — few indirect paths lead here; candidate for more inbound links |
-| Zero      | Page is in a [[communicating-classes|transient class]] — cut off from recurrent core |
-
-Low π ≠ zero in-degree. A page can have many inbound links and still score
-low if those links come only from other low-traffic pages.
-
-## Orphan detection
-
-The [[analyze]] command's **Orphan pages** section lists pages in the bottom
-N% by π (default: bottom 10%, controlled by `--orphan-pct`). These pages are
-rarely visited by the random walk and typically need more inbound wikilinks
-from well-connected pages.
-
-## Where π appears in wikigraph output
-
-| Command     | Use of π                                                         |
-| ----------- | ---------------------------------------------------------------- |
-| [[analyze]] | Orphan detection, most-central ranking, [[commute-time]] weighting  |
-| [[export]]  | `pi` field in JSON/CSV per page                                 |
-| [[graph]]   | Node size in the force-directed visualisation encodes π         |
+- [[random-walk]] — Convergence to stationary vector
+- [[analyze]] — Orphan and central page sections
+- [[adr-003-orphan-threshold]] — Low $\pi$ tolerance policy for governance pages
 
 ## Sources
 
-- [`cmd_analyze.go` — `kern.Stationary`, orphan section](https://github.com/stephen-mcelhose/wikigraph/blob/main/cmd_analyze.go)
-- [`cmd_export.go` — `pi` field in export](https://github.com/stephen-mcelhose/wikigraph/blob/main/cmd_export.go)
-- [Stationary distribution — Wikipedia](https://en.wikipedia.org/wiki/Stationary_distribution)
-- [Power iteration — Wikipedia](https://en.wikipedia.org/wiki/Power_iteration)
+- Golub, G. H., & Van Loan, C. F. (2013). *Matrix Computations*. Johns Hopkins.
+- [[catrace]]
