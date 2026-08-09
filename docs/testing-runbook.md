@@ -396,6 +396,43 @@ wikigraph graph /tmp/tinywiki -o /tmp/tiny.html
 
 ---
 
+## TC-23 · recursive vault traversal (-r)
+
+**Goal:** `-r / --recursive` scans nested subdirectories and skips hidden folders. See [[adr-006-recursive-vault-traversal]].
+
+```bash
+rm -rf /tmp/recwiki
+mkdir -p /tmp/recwiki/folder1 /tmp/recwiki/.hidden
+printf '# Note 1\n\n[[note2]]\n' > /tmp/recwiki/folder1/note1.md
+printf '# Note 2\n\n[[note1]]\n' > /tmp/recwiki/folder1/note2.md
+printf '# Hidden Note\n\n[[note1]]\n' > /tmp/recwiki/.hidden/note3.md
+wikigraph analyze /tmp/recwiki -r --suggest-top 0 2>&1
+```
+
+**Pass criteria:**
+- Output lists `Pages: 2` (finds `note1` and `note2`, skips `.hidden/note3`)
+- Exit code 0
+
+---
+
+## TC-24 · duplicate slug collision in recursive mode
+
+**Goal:** Clear error when duplicate file basenames exist in different subdirectories under `-r`.
+
+```bash
+rm -rf /tmp/dupwiki
+mkdir -p /tmp/dupwiki/dirA /tmp/dupwiki/dirB
+printf '# Note A\n' > /tmp/dupwiki/dirA/same.md
+printf '# Note B\n' > /tmp/dupwiki/dirB/same.md
+wikigraph analyze /tmp/dupwiki -r 2>&1
+```
+
+**Pass criteria:**
+- Non-zero exit code
+- Stderr contains `duplicate slug "same" found`
+
+---
+
 ## See Also
 
 - [[graph]]
