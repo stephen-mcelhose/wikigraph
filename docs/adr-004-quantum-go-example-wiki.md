@@ -1,6 +1,7 @@
 ---
-type: adr
+type: decision
 title: "ADR-004: Use quantum-go as the canonical example wiki in how-to docs"
+description: Use quantum-go as the canonical example wiki in all how-to guides to make verification reproducible and realistic.
 status: accepted
 timestamp: 2026-08-09T09:00:00Z
 tags: [adr, documentation, examples]
@@ -14,7 +15,7 @@ Accepted
 
 ## Context
 
-The how-to guides for `wikigraph graph`, `analyze`, `goal`, and `export` need
+The how-to guides for `wikigraph` [[graph]], [[analyze]], [[goal]], and [[export]] need
 a concrete wiki to use as the running example throughout steps and verification
 sections. The alternative approaches were:
 

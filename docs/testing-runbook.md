@@ -9,9 +9,9 @@ timestamp: 2026-08-09T06:54:46Z
 # wikigraph — Manual Test Runbook
 
 **Binary:** built locally from `~/repos/wikigraph/`  
-**Wiki under test:** `docs/` in this repo (20 content pages)  
+**Wiki under test:** `docs/` in this repo (21 content pages)  
 **Run all commands from:** `~/repos/wikigraph/` (the repo root)  
-**Last verified:** 2026-08-09 against current wiki state (20 pages, 125 edges, 1 recurrent class)
+**Last verified:** 2026-08-09 against current wiki state (21 pages, 133 edges, 1 recurrent class)
 
 ---
 
@@ -290,11 +290,11 @@ wikigraph analyze docs/
 
 | Section         | Expected                                                                              |
 | --------------- | ------------------------------------------------------------------------------------- |
-| Overview        | Pages: 20, Edges: 125, Entropy rate: ~2.66 bits, Classes: 1                          |
-| Classes         | 1 recurrent (20 pages)                                                                |
-| Orphans (≤10%)  | `adr-003-orphan-threshold` (π=0.009549), `how-to-docs-plan` (π=0.020663), `adr-001-embedding-layer` (π=0.021601) |
+| Overview        | Pages: 21, Edges: 133, Entropy rate: ~2.73 bits, Classes: 1                          |
+| Classes         | 1 recurrent (21 pages)                                                                |
+| Orphans (≤10%)  | `adr-003-orphan-threshold` (π=0.008269), `adr-004-quantum-go-example-wiki` (π=0.018599), `testing-runbook` (π=0.018599) |
 | Sinks           | `(none)`                                                                              |
-| Most central #1 | `analyze` (π=0.133684)                                                               |
+| Most central #1 | `analyze` (π=0.110755)                                                               |
 | Suggestions     | At least one page with 3 suggestions listed                                           |
 
 - Exit code 0
@@ -322,7 +322,7 @@ wikigraph analyze docs/ --orphan-pct 0 --suggest-top 0
 ```
 
 **Pass criteria:**
-- Orphan section shows `adr-003-orphan-threshold` (π=0.009549) — the single lowest-π page
+- Orphan section shows `adr-003-orphan-threshold` (π=0.008269) — the single lowest-π page
 - Section header says `bottom 0%`
 
 ---
@@ -334,7 +334,7 @@ wikigraph analyze docs/ --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "
 ```
 
 **Pass criteria:**
-- Count equals 20 (all pages shown as orphans at 100th percentile)
+- Count equals 21 (all pages shown as orphans at 100th percentile)
 
 ---
 
@@ -351,7 +351,7 @@ wikigraph analyze docs/ -e index -e log -e AGENTS -e how-to-docs-plan --suggest-
 ```
 
 **Pass criteria:**
-- All four lines print `Pages: 19`
+- All four lines print `Pages: 20`
 - `how-to-docs-plan` absent from exported JSON nodes list:
   ```bash
   jq -e '[.nodes[].id] | index("how-to-docs-plan") | not' /tmp/excl.json

@@ -57,8 +57,10 @@ which can save significant computation on large wikis.
 
 ## Infinite MFPT
 
-MFPT(i, j) is infinite when page j is not reachable from page i — i.e., i
-is in a transient class that has no path to j's class. In `goal`, such
+MFPT(i, j) is infinite when page j is not reachable from page i. This
+happens in two situations: i is in a recurrent class that does not contain
+j (recurrent classes are closed — a walker never leaves), or i is in a
+transient class with no directed path toward j's class. In `goal`, such
 pages are left with score `1e18` and typically excluded from the top-N
 selection. In `analyze`, `CommuteTime` returns an error for such pairs
 and the pair is skipped.

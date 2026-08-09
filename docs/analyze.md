@@ -50,6 +50,11 @@ You will see six sections printed to stdout.
 
 ### 2. Read the Overview section
 
+> **Note:** The examples in steps 2–3 use an illustrative wiki with multiple
+> communicating classes to show all output formats. Running against
+> `~/quantum-go/wiki` produces `Pages: 36, Edges: 295, Entropy rate: 2.2003
+> bits, Classes: 1` — a single healthy class with no transient pages.
+
 ```
 === Overview ===
 Pages:        47
@@ -180,7 +185,7 @@ pairs sorted by **[[commute-time|commute time]]** — how quickly the [[random-w
 them. A low commute time means the two pages are already structurally close
 (many indirect paths), so adding a direct link would be a natural improvement.
 
-The default is the top 5 pages (`--suggest-top 5`). Increase it:
+The default is the top 3 pages (`--suggest-top 3`). Increase it:
 
 ```bash
 wikigraph analyze ~/quantum-go/wiki --suggest-top 10
