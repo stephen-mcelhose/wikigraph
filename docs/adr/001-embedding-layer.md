@@ -1,3 +1,12 @@
+---
+type: decision
+title: Embedding Layer for Semantic Wiki Search
+description: Chose chromem-go + Ollama for in-process semantic goal resolution, rejecting a private Bayer dependency and an alpha CGo library.
+resource: https://github.com/stephen-mcelhose/wikigraph/issues/6
+tags: [adr, embedding, semantic-search, chromem-go, ollama]
+timestamp: 2026-08-09T06:54:46Z
+---
+
 # ADR-001 — Embedding layer for semantic wiki search
 
 **Date:** 2026-08  

@@ -54,8 +54,8 @@ The JSON is D3 node-link format:
 }
 ```
 
-- `pi` — stationary probability (centrality): how often a random walker visits this page
-- `class` — communicating class index (`-1` means the page is transient / isolated)
+- `pi` — stationary probability (centrality): how often a random walker visits this page (see [[How to generate an interactive wiki graph]] for a visual explanation)
+- `class` — communicating class index (`-1` means the page is transient / isolated; see [[How to analyse your wiki's health]] for what classes mean)
 - `value` — transition probability on that edge
 
 ### 2. Export as CSV

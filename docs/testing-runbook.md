@@ -1,3 +1,11 @@
+---
+type: runbook
+title: wikigraph Manual Test Runbook
+description: Manual test plan covering all subcommands and edge cases, including graph, analyze, goal, and export.
+tags: [testing, runbook, qa]
+timestamp: 2026-08-09T06:54:46Z
+---
+
 # wikigraph — Manual Test Runbook
 
 **Binary:** `~/go/bin/wikigraph` (installed via `go install github.com/stephen-mcelhose/wikigraph@latest`)  
