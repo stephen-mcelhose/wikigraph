@@ -1,3 +1,12 @@
+---
+type: decision
+title: Embedding Layer for Semantic Wiki Search
+description: Chose chromem-go + Ollama for in-process semantic goal resolution, rejecting a private Bayer dependency and an alpha CGo library.
+resource: https://github.com/stephen-mcelhose/wikigraph/issues/6
+tags: [adr, embedding, semantic-search, chromem-go, ollama]
+timestamp: 2026-08-09T06:54:46Z
+---
+
 # ADR-001 — Embedding layer for semantic wiki search
 
 **Date:** 2026-08  
@@ -79,4 +88,11 @@ Ollama requires a local daemon (`ollama serve`), but it is widely installed and 
 - **`wikigraph goal --semantic`** will load the chromem-go index and perform cosine-similarity lookup to resolve a natural-language query to slugs, then feed those into the existing MFPT machinery.
 - **Embedding backend** defaults to Ollama (`--host http://localhost:11434`, `--model nomic-embed-text`). The interface allows future backends (LocalAI, OpenAI-compatible, custom).
 - **Searching does not require Ollama** — the stored vectors are used directly. Only `wikigraph vectorize` needs the daemon running.
-- **Plain slug-based `goal`** remains fully self-contained with no new dependencies.
+- **Plain slug-based `goal`** remains fully self-contained with no new dependencies. See [[goal]] for current usage.
+- **Slug naming convention** for all wiki pages is documented in [[adr-002-slug-resolution]].
+
+## Sources
+
+- [GitHub issue #6](https://github.com/stephen-mcelhose/wikigraph/issues/6)
+- [chromem-go](https://github.com/philippgille/chromem-go)
+- [sqlite-lembed](https://github.com/asg017/sqlite-lembed)
