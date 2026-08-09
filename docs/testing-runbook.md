@@ -286,9 +286,9 @@ wikigraph analyze docs/
 
 | Section         | Expected                                                                              |
 | --------------- | ------------------------------------------------------------------------------------- |
-| Overview        | Pages: 23, Edges: 145, Entropy rate: ~2.77 bits, Classes: 1                          |
+| Overview        | Pages: 23, Edges: 145, Entropy rate: ~2.76 bits, Classes: 1                          |
 | Classes         | 1 recurrent (23 pages)                                                                |
-| Orphans (≤10%)  | `adr-003-orphan-threshold` (π=0.006887), `adr-005-page-type-conventions-and-proposal-storage` (π=0.013676), `adr-001-embedding-layer` (π=0.015725) |
+| Orphans (≤10%)  | `adr-003-orphan-threshold` (π=0.006842), `adr-001-embedding-layer` (π=0.015985), `adr-005-page-type-conventions-and-proposal-storage` (π=0.016319) |
 | Sinks           | `(none)`                                                                              |
 | Most central #1 | `analyze` (π=0.103308)                                                               |
 | Suggestions     | At least one page with 3 suggestions listed                                           |
