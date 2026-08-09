@@ -1,77 +1,54 @@
 ---
 type: concept
-title: Commute Time
-description: CT(i,j) = MFPT(i,j) + MFPT(j,i) — a symmetric graph distance metric used by wikigraph to suggest missing links between structurally close pages.
-resource: cmd_analyze.go
-tags: [commute-time, mfpt, graph-distance, link-suggestion, random-walk]
-timestamp: 2026-08-09T08:05:55Z
+title: Commute Time Metric
+description: Symmetric distance metric K(i,j) = MFPT(i,j) + MFPT(j,i) used by wikigraph analyze to discover missing link suggestions between related pages.
+tags: [commute-time, mfpt, distance-metric, link-suggestions, markov-chain]
+timestamp: 2026-08-09T08:35:00Z
 ---
 
-# Commute Time
+# Commute Time Metric
 
-**Commute time** CT(i, j) is the expected number of steps for a [[random-walk]]
-to travel from page i to page j *and back* to page i:
+## Overview
 
-```
-CT(i, j) = MFPT(i, j) + MFPT(j, i)
-```
+The **commute time** $K(i,j)$ between page $i$ and page $j$ is the expected number of random-walk steps to travel from $i$ to $j$ and return back to $i$:
 
-where [[mfpt|MFPT(i, j)]] is the mean first passage time from i to j. See
-[[mfpt]] for how MFPT is computed via the fundamental matrix.
+$$K(i,j) = M(i,j) + M(j,i)$$
 
-## Why symmetry matters
+where $M(i,j)$ is the [[mfpt|Mean First Passage Time]].
 
-MFPT alone is asymmetric — MFPT(i, j) ≠ MFPT(j, i) in general, because the
-link structure in each direction may differ. Commute time adds both directions,
-making it **symmetric**: CT(i, j) = CT(j, i).
+## Key Properties
 
-This symmetry is what makes commute time a proper distance metric. You can
-compare any two page pairs on equal footing and rank them by structural
-proximity without worrying about which direction is easier.
+### Why symmetry matters
 
-## Relationship to graph resistance distance
+Unlike MFPT, which is asymmetric ($M(i,j) \neq M(j,i)$), commute time is strictly symmetric ($K(i,j) = K(j,i)$). This makes $K(i,j)$ a true graph metric (satisfying triangle inequality).
 
-In an undirected graph, commute time is exactly proportional to the
-**effective resistance** between two nodes in an equivalent electrical network
-(each edge is a unit resistor). For directed wiki graphs the analogy is
-approximate but the intuition holds: pages connected by many indirect paths
-have low effective resistance and low commute time.
+### Relationship to graph resistance distance
 
-## Reading the Suggested missing links section
+Commute time is directly proportional to **effective resistance** $R_{ij}$ in an electrical network where edges represent unit resistors:
 
-[[analyze]] uses commute time to recommend where to add wikilinks:
+$$K(i,j) = 2m \cdot R_{ij}$$
+
+Two pages have a small commute time if there are many short, parallel paths connecting them in the wiki.
+
+### Reading Suggested Missing Links
+
+In `wikigraph analyze docs/`:
 
 ```
 === Suggested missing links (lowest commute time, not yet linked) ===
-  machine-learning:
-    → linear-algebra    (commute: 4.21)
-    → probability       (commute: 5.83)
+analyze:
+  → catrace (commute: 27.76)
 ```
 
-Low commute time means the pages are already structurally close — the walk
-bounces between them quickly via indirect paths. Adding a direct `[[slug]]`
-wikilink formalises that relationship for readers.
+Low commute time between unlinked pages indicates strong implicit connectivity — ideal candidates for explicit `[[wikilinks]]`.
 
-Pairs are ranked ascending by commute time; the top `--suggest-top` (default 5)
-are shown. Pass `--suggest-top 0` to skip the section and save computation
-on large wikis.
+## Related Concepts
 
-## Infinite commute time
-
-CT(i, j) is infinite when i and j are in different
-[[communicating-classes|communicating classes]] with no return path. Such
-pairs are skipped by [[analyze]] — fixing the class structure (see
-[[recurrent-class]]) is required before suggestions become meaningful.
-
-## Relationship to MFPT
-
-Commute time is a derived concept built entirely on [[mfpt]]. The
-[[mfpt]] page covers the fundamental matrix computation; this page covers the
-symmetric combination and its role as a link-suggestion metric.
+- [[mfpt]] — Asymmetric mean first passage time foundation
+- [[analyze]] — How `wikigraph analyze` formats link suggestions
+- [[catrace]] — Fundamental matrix linear algebra implementation
 
 ## Sources
 
-- [[catrace]] — `Kernel.CommuteTime(i, j int)`, `Kernel.MeanFirstPassage(i, j int)`
-- [`cmd_analyze.go` — `kern.CommuteTime`, suggested missing links](https://github.com/stephen-mcelhose/wikigraph/blob/main/cmd_analyze.go)
-- [Commute time — Wikipedia](https://en.wikipedia.org/wiki/Hitting_time#Commute_time)
-- [Effective resistance — Wikipedia](https://en.wikipedia.org/wiki/Resistance_distance)
+- Chandra et al. (1996). *The Electrical Resistancy of a Graph along with its Applications to Random Walks*.
+- [[mfpt]]

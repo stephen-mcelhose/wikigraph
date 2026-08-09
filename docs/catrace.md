@@ -1,154 +1,48 @@
 ---
 type: concept
-title: catrace Library
-description: catrace is the Go library that implements all Markov chain mathematics for wikigraph — Kernel struct, stationary distribution, SCC decomposition, MFPT, commute time, trace kernels, and HTML rendering.
-resource: go.mod
-tags: [catrace, library, go, markov, kernel, api]
-timestamp: 2026-08-09T08:05:55Z
+title: The catrace Go Package
+description: Overview of github.com/stephen-mcelhose/catrace — the Go library providing all Markov chain mathematics, graph algorithms, and D3 visualization for wikigraph.
+tags: [catrace, go, markov-chain, linear-algebra, gonum]
+timestamp: 2026-08-09T08:35:00Z
 ---
 
-# catrace Library
+# The catrace Go Package
 
-`github.com/stephen-mcelhose/catrace` is a Go library for
-**finite-state Markov models of autonomous-agent networks**. wikigraph uses
-it as a pure-math backend: wikigraph handles filesystem I/O, wikilink parsing,
-and CLI output; catrace handles all linear algebra and Markov chain
-mathematics.
+## Overview
 
-See [[architecture]] for how the two packages fit together.
+`catrace` (`github.com/stephen-mcelhose/catrace`) is an open-source Go library providing Markov chain analysis, graph decomposition, and D3 force-directed graph rendering. `wikigraph` imports `catrace` and delegates all linear algebra to its `Kernel` struct.
 
-## Repository and version
+### Repository and version
 
-- Repository: `https://github.com/stephen-mcelhose/catrace`
-- Version pinned in `go.mod`: `v0.0.0-20260805012807-4f4561824de9`
-- Dependency: `gonum.org/v1/gonum` (matrix operations)
+- **Import path:** `github.com/stephen-mcelhose/catrace`
+- **Primary type:** `catrace.Kernel`
+- **Dependencies:** `gonum.org/v1/gonum/mat`
 
-## The Kernel struct
+## Key Properties
 
-The central type is `Kernel` — a square row-stochastic matrix with named
-states:
+### The Kernel struct
 
-```go
-type Kernel struct {
-    P          *mat.Dense // row-stochastic transition matrix
-    StateNames []string
-}
-```
+A `Kernel` wraps an $n \times n$ row-stochastic transition matrix $P$ and an array of state labels (slugs).
 
-wikigraph constructs a Kernel via `NewRandomWalkKernel`, which row-normalises
-a raw adjacency matrix. An error is returned if any row is all-zero (a
-[[sink-page|sink]]) — so [[markov-model|`buildAdjacency`]] applies uniform
-teleportation to sinks *before* calling this constructor.
+### Analysis methods used by wikigraph
 
-## Constructor
+- **`Stationary(tol, maxIter)`**: Computes stationary distribution $\pi$ via power iteration ($P^T \pi = \pi$). Used by `analyze` for centrality and orphan detection ([[stationary-distribution]]).
+- **`Classes(tol)`**: Computes communicating classes via Kosaraju's SCC algorithm on non-zero transitions ($P_{ij} > 0$). Used by `analyze` ([[communicating-classes]]).
+- **`EntropyRate(base)`**: Computes entropy rate $H = -\sum_i \pi_i \sum_j P_{ij} \log P_{ij}$. Used by `analyze` ([[entropy-rate]]).
+- **`MeanFirstPassage(i, j)`**: Computes expected steps from state $i$ to state $j$ using the fundamental matrix $Z = (I - P + W)^{-1}$. Used by `goal` ([[mfpt]]).
+- **`CommuteTime(i, j)`**: Computes $K(i,j) = M(i,j) + M(j,i)$. Used by `analyze` for missing link suggestions ([[commute-time]]).
+- **`Trace(subset, tol)`**: Computes effective trace kernel $P_S$ on a state subset $S$, accounting for paths through excluded states $S^c$. Used by `goal` subgraphs.
+- **`ToHTML(opts)`**: Renders force-directed graph HTML using D3.js. Used by `graph` and `goal`.
 
-```go
-func NewRandomWalkKernel(adj *mat.Dense, names []string) (*Kernel, error)
-```
+## Related Concepts
 
-Divides each row of `adj` by its sum, producing `P(i,j) = adj[i][j] / Σₖ adj[i][k]`.
-This is the standard [[random-walk]] on a graph — edge weights become
-transition probabilities proportional to weight.
-
-## Analysis methods used by wikigraph
-
-| Method                             | Returns                  | Used in                   |
-| ---------------------------------- | ------------------------ | ------------------------- |
-| `Stationary(tol, maxIter)`         | `[]float64` (π)          | [[analyze]], [[export]], [[graph]] |
-| `EntropyRate(base)`                | `float64`                | [[analyze]]               |
-| `Classes(tol)`                     | `*ClassDecomposition`    | [[analyze]], [[export]]   |
-| `MeanFirstPassage(i, j int)`       | `float64, error`         | [[analyze]], [[goal]]     |
-| `CommuteTime(i, j int)`            | `float64, error`         | [[analyze]]               |
-| `Trace(subset []int, tol float64)` | `*Kernel, error`         | [[goal]]                  |
-| `ToHTML(opts *VisualiseOptions)`   | `[]byte, error`          | [[graph]]                 |
-
-### Stationary(tol, maxIter)
-
-Power iteration for the [[stationary-distribution]]. Starts from a uniform
-vector and multiplies by P until L₁ convergence < `tol`.
-
-### EntropyRate(base)
-
-Computes [[entropy-rate]] H = −Σᵢ π(i) Σⱼ Pᵢⱼ log\_base(Pᵢⱼ).
-wikigraph passes `base = 2` for bits.
-
-### Classes(tol)
-
-Kosaraju's SCC algorithm over the graph of non-negligible transitions
-(`Pᵢⱼ > tol`). Returns a `ClassDecomposition` with `Recurrent` and
-`Transient` slices of state-index sets, plus a `Periods` map.
-See [[communicating-classes]] and [[recurrent-class]].
-
-### MeanFirstPassage(i, j)
-
-Expected steps from state i to first reach state j via the fundamental
-matrix of the chain. Returns `+Inf` when j is unreachable from i.
-See [[mfpt]].
-
-### CommuteTime(i, j)
-
-`MeanFirstPassage(i,j) + MeanFirstPassage(j,i)` — symmetric distance metric.
-See [[commute-time]].
-
-### Trace(subset, tol)
-
-Projects the full transition matrix onto `subset` states, integrating out
-all excursions through the complement:
-
-```
-P_A = a + b (I - c)⁻¹ d
-```
-
-The stationary distribution of the trace kernel equals the parent π
-restricted and renormalized to the subset. Used by [[goal]] to build
-focused subgraph visualisations.
-
-### ToHTML(opts)
-
-Renders a D3 force-directed graph. Node size encodes [[stationary-distribution|π]];
-edge opacity encodes transition probability. Used by [[graph]].
-
-## Additional Kernel methods
-
-| Method                    | Purpose                                           |
-| ------------------------- | ------------------------------------------------- |
-| `Clone()`                 | Deep copy of the Kernel                           |
-| `NumStates()`             | Number of states (rows/columns of P)              |
-| `NormalizeRows(tol)`      | Re-normalize rows in place (mutates P)            |
-| `Multiply(other)`         | Matrix product k·other as a new Kernel            |
-| `LeftAction(dist)`        | Evolve a distribution one step: π' = π·P          |
-| `IsTraceOf(parent, ...)`  | Verify that this Kernel is a valid trace of parent |
-| `Sample(rowIdx, rng)`     | Sample one step forward given a starting state    |
-
-## Agent model (not used by wikigraph)
-
-catrace's primary design is for modelling autonomous-agent networks via three
-rectangular row-stochastic maps:
-
-```
-D : X → G  (decision:   experience → action)
-A : G → W  (effect:     action     → world)
-P : W → X  (perception: world      → experience)
-```
-
-Composing these in cyclic order gives square kernels on each space
-(`QualiaKernel`, `StrategyKernel`, `WorldKernel`) that share eigenvalues —
-three perspectives on the same closed-loop system. wikigraph does not use
-this model but it is the library's primary motivation.
-
-## Estimation and trajectory tools
-
-| Function                             | Purpose                                              |
-| ------------------------------------ | ---------------------------------------------------- |
-| `EstimateKernelFromSequence`         | Empirical transition counts → kernel (with pseudocount smoothing) |
-| `SampleTraceFromSequence`            | Filter a trajectory to observed states               |
-| `WindowedTraceEstimates`             | Sliding-window kernel estimates for drift detection  |
+- [[architecture]] — How `wikigraph` wires `catrace` into subcommand handlers
+- [[markov-model]] — Construction of transition matrix $P$ from wikilinks
+- [[stationary-distribution]] — Power iteration implementation
+- [[communicating-classes]] — Strongly connected components
+- [[mfpt]] — Fundamental matrix calculation
 
 ## Sources
 
-- [`go.mod` — version pin](https://github.com/stephen-mcelhose/wikigraph/blob/main/go.mod)
 - [catrace repository](https://github.com/stephen-mcelhose/catrace)
-- [`wiki.go` — `NewRandomWalkKernel` call site](https://github.com/stephen-mcelhose/wikigraph/blob/main/wiki.go)
-- [`cmd_analyze.go` — Stationary, Classes, CommuteTime](https://github.com/stephen-mcelhose/wikigraph/blob/main/cmd_analyze.go)
-- [`cmd_goal.go` — MeanFirstPassage, Trace](https://github.com/stephen-mcelhose/wikigraph/blob/main/cmd_goal.go)
-- [`cmd_graph.go` — ToHTML](https://github.com/stephen-mcelhose/wikigraph/blob/main/cmd_graph.go)
+- `architecture.md`

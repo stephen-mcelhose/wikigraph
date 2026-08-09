@@ -1,81 +1,56 @@
 ---
 type: concept
-title: Communicating Classes
-description: A communicating class is a maximal set of Markov chain states that are mutually reachable — the structural unit that determines whether a wiki is connected or fragmented.
-resource: cmd_analyze.go
-tags: [communicating-classes, scc, tarjan, markov, graph-structure, reachability]
-timestamp: 2026-08-09T07:31:56Z
+title: Communicating Classes and Recurrent Sets
+description: Maximal mutually-reachable sets of wiki pages — how Kosaraju's SCC algorithm partitions a wiki graph into recurrent and transient components.
+tags: [markov-chain, graph-theory, scc, recurrent, transient]
+timestamp: 2026-08-09T08:35:00Z
 ---
 
-# Communicating Classes
+# Communicating Classes and Recurrent Sets
 
-A **communicating class** is a maximal set of states in a Markov chain where
-every state can reach every other state — possibly via intermediate states.
-For a wiki, states are pages and transitions are `[[wikilinks]]`. Two pages
-**communicate** if there is a directed path of links from A to B *and* from
-B to A.
+## Overview
 
-The class decomposition is the single most important structural fact about a
-wiki: it tells you whether readers can navigate freely or whether the wiki is
-fragmented into islands. See [[recurrent-class]] for what happens inside and
-outside each class.
+A **communicating class** is a maximal set of states (pages) where every page in the set can reach every other page in the set following directed wikilinks. In graph theory, communicating classes correspond to **strongly connected components (SCCs)** on non-zero transitions ($P_{ij} > 0$).
 
-## How it is computed
+## Key Properties
 
-wikigraph uses Kosaraju's strongly connected components (SCC) algorithm, via
-`catrace.Kernel.Classes`. Kosaraju's algorithm runs in O(V + E) — linear in
-pages and links — and produces a partition of all pages into SCCs. Each SCC
-is a communicating class.
+### How it is computed
 
-After SCC decomposition, each class is labelled **recurrent** or **transient**
-based on whether any state in the class can escape to another class (transient)
-or not (recurrent). See [[recurrent-class]].
+`catrace` computes communicating classes via Kosaraju's two-pass DFS algorithm on the adjacency graph:
 
-## Reading the output
+1. **First DFS pass**: Computes post-order traversal on $P$.
+2. **Second DFS pass**: Runs DFS on transpose $P^T$ in reverse post-order to extract components.
+3. **Classification**:
+   - **Recurrent class**: A component with no outgoing transitions to other components. Once a random walker enters, it never leaves.
+   - **Transient class**: A component with outgoing transitions to another component. A random walker will eventually leave and never return.
+
+### Reading the output
+
+In `wikigraph analyze docs/`:
 
 ```
 === Communicating classes ===
-Class 1 (recurrent): 11 page(s)
-  adr-001-embedding-layer
-  adr-002-slug-resolution
+Class 1 (recurrent): 23 page(s)
   analyze
+  architecture
   ...
 ```
 
-| Field          | Meaning                                                              |
-| -------------- | -------------------------------------------------------------------- |
-| `Class N`      | Index — if there are multiple classes you see Class 1, Class 2, etc |
-| `(recurrent)`  | All pages mutually reachable; stationary distribution defined here   |
-| `(transient)`  | Pages escape to another class eventually; π = 0 for these pages     |
-| `N page(s)`    | Size of the class                                                    |
-| Page list      | Every slug in this class, in SCC discovery order (not alphabetical)  |
+A healthy wiki forms **a single recurrent class** containing all pages.
 
-**One recurrent class containing all pages** is the healthy state: a random
-walk started anywhere reaches everywhere. Multiple classes — or transient
-classes — mean the wiki has structural gaps.
+### Common failure modes
 
-## Common failure modes
+- **Disconnected islands**: Subgraphs linked internally but unreachable from the main wiki.
+- **Trap subgraphs / Sink pages**: Pages or clusters with no path back to main content.
 
-| Symptom | Cause | Fix |
-| ------- | ----- | --- |
-| `Class 2 (transient): 1 page` | A page has inbound links but no outbound link back to the main cluster | Add at least one `[[slug]]` to a page in the recurrent class |
-| Two recurrent classes | Two clusters with no cross-links | Add links bridging the clusters in both directions |
-| All pages transient | No cycles exist anywhere | Add cross-links; a linear chain has no recurrent class |
-| Page missing from all classes | It has no `.md` extension, or it's in `--exclude` | Check filename and exclude list |
+## Related Concepts
 
-## Relationship to π and entropy
-
-Only recurrent-class pages receive non-zero [[stationary-distribution|stationary probability]]
-π — the long-run visit frequency of the [[markov-model]] [[random-walk|random walk]].
-Transient pages are visited finitely often and then never again, so their π is
-0 regardless of how many internal links they have.
-
-[[entropy-rate|Entropy rate]] is computed over the recurrent class(es). A single large
-recurrent class with varied out-degrees produces a healthy mid-range entropy
-(wikigraph docs: 1.65 bits on 11 pages). See [[mfpt]] for how mean first
-passage time uses the same Markov structure to measure distance between pages.
+- [[recurrent-class]] — Detailed distinction between recurrent and transient sets
+- [[sink-page]] — Pages with zero outgoing links that create dead ends
+- [[stationary-distribution]] — How transient pages lose long-run probability $\pi = 0$
+- [[catrace]] — Kosaraju SCC algorithm implementation
 
 ## Sources
 
-- `cmd_analyze.go` — `kern.Classes(1e-10)`, recurrent/transient labelling, output formatting
-- `catrace` library — Tarjan SCC via `Classes`
+- Feller, W. (1968). *An Introduction to Probability Theory and Its Applications*.
+- `catrace` package documentation

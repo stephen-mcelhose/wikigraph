@@ -15,7 +15,7 @@ Comprehensive manual test plan covering all `wikigraph` subcommands (`graph`, `a
 **Binary:** built locally from `~/repos/wikigraph/`  
 **Wiki under test:** `docs/` in this repo (23 content pages)  
 **Run all commands from:** `~/repos/wikigraph/` (the repo root)  
-**Last verified:** 2026-08-09 against current wiki state (23 pages, 146 edges, 1 recurrent class)
+**Last verified:** 2026-08-09 against current wiki state (23 pages, 105 edges, 1 recurrent class)
 
 ---
 
@@ -292,9 +292,9 @@ wikigraph analyze docs/
 
 | Section         | Expected                                                                              |
 | --------------- | ------------------------------------------------------------------------------------- |
-| Overview        | Pages: 23, Edges: 146, Entropy rate: ~2.80 bits, Classes: 1                          |
+| Overview        | Pages: 23, Edges: 105, Entropy rate: ~2.28 bits, Classes: 1                          |
 | Classes         | 1 recurrent (23 pages)                                                                |
-| Orphans (≤10%)  | `adr-003-orphan-threshold` (π=0.006970), `adr-005-page-type-conventions-and-proposal-storage` (π=0.008867), `page-type-conventions` (π=0.013301) |
+| Orphans (≤10%)  | `adr-005-page-type-conventions-and-proposal-storage` (π=0.011739), `adr-004-quantum-go-example-wiki` (π=0.012398), `page-type-conventions` (π=0.017609) |
 | Sinks           | `(none)`                                                                              |
 | Most central #1 | `analyze` (π=0.103308)                                                               |
 | Suggestions     | At least one page with 3 suggestions listed                                           |

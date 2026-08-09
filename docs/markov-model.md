@@ -1,76 +1,40 @@
 ---
 type: concept
-title: Markov Model of a Wiki
-description: How wikigraph translates `[[wikilinks]]` into a row-stochastic transition matrix — the loadPages and buildAdjacency pipeline in wiki.go.
-resource: wiki.go
-tags: [markov, transition-matrix, wikilinks, adjacency, sink, teleportation]
-timestamp: 2026-08-09T07:31:56Z
+title: Wikilink Markov Model
+description: How wikilinks are extracted and converted into an n×n row-stochastic transition matrix P and catrace.Kernel struct.
+tags: [markov-chain, transition-matrix, adjacency, parser]
+timestamp: 2026-08-09T08:35:00Z
 ---
 
-# Markov Model of a Wiki
+# Wikilink Markov Model
 
-wikigraph models a wiki as a **discrete-time Markov chain**: pages are
-states, and outgoing wikilinks (`[[slug]]` syntax) define the transitions. A
-[[random-walk|random walker]] follows links at random; the long-run fraction
-of time spent on each page is its [[stationary-distribution|stationary distribution]]
-π — used as centrality throughout the tool.
+## Overview
 
-The full pipeline is in `wiki.go` and detailed in [[architecture]].
+`wikigraph` models a markdown wiki as a discrete-time Markov chain $X_t$ on $n$ states, where states are pages and transitions correspond to a reader clicking `[[wikilinks]]`.
 
-## Step 1 — loadPages
+## Key Properties
 
-`os.ReadDir` lists all `.md` files in the wiki directory. Each file that
-is not in the exclude set becomes a **slug** (filename without `.md`).
-Slugs are sorted alphabetically; their sorted position is their matrix
-index. Sorting gives a deterministic matrix regardless of filesystem order.
-The rationale for the flat slug convention is in [[adr-002-slug-resolution]].
+### Pipeline steps (`wiki.go`)
 
-The exclude set is built from the `--exclude` flag (defaults: `index`,
-`log`, `AGENTS`).
+1. **`loadPages`**: Discovers markdown files in `docs/`, sorts slugs alphabetically, builds `slug -> index` map.
+2. **`buildAdjacency`**: Parses `[[slug]]` and `[[slug|alias]]` wikilinks from page bodies using regular expressions (`\[\[([^\]\|]+)(?:\|[^\]]+)?\]\]`).
+3. **Teleportation for sinks**: If a page has zero outgoing links ([[sink-page]]), a uniform row $P_{ij} = 1/n$ is inserted.
+4. **Row-stochastic normalization**: Row $i$ with $k_i > 0$ outgoing links gets uniform probability $P_{ij} = 1/k_i$ for linked targets $j$.
 
-## Step 2 — Wikilink extraction (buildAdjacency)
+### Transition Matrix $P$
 
-Each page is read and matched against:
+The resulting matrix $P$ satisfies:
 
-```
-\[\[([A-Za-z][A-Za-z0-9-]*)(?:\|[^\]]+)?\]\]
-```
+$$\sum_{j=1}^n P_{ij} = 1 \quad \forall i$$
 
-- **Capture group 1** is the slug (the `[[slug|alias]]` form strips the alias)
-- Match is case-insensitive: the slug is lowercased before index lookup
-- Self-links (`j == i`) are discarded
-- Duplicate links count as one (deduplicated via a `map[int]bool`)
+## Related Concepts
 
-## Step 3 — Adjacency matrix
-
-A `gonum/mat.Dense` n×n matrix is filled with 1.0 for each outgoing link.
-[[catrace|catrace.NewRandomWalkKernel]] then **row-normalises**: each row is divided
-by its sum, producing a row-stochastic matrix where each entry Pᵢⱼ is the
-probability of moving from page i to page j in one step.
-
-## Sink handling — teleportation
-
-A page with no outgoing links (a **[[sink-page|sink]]**) would produce a zero row —
-making the matrix substochastic (row sum = 0, violating the stochastic property). To keep the
-chain well-defined, `buildAdjacency` gives sinks a **uniform row**: equal
-probability of jumping to any page. This is the same teleportation trick
-used in PageRank.
-
-Within each [[communicating-classes|communicating class]] the Kernel is irreducible, which
-guarantees a unique stationary distribution per class. The Kernel is also aperiodic for any
-class that contains at least one sink page, since the uniform teleportation row carries a
-self-loop. Classes with no sinks may be periodic if the underlying link graph is bipartite.
-See [[analyze]] for what communicating classes mean for wiki health.
-
-## What the matrix represents
-
-After normalisation, Pᵢⱼ is the **one-step transition probability** from
-page i to page j. The stationary distribution π satisfies πP = π and gives
-the long-run visit frequency for each page. Pages with high π are hubs —
-many random walks converge on them. See [[mfpt]] for how mean first passage
-time uses this matrix to measure structural distance between pages.
+- [[architecture]] — Data-flow pipeline
+- [[sink-page]] — Sink handling and uniform teleportation
+- [[catrace]] — `catrace.Kernel` wrapper
+- [[stationary-distribution]] — Power iteration on $P$
 
 ## Sources
 
 - `wiki.go`
-- `cmd_analyze.go`
+- Norris, J. R. (1998). *Markov Chains*. Cambridge University Press.
