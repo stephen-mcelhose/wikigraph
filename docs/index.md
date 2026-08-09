@@ -29,3 +29,7 @@ timestamp: 2026-08-09T06:54:46Z
 | [[sink-page]]                | `concept`  | Zero-outgoing-link pages and the teleportation fix                    |
 | [[commute-time]]             | `concept`  | Symmetric MFPT-based distance metric for link suggestions             |
 | [[catrace]]                  | `concept`  | The Go library providing all Markov chain mathematics                 |
+
+## Sources
+
+Generated and maintained by the `llm-wiki` skill from the pages in `docs/`.
