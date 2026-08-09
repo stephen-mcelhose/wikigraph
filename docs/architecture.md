@@ -16,8 +16,9 @@ wikigraph is ~850 lines of Go across seven files. The design is deliberately thi
 
 | File | Role |
 | --- | --- |
-| `main.go` | Cobra root command, `--exclude` persistent flag, subcommand wiring |
+| `main.go` | Cobra root command, `--exclude` and `-r/--recursive` persistent flags, subcommand wiring |
 | `wiki.go` | `loadPages`, `buildAdjacency`, `buildKernel` — the translation layer |
+| `wiki_test.go` | Unit tests for flat/recursive page loading, duplicate slug validation, and kernel construction |
 | `cmd_graph.go` | `graph` subcommand — renders full kernel as interactive HTML |
 | `cmd_analyze.go` | `analyze` subcommand — prints health report with six sections |
 | `cmd_goal.go` | `goal` subcommand — MFPT ranking + trace kernel for a target subgraph |
@@ -69,7 +70,7 @@ catrace.Kernel  (P is now row-stochastic)
 - [[catrace]] — Go package providing Markov chain linear algebra
 - [[mfpt]] — Mean first passage time calculations for goal paths
 - [[commute-time]] — Symmetric distance metric used for link suggestions
-- [[adr-002-slug-resolution]] — Rationale for flat slug layout
+- [[adr-006-recursive-vault-traversal]] — Rationale for recursive vault traversal and slug resolution
 - [[how-to-docs-plan]] — Documentation initiative driving subcommand interface
 
 ## Sources

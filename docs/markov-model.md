@@ -17,7 +17,7 @@ timestamp: 2026-08-09T08:35:00Z
 ### Pipeline steps (`wiki.go`)
 
 1. **`loadPages`**: Discovers markdown files in `docs/`, sorts slugs alphabetically, builds `slug -> index` map.
-2. **`buildAdjacency`**: Parses `[[slug]]` and `[[slug|alias]]` wikilinks from page bodies using regular expressions (`\[\[([^\]\|]+)(?:\|[^\]]+)?\]\]`).
+2. **`buildAdjacency`**: Parses `[[slug]]` and `[[slug|alias]]` wikilinks from page bodies using regular expressions (`\[\[([A-Za-z][A-Za-z0-9-]*)(?:\|[^\]]+)?\]\]`).
 3. **Teleportation for sinks**: If a page has zero outgoing links ([[sink-page]]), a uniform row $P_{ij} = 1/n$ is inserted.
 4. **Row-stochastic normalization**: Row $i$ with $k_i > 0$ outgoing links gets uniform probability $P_{ij} = 1/k_i$ for linked targets $j$.
 

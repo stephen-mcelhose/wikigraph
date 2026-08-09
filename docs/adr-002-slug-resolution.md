@@ -10,6 +10,8 @@ superseded_by: adr-006-recursive-vault-traversal
 
 # ADR-002 — Slug resolution for nested wiki directories
 
+> **SUPERSEDED BY [[adr-006-recursive-vault-traversal]]** — Opt-in recursive vault traversal via `-r / --recursive` now supported while preserving basename slug matching.
+
 ## Context
 
 After establishing `docs/` as the wiki root, pages were organised into subdirectories (`how-to/`, `adr/`, `proposal/`) for filesystem clarity. This forced a choice: what slug does `docs/how-to/analyze.md` get? The decision affects every `[[wikilink]]` in the wiki — for example, links to [[analyze]], [[goal]], and [[adr-001-embedding-layer]].
