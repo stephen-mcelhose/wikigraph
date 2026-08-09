@@ -9,7 +9,7 @@ tags: [goal, learning-path, mfpt, subgraph]
 > **Draft** — `wikigraph goal` is a prototype. Goals must currently be exact
 > page slugs. Natural-language goals ("understand quantum error correction")
 > are planned. See [issue #1](https://github.com/stephen-mcelhose/wikigraph/issues/1)
-> and [[Embedding Layer for Semantic Wiki Search]] for the planned approach.
+> and [[adr/001-embedding-layer]] for the planned approach.
 
 # How to find a learning path through your wiki
 
@@ -18,8 +18,8 @@ which pages in my wiki are the most structurally relevant stepping stones?*
 
 It uses **Mean First Passage Time (MFPT)** — a Markov chain metric that
 measures how quickly a random walker starting at page X will reach your goal
-page. The same random-walk model underlies [[How to analyse your wiki's health]]
-(commute time suggestions) and [[How to generate an interactive wiki graph]]
+page. The same random-walk model underlies [[how-to/analyze]]
+(commute time suggestions) and [[how-to/graph]]
 (node size and colour). Pages with a low MFPT are the ones your wiki's link structure naturally
 funnels readers toward the goal through. These are your learning path.
 

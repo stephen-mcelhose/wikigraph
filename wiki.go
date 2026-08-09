@@ -12,7 +12,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-var wikilinkRe = regexp.MustCompile(`\[\[([A-Za-z][A-Za-z0-9-]*)(?:\|[^\]]+)?\]\]`)
+var wikilinkRe = regexp.MustCompile(`\[\[([A-Za-z0-9][A-Za-z0-9/_-]*)(?:\|[^\]]+)?\]\]`)
 
 // makeExcludeMap converts a slice of slugs to a set for O(1) lookup.
 func makeExcludeMap(slugs []string) map[string]bool {
@@ -23,23 +23,33 @@ func makeExcludeMap(slugs []string) map[string]bool {
 	return m
 }
 
-// loadPages reads all non-meta .md files from dir and returns the sorted list
-// of slugs and a slug→index map.
+// loadPages reads all non-meta .md files from dir (recursively) and returns
+// the sorted list of slugs and a slug→index map.
+// Slugs are relative paths from dir without the .md suffix (e.g. "how-to/analyze").
+// A slug is excluded if its full path OR its basename matches the exclude set.
 func loadPages(dir string, exclude map[string]bool) ([]string, map[string]int, error) {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return nil, nil, fmt.Errorf("reading wiki dir %q: %w", dir, err)
-	}
 	var pages []string
-	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
-			continue
+	err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
 		}
-		slug := strings.TrimSuffix(e.Name(), ".md")
-		if exclude[slug] {
-			continue
+		if d.IsDir() || !strings.HasSuffix(d.Name(), ".md") {
+			return nil
+		}
+		rel, err := filepath.Rel(dir, path)
+		if err != nil {
+			return err
+		}
+		slug := strings.TrimSuffix(rel, ".md")
+		base := strings.TrimSuffix(d.Name(), ".md")
+		if exclude[slug] || exclude[base] {
+			return nil
 		}
 		pages = append(pages, slug)
+		return nil
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("reading wiki dir %q: %w", dir, err)
 	}
 	sort.Strings(pages)
 	idx := make(map[string]int, len(pages))

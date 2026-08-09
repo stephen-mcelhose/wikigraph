@@ -13,8 +13,8 @@ regions, and where to add links to knit it together.
 
 It is the most information-dense subcommand. This guide works through each
 section so you know exactly what to act on. The same structure is visualised
-interactively by [[How to generate an interactive wiki graph]], and the data
-can be exported for external tools via [[How to export your wiki graph for external tools]].
+interactively by [[how-to/graph]], and the data
+can be exported for external tools via [[how-to/export]].
 
 ## Goal
 
@@ -187,7 +187,7 @@ wikigraph analyze ~/notes --suggest-top 0
 
 **Action:** For each suggestion, read both pages. If the topic connection is
 genuine, add `[[target-slug]]` to the source page's body. If you want to
-explore why two pages are close, see [[How to find a learning path through your wiki]]
+explore why two pages are close, see [[how-to/goal]]
 for MFPT-based subgraph visualisation.
 
 ### 8. Full example with all flags

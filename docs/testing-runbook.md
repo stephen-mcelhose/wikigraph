@@ -8,32 +8,52 @@ timestamp: 2026-08-09T06:54:46Z
 
 # wikigraph — Manual Test Runbook
 
-**Binary:** `~/go/bin/wikigraph` (installed via `go install github.com/stephen-mcelhose/wikigraph@latest`)  
-**Wiki under test:** any wiki directory with 36 content pages (e.g. `quantum-go/wiki`)  
-**Last verified:** 2026-08 against commit `3d0d08e`
+**Binary:** built locally from `~/repos/wikigraph/`  
+**Wiki under test:** `docs/` in this repo (7 content pages)  
+**Run all commands from:** `~/repos/wikigraph/` (the repo root)  
+**Last verified:** 2026-08 against commit `0d68bb3`
 
 ---
 
 ## Prerequisites
 
-Install the binary:
+### 1. Build the binary
 
 ```bash
-go install github.com/stephen-mcelhose/wikigraph@latest
+cd ~/repos/wikigraph
+go build -o wikigraph .
+export PATH="$PWD:$PATH"
 ```
 
-All commands below assume you are **in the wiki directory**:
+Verify:
 
 ```bash
-cd path/to/your/wiki
+wikigraph --help   # must list graph, goal, export, analyze
 ```
 
-Then verify the binary is available:
+### 2. Stay in the repo root
+
+All commands use `docs/` as the wiki path. Run everything from `~/repos/wikigraph`:
 
 ```bash
-which wikigraph          # must print ~/go/bin/wikigraph
-wikigraph --help         # must list graph, goal, export, analyze
+cd ~/repos/wikigraph
 ```
+
+`docs/` contains 10 `.md` files across root and subdirectories. Three are excluded by default (`index`, `log`, `AGENTS` — matched by basename), leaving **7 content pages**:
+
+```
+adr/001-embedding-layer
+how-to/analyze
+how-to/export
+how-to/goal
+how-to/graph
+proposal/how-to-docs-plan
+testing-runbook
+```
+
+> **Slug format:** wikigraph scans subdirectories recursively. Slugs are relative paths without `.md` (e.g. `how-to/analyze`). Exclusions match on full slug OR basename.
+
+> **Re-specify defaults when adding `--exclude`:** passing `-e` replaces the default list. Always include `-e index -e log -e AGENTS` alongside any custom exclusions.
 
 ---
 
@@ -54,18 +74,18 @@ wikigraph --help
 
 ## TC-02 · graph — baseline render
 
-**Goal:** Full wiki renders to a valid HTML file. See [[How to generate an interactive wiki graph]].
+**Goal:** Full wiki renders to a valid HTML file. See [[how-to/graph]].
 
 ```bash
-wikigraph graph . -o /tmp/wg_graph.html
+wikigraph graph docs/ -o /tmp/wg_graph.html
 open /tmp/wg_graph.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 36` and `Written: /tmp/wg_graph.html`
+- Stderr prints `Pages: 7` and `Written: /tmp/wg_graph.html`
 - File exists and opens in browser showing a force-directed graph
-- 36 labelled nodes visible; nodes sized differently (stationary dist)
-- All nodes coloured the same (one communicating class)
+- 7 labelled nodes visible; nodes sized differently (stationary dist reflects link structure)
+- 3 colours visible (3 communicating classes)
 - Exit code 0
 
 ---
@@ -75,12 +95,12 @@ open /tmp/wg_graph.html
 **Goal:** Excluding a content page reduces node count.
 
 ```bash
-wikigraph graph . -e index -e log -e AGENTS -e gate-zoo -o /tmp/wg_excl.html
+wikigraph graph docs/ -e index -e log -e AGENTS -e testing-runbook -o /tmp/wg_excl.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 35`
-- `gate-zoo` node absent from rendered graph
+- Stderr prints `Pages: 6`
+- `testing-runbook` node absent from rendered graph
 
 ---
 
@@ -89,7 +109,7 @@ wikigraph graph . -e index -e log -e AGENTS -e gate-zoo -o /tmp/wg_excl.html
 **Goal:** Raising the edge threshold produces a sparser graph.
 
 ```bash
-wikigraph graph . --min-edge 0.10 -o /tmp/wg_sparse.html
+wikigraph graph docs/ --min-edge 0.30 -o /tmp/wg_sparse.html
 ```
 
 **Pass criteria:**
@@ -103,8 +123,8 @@ wikigraph graph . --min-edge 0.10 -o /tmp/wg_sparse.html
 **Goal:** sed expressions are applied to the output.
 
 ```bash
-wikigraph graph . \
-  -s 's/wiki wiki/TEST TITLE/' \
+wikigraph graph docs/ \
+  -s 's/docs wiki/TEST TITLE/' \
   -o /tmp/wg_sed.html
 grep "TEST TITLE" /tmp/wg_sed.html
 ```
@@ -112,6 +132,8 @@ grep "TEST TITLE" /tmp/wg_sed.html
 **Pass criteria:**
 - `grep` finds the patched string
 - Exit code 0
+
+> Note: the default title is `<dir> wiki` where `<dir>` is the last path component. Running with `docs/` gives title `docs wiki`.
 
 ---
 
@@ -129,19 +151,19 @@ wikigraph graph /tmp/does-not-exist
 
 ---
 
-## TC-07 · goal — learning path to shors-algorithm
+## TC-07 · goal — learning path to a goal page
 
-**Goal:** 12-node subgraph centred on Shor's algorithm. See [[How to find a learning path through your wiki]].
+**Goal:** Subgraph centred on a goal page. See [[how-to/goal]].
 
 ```bash
-wikigraph goal . --goal shors-algorithm --top 12 -o /tmp/wg_goal.html
+wikigraph goal docs/ --goal how-to/analyze --top 5 -o /tmp/wg_goal.html
 open /tmp/wg_goal.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 36` and `Written: /tmp/wg_goal.html (12 nodes)`
-- Browser shows exactly 12 nodes
-- `shors-algorithm` node is present
+- Stderr prints `Pages: 7` and `Written: /tmp/wg_goal.html (5 nodes)`
+- Browser shows exactly 5 nodes
+- `how-to/analyze` node is present
 - Exit code 0
 
 ---
@@ -151,14 +173,14 @@ open /tmp/wg_goal.html
 **Goal:** Two goal pages, both present in output.
 
 ```bash
-wikigraph goal . \
-  --goal shors-algorithm --goal grovers-algorithm \
-  --top 8 -o /tmp/wg_goal2.html
+wikigraph goal docs/ \
+  --goal how-to/analyze --goal how-to/graph \
+  --top 5 -o /tmp/wg_goal2.html
 ```
 
 **Pass criteria:**
-- Stderr shows `(8 nodes)`
-- Both `shors-algorithm` and `grovers-algorithm` present in rendered graph
+- Stderr shows `(5 nodes)`
+- Both `how-to/analyze` and `how-to/graph` present in rendered graph
 
 ---
 
@@ -167,12 +189,12 @@ wikigraph goal . \
 **Goal:** Clear error when a slug doesn't exist.
 
 ```bash
-wikigraph goal . --goal not-a-real-page -o /tmp/x.html
+wikigraph goal docs/ --goal not-a-real-page -o /tmp/x.html
 ```
 
 **Pass criteria:**
-- Stderr prints `unknown --goal slug "not-a-real-page"`
-- Stderr lists valid slugs
+- Prints `unknown --goal slug "not-a-real-page"`
+- Lists valid slugs (e.g. `how-to/analyze`, `adr/001-embedding-layer`)
 - Non-zero exit code; no output file written
 
 ---
@@ -182,7 +204,7 @@ wikigraph goal . --goal not-a-real-page -o /tmp/x.html
 **Goal:** Requires at least one goal.
 
 ```bash
-wikigraph goal . -o /tmp/x.html
+wikigraph goal docs/ -o /tmp/x.html
 ```
 
 **Pass criteria:**
@@ -193,10 +215,10 @@ wikigraph goal . -o /tmp/x.html
 
 ## TC-11 · export — JSON
 
-**Goal:** Valid node-link JSON with correct shape. See [[How to export your wiki graph for external tools]].
+**Goal:** Valid node-link JSON with correct shape. See [[how-to/export]].
 
 ```bash
-wikigraph export . --format json -o /tmp/wg
+wikigraph export docs/ --format json -o /tmp/wg
 jq '.' /tmp/wg.json | head -20
 ```
 
@@ -206,6 +228,7 @@ jq '.' /tmp/wg.json | head -20
 - Each node has `id` (string), `pi` (float), `class` (int)
 - Each link has `source`, `target` (strings), `value` (float)
 - `jq` exits 0 (valid JSON)
+- 7 nodes, 18 links
 
 ---
 
@@ -214,7 +237,7 @@ jq '.' /tmp/wg.json | head -20
 **Goal:** Two well-formed CSV files.
 
 ```bash
-wikigraph export . --format csv -o /tmp/wg
+wikigraph export docs/ --format csv -o /tmp/wg
 head /tmp/wg_nodes.csv
 head /tmp/wg_edges.csv
 ```
@@ -222,7 +245,7 @@ head /tmp/wg_edges.csv
 **Pass criteria:**
 - `wg_nodes.csv` header: `slug,pi,class`
 - `wg_edges.csv` header: `source,target,probability`
-- Both have 36 data rows in nodes (one per page)
+- `wg_nodes.csv` has 7 data rows (one per page)
 - Values are numeric floats; no empty cells
 
 ---
@@ -232,14 +255,14 @@ head /tmp/wg_edges.csv
 **Goal:** Valid Graphviz DOT output.
 
 ```bash
-wikigraph export . --format dot -o /tmp/wg
+wikigraph export docs/ --format dot -o /tmp/wg
 head /tmp/wg.dot
 dot -Tsvg /tmp/wg.dot -o /tmp/wg.svg && echo "dot OK"
 ```
 
 **Pass criteria:**
 - First line: `digraph wiki {`
-- Node lines: `"slug" [weight=N.NNNNNN];`
+- Node lines: `"slug" [weight=N.NNNNNN];` (slugs may contain `/`, e.g. `"how-to/analyze"`)
 - Edge lines: `"slug" -> "slug" [weight=N.NNNNNN];`
 - `dot -Tsvg` succeeds (requires Graphviz; skip if not installed)
 
@@ -248,7 +271,7 @@ dot -Tsvg /tmp/wg.dot -o /tmp/wg.svg && echo "dot OK"
 ## TC-14 · export — unknown format
 
 ```bash
-wikigraph export . --format xml -o /tmp/wg
+wikigraph export docs/ --format xml -o /tmp/wg
 ```
 
 **Pass criteria:**
@@ -260,43 +283,43 @@ wikigraph export . --format xml -o /tmp/wg
 ## TC-15 · export — --min-edge filters edges
 
 ```bash
-wikigraph export . --format json --min-edge 0.5 -o /tmp/wg_sparse
+wikigraph export docs/ --format json --min-edge 0.5 -o /tmp/wg_sparse
 jq '.links | length' /tmp/wg_sparse.json
 ```
 
 **Pass criteria:**
-- Link count is significantly lower than with default `--min-edge 0.005`
+- Link count is lower than default (default: 18 links; with `--min-edge 0.5`: 4 links)
 
 ---
 
 ## TC-16 · analyze — full report
 
-**Goal:** All six sections printed; known facts match. See [[How to analyse your wiki's health]].
+**Goal:** All six sections printed; known facts match. See [[how-to/analyze]].
 
 ```bash
-wikigraph analyze .
+wikigraph analyze docs/
 ```
 
 **Pass criteria (spot-check against known state):**
 
-| Section         | Expected                                                     |
-| --------------- | ------------------------------------------------------------ |
-| Overview        | Pages: 36, Edges: 295, Entropy rate: ~2.20 bits, Classes: 1 |
-| Classes         | 1 recurrent class containing all 36 pages                   |
-| Orphans (≤10%)  | None shown, or only `how-to-add-a-new-gate` (others fixed in 2026-08-09 lint pass) |
-| Sinks           | `algorithm-comparison`, `fuzz-testing`, `qelib1-standard-gates`, `verification-tests` |
-| Most central #1 | `composite-gates` (π ≈ 0.096)                               |
-| Suggestions     | At least one page with 3 suggestions listed                  |
+| Section         | Expected                                                                              |
+| --------------- | ------------------------------------------------------------------------------------- |
+| Overview        | Pages: 7, Edges: 18, Entropy rate: ~1.02 bits, Classes: 3                            |
+| Classes         | 1 recurrent (5 pages), 2 transient (1 page each: `testing-runbook`, `proposal/how-to-docs-plan`) |
+| Orphans (≤10%)  | `proposal/how-to-docs-plan` and `testing-runbook` (π=0.000000)                       |
+| Sinks           | `(none)`                                                                              |
+| Most central #1 | `how-to/analyze` (π=0.375000)                                                        |
+| Suggestions     | At least one page with 3 suggestions listed                                           |
 
 - Exit code 0
-- Completes in < 2 seconds
+- Completes in < 1 second
 
 ---
 
 ## TC-17 · analyze — --suggest-top 0 skips commute section
 
 ```bash
-time wikigraph analyze . --suggest-top 0
+time wikigraph analyze docs/ --suggest-top 0
 ```
 
 **Pass criteria:**
@@ -309,11 +332,11 @@ time wikigraph analyze . --suggest-top 0
 ## TC-18 · analyze — --orphan-pct 0 shows only minimum-pi pages
 
 ```bash
-wikigraph analyze . --orphan-pct 0 --suggest-top 0
+wikigraph analyze docs/ --orphan-pct 0 --suggest-top 0
 ```
 
 **Pass criteria:**
-- Orphan section shows only the page(s) with the absolute lowest π
+- Orphan section shows only the page(s) with the absolute lowest π (`proposal/how-to-docs-plan` and `testing-runbook`, both π=0.000000)
 - Section header says `bottom 0%`
 
 ---
@@ -321,11 +344,11 @@ wikigraph analyze . --orphan-pct 0 --suggest-top 0
 ## TC-19 · analyze — --orphan-pct 1.0 shows all pages
 
 ```bash
-wikigraph analyze . --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "→ add inbound"
+wikigraph analyze docs/ --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "→ add inbound"
 ```
 
 **Pass criteria:**
-- Count equals 36 (all pages shown as orphans at 100th percentile)
+- Count equals 7 (all pages shown as orphans at 100th percentile)
 
 ---
 
@@ -334,18 +357,18 @@ wikigraph analyze . --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "→ 
 **Goal:** Persistent flag is inherited; excluded pages disappear from every subcommand.
 
 ```bash
-# Should reduce page count to 35 in each case
-wikigraph graph   . -e index -e log -e AGENTS -e gate-zoo -o /dev/null 2>&1 | grep Pages
-wikigraph goal    . -e index -e log -e AGENTS -e gate-zoo --goal shors-algorithm -o /dev/null 2>&1 | grep Pages
-wikigraph export  . -e index -e log -e AGENTS -e gate-zoo -o /tmp/excl 2>&1 | grep Pages
-wikigraph analyze . -e index -e log -e AGENTS -e gate-zoo --suggest-top 0 2>/dev/null | grep Pages
+# Should reduce page count to 6 in each case
+wikigraph graph   docs/ -e index -e log -e AGENTS -e how-to/analyze -o /dev/null 2>&1 | grep Pages
+wikigraph goal    docs/ -e index -e log -e AGENTS -e how-to/analyze --goal how-to/graph -o /dev/null 2>&1 | grep Pages
+wikigraph export  docs/ -e index -e log -e AGENTS -e how-to/analyze -o /tmp/excl 2>&1 | grep Pages
+wikigraph analyze docs/ -e index -e log -e AGENTS -e how-to/analyze --suggest-top 0 2>/dev/null | grep Pages
 ```
 
 **Pass criteria:**
-- All four lines print `Pages: 35`
-- `gate-zoo` absent from exported JSON nodes list:
+- All four lines print `Pages: 6`
+- `how-to/analyze` absent from exported JSON nodes list:
   ```bash
-  jq -e '[.nodes[].id] | index("gate-zoo") | not' /tmp/excl.json
+  jq -e '[.nodes[].id] | index("how-to/analyze") | not' /tmp/excl.json
   ```
 
 ---
@@ -387,7 +410,7 @@ wikigraph graph /tmp/tinywiki -o /tmp/tiny.html
 
 ## See Also
 
-- [[How to generate an interactive wiki graph]]
-- [[How to analyse your wiki's health]]
-- [[How to find a learning path through your wiki]]
-- [[How to export your wiki graph for external tools]]
+- [[how-to/graph]]
+- [[how-to/analyze]]
+- [[how-to/goal]]
+- [[how-to/export]]
