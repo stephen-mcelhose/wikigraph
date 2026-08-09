@@ -48,13 +48,13 @@ func runGraph(cmd *cobra.Command, args []string) error {
 
 	exclude := makeExcludeMap(flagExclude)
 
-	pages, idx, err := loadPages(wikiDir, exclude)
+	pages, idx, paths, err := loadPages(wikiDir, flagRecursive, exclude)
 	if err != nil {
 		return err
 	}
 	fmt.Fprintf(os.Stderr, "Pages: %d\n", len(pages))
 
-	adj, _, err := buildAdjacency(wikiDir, pages, idx)
+	adj, _, err := buildAdjacency(pages, idx, paths)
 	if err != nil {
 		return err
 	}

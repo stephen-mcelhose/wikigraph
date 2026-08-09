@@ -14,7 +14,8 @@ timestamp: 2026-08-09T06:54:46Z
 | [[analyze]]                  | `how-to`   | Wiki health report — orphans, sinks, hubs, link suggestions    |
 | [[goal]]                     | `how-to`   | Learning paths via MFPT — draft                                |
 | [[adr-001-embedding-layer]]  | `decision` | ADR: chromem-go + Ollama chosen for semantic goal resolution   |
-| [[adr-002-slug-resolution]]  | `decision` | ADR: flat wiki layout with basename slugs over path-qualified  |
+| [[adr-002-slug-resolution]]  | `decision` | ADR: flat wiki layout with basename slugs (superseded by ADR-006) |
+| [[adr-006-recursive-vault-traversal]] | `decision` | ADR: recursive vault traversal and basename slug resolution |
 | [[adr-003-orphan-threshold]] | `decision` | ADR: accept low π for ADR/proposal pages — not a defect       |
 | [[adr-004-quantum-go-example-wiki]] | `decision` | ADR: Use quantum-go as the canonical example wiki in how-to docs |
 | [[adr-005-page-type-conventions-and-proposal-storage]] | `decision` | ADR: Page-type structural conventions and proposal/spike storage strategy |

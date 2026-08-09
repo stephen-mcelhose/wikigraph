@@ -53,7 +53,7 @@ func runGoal(cmd *cobra.Command, args []string) error {
 	wikiDir := args[0]
 	exclude := makeExcludeMap(flagExclude)
 
-	kern, pages, _, err := buildKernel(wikiDir, exclude)
+	kern, pages, _, err := buildKernel(wikiDir, flagRecursive, exclude)
 	if err != nil {
 		return err
 	}

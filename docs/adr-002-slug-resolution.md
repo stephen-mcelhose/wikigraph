@@ -4,7 +4,8 @@ title: Slug Resolution for Nested Wiki Directories
 description: Chose a flat wiki layout with basename slugs over path-qualified slugs, keeping [[wikilinks]] natural and decoupled from filesystem structure.
 tags: [adr, slug, wikilink, wiki-structure]
 timestamp: 2026-08-09T07:19:55Z
-status: accepted
+status: superseded
+superseded_by: adr-006-recursive-vault-traversal
 ---
 
 # ADR-002 — Slug resolution for nested wiki directories

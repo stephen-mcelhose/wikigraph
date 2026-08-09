@@ -12,6 +12,9 @@ var defaultExcludes = []string{"index", "log", "AGENTS"}
 // flagExclude is a persistent flag inherited by all subcommands.
 var flagExclude []string
 
+// flagRecursive controls whether subdirectories are scanned recursively.
+var flagRecursive bool
+
 var rootCmd = &cobra.Command{
 	Use:   "wikigraph",
 	Short: "Interactive wiki link graph and analysis tools.",
@@ -33,6 +36,8 @@ Subcommands:
 func init() {
 	rootCmd.PersistentFlags().StringArrayVarP(&flagExclude, "exclude", "e", defaultExcludes,
 		"slugs to exclude from all subcommands (meta-pages, changelogs, etc.)")
+	rootCmd.PersistentFlags().BoolVarP(&flagRecursive, "recursive", "r", false,
+		"recursively scan subdirectories for Markdown pages")
 	rootCmd.AddCommand(graphCmd, goalCmd, exportCmd, analyzeCmd)
 }
 

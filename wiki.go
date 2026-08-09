@@ -23,44 +23,83 @@ func makeExcludeMap(slugs []string) map[string]bool {
 	return m
 }
 
-// loadPages reads all non-meta .md files from dir and returns the sorted list
-// of slugs and a slug→index map.
-func loadPages(dir string, exclude map[string]bool) ([]string, map[string]int, error) {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return nil, nil, fmt.Errorf("reading wiki dir %q: %w", dir, err)
-	}
+// loadPages reads all non-meta .md files from dir (optionally recursively)
+// and returns sorted slugs, slug->index map, and slug->filePath map.
+func loadPages(dir string, recursive bool, exclude map[string]bool) ([]string, map[string]int, map[string]string, error) {
+	paths := make(map[string]string)
 	var pages []string
-	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
-			continue
+
+	if recursive {
+		err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				// Skip hidden directories like .git, .obsidian, .trash
+				if strings.HasPrefix(d.Name(), ".") && path != dir {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+			if !strings.HasSuffix(d.Name(), ".md") {
+				return nil
+			}
+			slug := strings.TrimSuffix(d.Name(), ".md")
+			if exclude[slug] {
+				return nil
+			}
+			if existingPath, ok := paths[slug]; ok {
+				return fmt.Errorf("duplicate slug %q found in %q and %q", slug, existingPath, path)
+			}
+			paths[slug] = path
+			pages = append(pages, slug)
+			return nil
+		})
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("walking wiki dir %q: %w", dir, err)
 		}
-		slug := strings.TrimSuffix(e.Name(), ".md")
-		if exclude[slug] {
-			continue
+	} else {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("reading wiki dir %q: %w", dir, err)
 		}
-		pages = append(pages, slug)
+		for _, e := range entries {
+			if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
+				continue
+			}
+			slug := strings.TrimSuffix(e.Name(), ".md")
+			if exclude[slug] {
+				continue
+			}
+			paths[slug] = filepath.Join(dir, e.Name())
+			pages = append(pages, slug)
+		}
 	}
+
 	sort.Strings(pages)
 	idx := make(map[string]int, len(pages))
 	for i, p := range pages {
 		idx[p] = i
 	}
-	return pages, idx, nil
+	return pages, idx, paths, nil
 }
 
 // buildAdjacency reads each page and extracts [[wikilinks]], returning a square
 // adjacency matrix and the slugs of sink pages.
 // Sink pages (no outgoing links) get uniform weight across all pages so the
 // Markov kernel stays well-defined and the stationary distribution can be computed.
-func buildAdjacency(dir string, pages []string, idx map[string]int) (*mat.Dense, []string, error) {
+func buildAdjacency(pages []string, idx map[string]int, paths map[string]string) (*mat.Dense, []string, error) {
 	n := len(pages)
 	adj := mat.NewDense(n, n, nil)
 	var sinks []string
 	for i, slug := range pages {
-		raw, err := os.ReadFile(filepath.Join(dir, slug+".md"))
+		filePath, ok := paths[slug]
+		if !ok {
+			return nil, nil, fmt.Errorf("missing path for slug %q", slug)
+		}
+		raw, err := os.ReadFile(filePath)
 		if err != nil {
-			return nil, nil, fmt.Errorf("reading %s.md: %w", slug, err)
+			return nil, nil, fmt.Errorf("reading %s: %w", filePath, err)
 		}
 		linked := map[int]bool{}
 		for _, m := range wikilinkRe.FindAllSubmatch(raw, -1) {
@@ -86,12 +125,12 @@ func buildAdjacency(dir string, pages []string, idx map[string]int) (*mat.Dense,
 // buildKernel builds a Markov kernel from the wiki directory.
 // Returns the kernel, sorted page slugs, sink slugs (pages whose adjacency row
 // was set to uniform teleportation), and any error.
-func buildKernel(wikiDir string, exclude map[string]bool) (*catrace.Kernel, []string, []string, error) {
-	pages, idx, err := loadPages(wikiDir, exclude)
+func buildKernel(wikiDir string, recursive bool, exclude map[string]bool) (*catrace.Kernel, []string, []string, error) {
+	pages, idx, paths, err := loadPages(wikiDir, recursive, exclude)
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	adj, sinkPages, err := buildAdjacency(wikiDir, pages, idx)
+	adj, sinkPages, err := buildAdjacency(pages, idx, paths)
 	if err != nil {
 		return nil, nil, nil, err
 	}

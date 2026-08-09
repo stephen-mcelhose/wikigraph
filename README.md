@@ -26,6 +26,7 @@ Subcommands:
 
 Persistent flags (all subcommands):
   -e, --exclude strings   slugs to exclude (default [index, log, AGENTS])
+  -r, --recursive         recursively scan subdirectories for Markdown pages
 ```
 
 ### graph
@@ -75,6 +76,7 @@ Flags:
 ## Wiki format
 
 - One `.md` file per page, named `<slug>.md`
+- Subdirectories supported via `-r / --recursive` (e.g. Obsidian/Logseq vaults)
 - Cross-references as `[[slug]]` or `[[slug|Display Name]]` wikilinks
 - Compatible with: Obsidian, Foam, Logseq, Roam, and any hand-rolled wiki using the same convention
 
