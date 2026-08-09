@@ -19,7 +19,7 @@ Topics in scope:
 
 - **Page slugs**: kebab-case, flat — all pages live directly in `docs/`, never in subdirectories (e.g., `analyze.md`, `adr-001-embedding-layer.md`)
 - **Frontmatter**: OKF — `type`, `title`, `description`, `timestamp` required; `resource`, `tags`, `status` optional
-- **Types**: `concept` | `how-to` | `decision` | `runbook` | `proposal` | `spike`
+- **Types**: `concept` | `how-to` | `decision` | `runbook` | `proposal` | `spike` (for required section schemas by page type, see [[page-type-conventions]])
 - **Cross-references**: `[[slug]]` wikilinks — the slug is the filename without `.md`
 - **Sources section**: every page ends with `## Sources` listing URLs or file paths it was derived from
 - **No subdirectories**: filesystem layout is flat. Organisation emerges from wikilinks and the graph, not from folders.

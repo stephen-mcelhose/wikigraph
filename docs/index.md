@@ -17,6 +17,7 @@ timestamp: 2026-08-09T06:54:46Z
 | [[adr-002-slug-resolution]]  | `decision` | ADR: flat wiki layout with basename slugs over path-qualified  |
 | [[adr-003-orphan-threshold]] | `decision` | ADR: accept low π for ADR/proposal pages — not a defect       |
 | [[adr-004-quantum-go-example-wiki]] | `decision` | ADR: Use quantum-go as the canonical example wiki in how-to docs |
+| [[adr-005-page-type-conventions-and-proposal-storage]] | `decision` | ADR: Page-type structural conventions and proposal/spike storage strategy |
 | [[testing-runbook]]          | `runbook`  | Manual test plan covering all subcommands and edge cases       |
 | [[how-to-docs-plan]]         | `proposal` | Proposal tracking the how-to docs initiative (GitHub issue #3) |
 | [[page-type-conventions]]    | `proposal` | Proposal to define required sections for each wiki page type   |

@@ -59,6 +59,11 @@ All four guides were delivered on 2026-08-09:
 - [[analyze]]
 - [[goal]] *(draft)*
 
+## Related Proposals and Decisions
+
+- [[page-type-conventions]] — Proposal defining structural conventions for all page types
+- [[adr-005-page-type-conventions-and-proposal-storage]] — ADR defining structural schemas and proposal retention
+
 ## Sources
 
 - [GitHub issue #3](https://github.com/stephen-mcelhose/wikigraph/issues/3)
