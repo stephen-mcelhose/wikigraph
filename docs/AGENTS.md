@@ -39,3 +39,18 @@ Structured catalog of all wiki pages. Updated on every write operation.
 ## log.md
 
 Append-only chronological log. Format: `## [YYYY-MM-DD] operation | detail`
+
+## testing-runbook.md
+
+**Always update `testing-runbook.md` whenever pages are added or removed from the wiki.**
+
+The runbook hardcodes expected `wikigraph analyze` output values — page counts, edge counts, entropy rate, orphan π values, and the full page list. These go stale the moment the wiki changes. After any ingest, lint, or structural edit that changes the page count:
+
+1. Run `wikigraph analyze docs/` to get current values.
+2. Update the header block (pages, edges, entropy, "Last verified").
+3. Update the full page list in the Prerequisites section.
+4. Update every hardcoded `Pages: N` expected value in the TC pass criteria.
+5. Update the TC-16 spot-check table (Overview row, Classes row, Orphans row, Most central row).
+6. Update TC-18 (lowest-π page identity and π value) and TC-19 (count equals N).
+7. Update TC-20 exclusion expectations (`Pages: N-1` after excluding one page).
+8. Update TC-12 CSV node row count.
