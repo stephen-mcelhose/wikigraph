@@ -42,10 +42,10 @@ how to act on them, see [[analyze]].
 ### 1. Basic graph
 
 ```bash
-wikigraph graph ~/notes
+wikigraph graph ~/go-quantum
 ```
 
-Opens a file called `wiki_graph.html` in the current directory. Open it:
+Writes `wiki_graph.html` to the current directory. Open it:
 
 ```bash
 open wiki_graph.html          # macOS
@@ -55,7 +55,7 @@ xdg-open wiki_graph.html      # Linux
 ### 2. Set a custom output path and title
 
 ```bash
-wikigraph graph ~/notes -o docs/graph.html --title "my notes"
+wikigraph graph ~/go-quantum -o ~/go-quantum.html --title "go-quantum"
 ```
 
 The title appears in the browser tab and as an `<h1>` in the page.
@@ -66,13 +66,13 @@ Very small transition probabilities clutter the graph. The default threshold
 is `0.005`. Raise it to show only the strongest links:
 
 ```bash
-wikigraph graph ~/notes --min-edge 0.05
+wikigraph graph ~/go-quantum --min-edge 0.05
 ```
 
 Lower it to see every edge (including tenuous ones from teleportation):
 
 ```bash
-wikigraph graph ~/notes --min-edge 0.001
+wikigraph graph ~/go-quantum --min-edge 0.001
 ```
 
 Open `wiki_graph.html` — the edge count visible in the graph should be
@@ -84,10 +84,10 @@ Inject custom CSS or replace text without modifying the source:
 
 ```bash
 # Change the background colour
-wikigraph graph ~/notes -s 's/background:#1a1a2e/background:#0f172a/'
+wikigraph graph ~/go-quantum -s 's/background:#1a1a2e/background:#0f172a/'
 
 # Apply multiple expressions
-wikigraph graph ~/notes \
+wikigraph graph ~/go-quantum \
   -s 's/wiki_graph/My Wiki/' \
   -s 's/font-size:12px/font-size:14px/'
 ```
@@ -100,14 +100,14 @@ background colour or text changed as specified).
 ### 5. Exclude meta-pages
 
 ```bash
-wikigraph graph ~/notes --exclude index --exclude log --exclude README
+wikigraph graph ~/go-quantum --exclude index --exclude log --exclude README
 ```
 
 `index`, `log`, and `AGENTS` are excluded by default. This replaces the
 defaults, so re-add them if needed:
 
 ```bash
-wikigraph graph ~/notes -e index -e log -e AGENTS -e README
+wikigraph graph ~/go-quantum -e index -e log -e AGENTS -e README
 ```
 
 Open `wiki_graph.html` and confirm the excluded slugs no longer appear as nodes.
@@ -117,7 +117,7 @@ Open `wiki_graph.html` and confirm the excluded slugs no longer appear as nodes.
 After the run you should see on stderr:
 
 ```
-Pages: 42
+Pages: 20
 Written: wiki_graph.html
 ```
 
