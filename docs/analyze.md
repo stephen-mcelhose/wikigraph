@@ -206,6 +206,32 @@ wikigraph analyze ~/quantum-go/wiki \
   --exclude index --exclude log --exclude AGENTS --exclude README
 ```
 
+### 9. Summarise the report with an LLM
+
+Capture the full output and paste it into your preferred LLM with this prompt:
+
+```
+wikigraph analyze ~/quantum-go/wiki > analyze-report.txt
+```
+
+**Suggested prompt:**
+
+```
+Below is the output of `wikigraph analyze` on my wiki. Please:
+
+1. State in one sentence whether the wiki is structurally healthy or needs work,
+   citing the entropy rate relative to log₂(pages) and the class count.
+2. List the top 3 highest-impact actions, ordered by urgency. For each action,
+   name the specific page slug(s) to act on and what to do (add inbound link,
+   add outbound link, merge page, etc.).
+3. From the Suggested missing links section, pick the single best link to add
+   and explain in one sentence why that pair is structurally close.
+
+<paste contents of analyze-report.txt here>
+```
+
+The prompt asks for slug-level specifics because vague advice ("improve your orphan pages") is not actionable. The entropy rate framing (see [[entropy-rate]]) gives the LLM the right benchmark: log₂(36) ≈ 5.17 bits is the theoretical maximum for a 36-page wiki; a healthy wiki sits above 70% of that.
+
 ## Verification
 
 Run against a known wiki and check stdout directly:
