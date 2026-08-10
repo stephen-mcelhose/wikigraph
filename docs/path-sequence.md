@@ -8,6 +8,9 @@ timestamp: 2026-08-10T01:15:00Z
 
 # Path Strategy Sequence Metric
 
+> [!WARNING]
+> **Prototype strategy.** `--strategy path` implements Dijkstra's algorithm directly in `cmd_goal.go` on the raw `*mat.Dense` transition matrix, bypassing the catrace library. Dijkstra is a general graph algorithm rather than Markov-chain-specific math, so it is not a catrace candidate — but the direct matrix usage still deviates from wikigraph's standard practice. Accepted under [[adr-008-prototype-math-strategies|ADR-008]] while the strategy is validated.
+
 ## Overview
 
 `wikigraph goal --strategy path` generates a sequential stepping-stone reading path connecting goal pages in the exact order specified by the user (`--goal A --goal B --goal C`).
@@ -40,6 +43,7 @@ If the core path sequence contains $K < N$ pages (where $N = \text{--top}$):
 - [[markov-model]] — Foundations of transition probabilities $P_{ij}$
 - [[bottleneck-centrality]] — Alternative strategy for identifying chokepoints
 - [[absorbing-markov-chain]] — State absorption mechanics
+- [[adr-007-subgraph-partitioning-and-path-strategies]] — Decision record for the four goal strategies
 
 ## Sources
 

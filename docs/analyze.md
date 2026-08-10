@@ -288,3 +288,4 @@ A healthy wiki typically looks like this:
 - [`wiki.go`](https://github.com/stephen-mcelhose/wikigraph/blob/main/wiki.go)
 - [[architecture]] — full data-flow pipeline from wikilinks to Markov output
 - [[how-to-docs-plan]] — proposal that drove the creation of these guides
+- [[quickstart]] — getting-started guide covering installation through first analysis run

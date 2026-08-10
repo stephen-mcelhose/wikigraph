@@ -10,7 +10,7 @@ timestamp: 2026-08-09T07:31:56Z
 
 ## Overview
 
-wikigraph is ~850 lines of Go across seven files. The design is deliberately thin: the tool's job is to translate a wiki's `[[wikilinks]]` into a Markov kernel and then hand off to the `catrace` library for all linear algebra and graph analysis.
+wikigraph is ~1,567 lines of Go across seven files. The design is deliberately thin: the tool's job is to translate a wiki's `[[wikilinks]]` into a Markov kernel and then hand off to the `catrace` library for linear algebra and graph analysis. The `union` and `intersection` goal strategies delegate fully to catrace; `path` (Dijkstra on the raw transition matrix) and `bottleneck` (fundamental matrix via `gonum/mat`) implement their own math directly — both are candidates for future catrace APIs where the math is stochastic-matrix-specific.
 
 ### File map
 
@@ -21,7 +21,7 @@ wikigraph is ~850 lines of Go across seven files. The design is deliberately thi
 | `wiki_test.go` | Unit tests for flat/recursive page loading, duplicate slug validation, and kernel construction |
 | `cmd_graph.go` | `graph` subcommand — renders full kernel as interactive HTML |
 | `cmd_analyze.go` | `analyze` subcommand — prints health report with six sections |
-| `cmd_goal.go` | `goal` subcommand — MFPT ranking + trace kernel for a target subgraph |
+| `cmd_goal.go` | `goal` subcommand — MFPT ranking + trace kernel; four strategies: `union`, `intersection`, `path`, `bottleneck` (see [[adr-007-subgraph-partitioning-and-path-strategies]]) |
 | `cmd_export.go` | `export` subcommand — serialises kernel as JSON, CSV, or DOT |
 | `sed.go` | `applySed` — applies arbitrary sed expressions to HTML output |
 
@@ -72,6 +72,7 @@ catrace.Kernel  (P is now row-stochastic)
 - [[commute-time]] — Symmetric distance metric used for link suggestions
 - [[adr-006-recursive-vault-traversal]] — Rationale for recursive vault traversal and slug resolution
 - [[adr-007-subgraph-partitioning-and-path-strategies]] — Subgraph strategy partitioning decisions for goal subcommand
+- [[adr-008-prototype-math-strategies]] — Accepted deviation: path and bottleneck implement math directly pending catrace APIs
 - [[how-to-docs-plan]] — Documentation initiative driving subcommand interface
 
 ## Sources

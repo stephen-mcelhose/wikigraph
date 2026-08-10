@@ -82,7 +82,27 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 - Verified OKF frontmatter across all 26 pages
 - Fixed cross-references and updated index.md and testing-runbook.md
 
-## [2026-08-10] lint | 33 pages checked, 0 orphans, index updated with 4 new pages (adr-007, absorbing-markov-chain, bottleneck-centrality, path-sequence)
+## [2026-08-10] lint | 30 pages checked, 0 orphans, index updated with 4 new pages (adr-007, absorbing-markov-chain, bottleneck-centrality, path-sequence)
+
+## [2026-08-10] lint | 30 pages checked, 7 issues found, 7 fixed
+- Stale claim: architecture.md line count updated ~850 → ~1,567; cmd_goal.go file-map entry updated to list all 4 strategies
+- Missing xref: added [[adr-007]] link to bottleneck-centrality.md, path-sequence.md, absorbing-markov-chain.md
+- Missing xref: added [[absorbing-markov-chain]] link to adr-007 bottleneck decision
+- Missing xref: added [[adr-007]] to goal.md See also section
+- Low-π orphan: quickstart (π=0.005) resolved — added inbound link from analyze.md (π=0.107)
+- adr-007 (π=0.004) resolved — 3 new inbound links from the new concept pages
+- Cannot fix without new source: llm-wiki-pattern (π=0.003), path-sequence (π=0.009) remain low — linked only from low-traffic pages; subagent GAN review pending
+
+## [2026-08-10] decision | ADR-008 — prototype math strategies accepted
+- path and bottleneck marked [PROTOTYPE] in CLI --help, --strategy flag description, and stderr on invocation
+- bottleneck-centrality.md and path-sequence.md each received a [!WARNING] callout citing ADR-008
+- ADR-008 written: accepts in-process math as time-boxed; bottleneck exception temporary (catrace API planned), path exception permanent (Dijkstra ≠ Markov math)
+- index.md updated with ADR-008
+
+## [2026-08-10] lint | 31 pages checked, 2 issues found, 1 fixed, 1 accepted
+- Missing xref: added [[adr-008]] to architecture.md Related Concepts (π: 0.004 → 0.008)
+- Low-π accepted: llm-wiki-pattern, adr-005, adr-004 — all meta/ADR pages, inherently low-traffic, no forced links added
+- OKF frontmatter: all 31 pages pass; 1 recurrent class, 0 sinks, entropy 2.34 bits
 - Added adr-007, absorbing-markov-chain, bottleneck-centrality, path-sequence to index.md
 - Verified OKF frontmatter across all 33 pages
 - Updated log.md
