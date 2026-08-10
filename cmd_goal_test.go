@@ -50,7 +50,6 @@ func TestGoalStrategies(t *testing.T) {
 		if len(res) != 3 {
 			t.Fatalf("expected 3 nodes, got %d", len(res))
 		}
-		// Goal 'd' must be present
 		hasD := false
 		for _, r := range res {
 			if r == idx["d"] {
@@ -83,8 +82,8 @@ func TestGoalStrategies(t *testing.T) {
 		}
 	})
 
-	// 3. Path strategy test
-	t.Run("Path Strategy", func(t *testing.T) {
+	// 3. Path strategy test (Shortest Path)
+	t.Run("Path Strategy - Shortest Route", func(t *testing.T) {
 		// Path from 'a' to 'd' -> shorter path is a -> x -> d (2 hops vs 3 hops)
 		goals := []int{idx["a"], idx["d"]}
 		res := selectPath(P, n, goals, 3)
@@ -97,7 +96,42 @@ func TestGoalStrategies(t *testing.T) {
 		}
 	})
 
-	// 4. Bottleneck strategy test
+	// 4. Path strategy test (Multi-goal Chain & Neighbor Expansion)
+	t.Run("Path Strategy - Multi-goal Chain & Expansion", func(t *testing.T) {
+		// Sequence: a -> b -> c -> d
+		goals := []int{idx["a"], idx["b"], idx["c"], idx["d"]}
+		res := selectPath(P, n, goals, 5)
+		if len(res) != 5 {
+			t.Fatalf("expected 5 nodes with expansion, got %d", len(res))
+		}
+
+		// All goal path nodes must be included
+		for _, g := range []string{"a", "b", "c", "d"} {
+			found := false
+			for _, r := range res {
+				if r == idx[g] {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("expected node %s in multi-goal path expansion", g)
+			}
+		}
+	})
+
+	// 5. Path strategy test (Unreachable Goal Pair Fallback)
+	t.Run("Path Strategy - Unreachable Pair", func(t *testing.T) {
+		// e -> a exists, but a -> e does NOT exist.
+		goals := []int{idx["a"], idx["e"]}
+		res := selectPath(P, n, goals, 2)
+		// Should include 'a' and 'e' without crashing
+		if len(res) != 2 {
+			t.Fatalf("expected 2 goal nodes, got %d", len(res))
+		}
+	})
+
+	// 6. Bottleneck strategy test
 	t.Run("Bottleneck Strategy", func(t *testing.T) {
 		goals := []int{idx["a"], idx["d"]}
 		res, err := selectBottleneck(P, n, goals, 3)
