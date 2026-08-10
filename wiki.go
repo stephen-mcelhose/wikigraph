@@ -126,20 +126,33 @@ func buildAdjacency(pages []string, idx map[string]int, paths map[string]string)
 }
 
 // buildKernel builds a Markov kernel from the wiki directory.
-// Returns the kernel, sorted page slugs, sink slugs (pages whose adjacency row
-// was set to uniform teleportation), and any error.
-func buildKernel(wikiDir string, recursive bool, exclude map[string]bool) (*catrace.Kernel, []string, []string, error) {
+// Returns the kernel, transition matrix, sorted page slugs, sink slugs, and any error.
+func buildKernel(wikiDir string, recursive bool, exclude map[string]bool) (*catrace.Kernel, *mat.Dense, []string, []string, error) {
 	pages, idx, paths, err := loadPages(wikiDir, recursive, exclude)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	adj, sinkPages, err := buildAdjacency(pages, idx, paths)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	k, err := catrace.NewRandomWalkKernel(adj, pages)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("building kernel: %w", err)
+		return nil, nil, nil, nil, fmt.Errorf("building kernel: %w", err)
 	}
-	return k, pages, sinkPages, nil
+	// Row-normalize adj to create transition matrix P
+	n := len(pages)
+	P := mat.NewDense(n, n, nil)
+	for i := 0; i < n; i++ {
+		rowSum := 0.0
+		for j := 0; j < n; j++ {
+			rowSum += adj.At(i, j)
+		}
+		if rowSum > 0 {
+			for j := 0; j < n; j++ {
+				P.Set(i, j, adj.At(i, j)/rowSum)
+			}
+		}
+	}
+	return k, P, pages, sinkPages, nil
 }
