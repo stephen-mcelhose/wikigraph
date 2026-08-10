@@ -71,6 +71,7 @@ catrace.Kernel  (P is now row-stochastic)
 - [[mfpt]] — Mean first passage time calculations for goal paths
 - [[commute-time]] — Symmetric distance metric used for link suggestions
 - [[adr-006-recursive-vault-traversal]] — Rationale for recursive vault traversal and slug resolution
+- [[adr-007-subgraph-partitioning-and-path-strategies]] — Subgraph strategy partitioning decisions for goal subcommand
 - [[how-to-docs-plan]] — Documentation initiative driving subcommand interface
 
 ## Sources
