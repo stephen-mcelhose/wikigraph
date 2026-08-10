@@ -46,4 +46,4 @@ $$N = I + Q + Q^2 + Q^3 + \dots = \sum_{k=0}^{\infty} Q^k = (I - Q)^{-1}$$
 
 ## Sources
 
-- Kemeny, J. G., & Snell, J. L. (1976). *Finite Markov Chains*. Springer-Verlag. ISBN: 978-0-387-90192-3.
+- Kemeny, J. G., & Snell, J. L. (1976). *Finite Markov Chains*. Springer-Verlag. [DOI: 10.1007/978-0-387-90192-3](https://doi.org/10.1007/978-0-387-90192-3) | [Springer Link](https://link.springer.com/book/10.1007/978-0-387-90192-3)
