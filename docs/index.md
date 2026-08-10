@@ -36,6 +36,7 @@ timestamp: 2026-08-09T06:54:46Z
 | [[commute-time]]             | `concept`  | Symmetric MFPT-based distance metric for link suggestions             |
 | [[catrace]]                  | `concept`  | The Go library providing all Markov chain mathematics                 |
 | [[adr-007-subgraph-partitioning-and-path-strategies]] | `decision` | ADR: Subgraph partitioning and path strategies for goal subcommand |
+| [[adr-008-prototype-math-strategies]]                 | `decision` | ADR: Accept in-process math for prototype path/bottleneck strategies |
 | [[absorbing-markov-chain]]   | `concept`  | Absorbing states, block canonical form, and fundamental matrix N      |
 | [[bottleneck-centrality]]    | `concept`  | Random-walk betweenness metric for gatekeeper/chokepoint pages        |
 | [[path-sequence]]            | `concept`  | Dijkstra negative log-likelihood transition sequence strategy          |

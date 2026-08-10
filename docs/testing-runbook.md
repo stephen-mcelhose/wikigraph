@@ -13,9 +13,9 @@ timestamp: 2026-08-09T06:54:46Z
 Comprehensive manual test plan covering all `wikigraph` subcommands (`graph`, `analyze`, `goal`, `export`) and edge cases against the repository's `docs/` wiki.
 
 **Binary:** built locally from `~/repos/wikigraph/`  
-**Wiki under test:** `docs/` in this repo (23 content pages)  
+**Wiki under test:** `docs/` in this repo (30 content pages)  
 **Run all commands from:** `~/repos/wikigraph/` (the repo root)  
-**Last verified:** 2026-08-09 against current wiki state (26 pages, 117 edges, 1 recurrent class)
+**Last verified:** 2026-08-09 against current wiki state (30 pages, 137 edges, 1 recurrent class)
 
 ---
 
@@ -35,8 +35,8 @@ All commands use `docs/` as the wiki path. Run from `~/repos/wikigraph`:
 cd ~/repos/wikigraph
 ```
 
-The 25 content pages (after default exclusions of `index`, `log`, `AGENTS`):
-`adr-001-embedding-layer`, `adr-002-slug-resolution`, `adr-003-orphan-threshold`, `adr-004-quantum-go-example-wiki`, `adr-005-page-type-conventions-and-proposal-storage`, `adr-006-recursive-vault-traversal`, `analyze`, `architecture`, `catrace`, `communicating-classes`, `commute-time`, `entropy-rate`, `export`, `goal`, `graph`, `how-to-docs-plan`, `llm-wiki-pattern`, `markov-model`, `mfpt`, `page-type-conventions`, `quickstart`, `random-walk`, `recurrent-class`, `sink-page`, `stationary-distribution`, `testing-runbook`
+The 30 content pages (after default exclusions of `index`, `log`, `AGENTS`):
+`absorbing-markov-chain`, `adr-001-embedding-layer`, `adr-002-slug-resolution`, `adr-003-orphan-threshold`, `adr-004-quantum-go-example-wiki`, `adr-005-page-type-conventions-and-proposal-storage`, `adr-006-recursive-vault-traversal`, `adr-007-subgraph-partitioning-and-path-strategies`, `analyze`, `architecture`, `bottleneck-centrality`, `catrace`, `communicating-classes`, `commute-time`, `entropy-rate`, `export`, `goal`, `graph`, `how-to-docs-plan`, `llm-wiki-pattern`, `markov-model`, `mfpt`, `page-type-conventions`, `path-sequence`, `quickstart`, `random-walk`, `recurrent-class`, `sink-page`, `stationary-distribution`, `testing-runbook`
 
 Verify:
 
@@ -73,9 +73,9 @@ open /tmp/wg_graph.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 20` and `Written: /tmp/wg_graph.html`
+- Stderr prints `Pages: 30` and `Written: /tmp/wg_graph.html`
 - File exists and opens in browser showing a force-directed graph
-- 20 labelled nodes visible; nodes sized differently (stationary dist)
+- 30 labelled nodes visible; nodes sized differently (stationary dist)
 - 1 colour (1 recurrent class)
 - Exit code 0
 
@@ -90,7 +90,7 @@ wikigraph graph docs/ -e index -e log -e AGENTS -e testing-runbook -o /tmp/wg_ex
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 19`
+- Stderr prints `Pages: 29`
 - `testing-runbook` node absent from rendered graph
 
 ---
@@ -212,6 +212,29 @@ wikigraph goal docs/ --goal analyze --strategy invalid
 - Error message: `unknown strategy "invalid" (valid: union, intersection, path, bottleneck)`
 - Non-zero exit code
 
+---
+
+## TC-07e · goal — bottleneck picks the true chokepoint
+
+**Goal:** Verify bottleneck strategy selects the genuine gatekeeper page, not an arbitrary or peripheral node. Uses a controlled star graph where `hub` is the only path between `b` and `c`.
+
+```bash
+mkdir -p /tmp/starwiki
+printf '# Hub\n\n[[b]] [[c]]\n' > /tmp/starwiki/hub.md
+printf '# B\n\n[[hub]]\n'       > /tmp/starwiki/b.md
+printf '# C\n\n[[hub]]\n'       > /tmp/starwiki/c.md
+printf '# A\n\n[[hub]]\n'       > /tmp/starwiki/a.md
+wikigraph goal /tmp/starwiki --goal b --goal c --strategy bottleneck --top 3 -o /tmp/star_bottleneck.html 2>&1
+grep -o '"name":"[^"]*"' /tmp/star_bottleneck.html | sort
+```
+
+**Pass criteria:**
+- Stderr prints `Pages: 4` and `Written: /tmp/star_bottleneck.html (3 nodes, strategy: bottleneck)`
+- `grep` output is exactly: `"name":"b"`, `"name":"c"`, `"name":"hub"` — `hub` present, `a` absent
+- Exit code 0
+
+---
+
 ## TC-08 · goal — multiple goals
 
 **Goal:** Two goal pages, both present in output.
@@ -288,7 +311,7 @@ head /tmp/wg_edges.csv
 **Pass criteria:**
 - `wg_nodes.csv` header: `slug,pi,class`
 - `wg_edges.csv` header: `source,target,probability`
-- Both have 20 data rows in nodes (one per page)
+- Both have 30 data rows in nodes (one per page)
 - Values are numeric floats; no empty cells
 
 ---
@@ -345,14 +368,14 @@ wikigraph analyze docs/
 
 **Pass criteria (spot-check against known state):**
 
-| Section         | Expected                                                                              |
-| --------------- | ------------------------------------------------------------------------------------- |
-| Overview        | Pages: 26, Edges: 117, Entropy rate: ~2.27 bits, Classes: 1                          |
-| Classes         | 1 recurrent (26 pages)                                                                |
-| Orphans (≤10%)  | `llm-wiki-pattern` (π=0.001321), `quickstart` (π=0.005286), `adr-005-page-type-conventions-and-proposal-storage` (π=0.009690) |
-| Sinks           | `(none)`                                                                              |
-| Most central #1 | `analyze` (π=0.115652)                                                               |
-| Suggestions     | At least one page with 3 suggestions listed                                           |
+| Section         | Expected                                                                                                                                                              |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Overview        | Pages: 30, Edges: 137, Entropy rate: ~2.30 bits, Classes: 1                                                                                                          |
+| Classes         | 1 recurrent (30 pages)                                                                                                                                                |
+| Orphans (≤10%)  | `llm-wiki-pattern` (π=0.001178), `adr-007-subgraph-partitioning-and-path-strategies` (π=0.003818), `quickstart` (π=0.004714), `path-sequence` (π=0.007192)           |
+| Sinks           | `(none)`                                                                                                                                                              |
+| Most central #1 | `analyze` (π=0.107177)                                                                                                                                                |
+| Suggestions     | At least one page with 3 suggestions listed                                                                                                                           |
 
 - Exit code 0
 - Completes in < 1 second
@@ -379,7 +402,7 @@ wikigraph analyze docs/ --orphan-pct 0 --suggest-top 0
 ```
 
 **Pass criteria:**
-- Orphan section shows `adr-003-orphan-threshold` (π=0.006887) — the single lowest-π page
+- Orphan section shows `llm-wiki-pattern` (π=0.001178) — the single lowest-π page
 - Section header says `bottom 0%`
 
 ---
@@ -391,7 +414,7 @@ wikigraph analyze docs/ --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "
 ```
 
 **Pass criteria:**
-- Count equals 23 (all pages shown as orphans at 100th percentile)
+- Count equals 30 (all pages shown as orphans at 100th percentile)
 
 ---
 
@@ -400,7 +423,7 @@ wikigraph analyze docs/ --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "
 **Goal:** Persistent flag is inherited; excluded pages disappear from every subcommand.
 
 ```bash
-# Should reduce page count to 6 in each case
+# Should reduce page count to 29 in each case (30 default minus how-to-docs-plan)
 wikigraph graph   docs/ -e index -e log -e AGENTS -e how-to-docs-plan -o /dev/null 2>&1 | grep Pages
 wikigraph goal    docs/ -e index -e log -e AGENTS -e how-to-docs-plan --goal analyze -o /dev/null 2>&1 | grep Pages
 wikigraph export  docs/ -e index -e log -e AGENTS -e how-to-docs-plan -o /tmp/excl 2>&1 | grep Pages
@@ -408,7 +431,7 @@ wikigraph analyze docs/ -e index -e log -e AGENTS -e how-to-docs-plan --suggest-
 ```
 
 **Pass criteria:**
-- All four lines print `Pages: 20`
+- All four lines print `Pages: 29`
 - `how-to-docs-plan` absent from exported JSON nodes list:
   ```bash
   jq -e '[.nodes[].id] | index("how-to-docs-plan") | not' /tmp/excl.json

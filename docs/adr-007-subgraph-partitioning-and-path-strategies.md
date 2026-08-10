@@ -53,7 +53,7 @@ We decided to extend `wikigraph goal` with a `--strategy` flag supporting `union
    - Evaluates goals in flag order ($g_1 \rightarrow g_2 \rightarrow \dots \rightarrow g_M$).
    - Uses Dijkstra's algorithm on edge weights $w_{ij} = -\log P_{ij}$ (where $P_{ij} > 0$).
    - Expands undersized paths up to `--top N` using 1-hop probabilistic neighbors.
-4. **`bottleneck`**: Scores nodes by random walk betweenness centrality across goal pairs.
+4. **`bottleneck`**: Scores nodes by random walk betweenness centrality across goal pairs using the [[absorbing-markov-chain|fundamental matrix]] $N = (I-Q)^{-1}$.
 
 ## Consequences
 
