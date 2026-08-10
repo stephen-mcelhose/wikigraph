@@ -155,3 +155,65 @@ func TestGoalStrategies(t *testing.T) {
 		}
 	})
 }
+
+// TestBottleneckSelectsPathNode verifies that selectBottleneck identifies genuine
+// chokepoint pages, not arbitrary or disconnected nodes.
+//
+// Graph: A → hub → B, hub → C, B → hub, C → hub
+// hub is the only page connecting B and C; any walk between them must pass through hub.
+// A is a dead-end tributary (reaches hub but not on any B↔C path).
+// Goals: [B, C], top: 3 → expected result: {B, C, hub}, NOT {B, C, A}.
+func TestBottleneckSelectsPathNode(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	files := map[string]string{
+		"hub.md": "[[b]] [[c]]",
+		"b.md":   "[[hub]]",
+		"c.md":   "[[hub]]",
+		"a.md":   "[[hub]]", // tributary: reaches hub but not on B↔C path
+	}
+	for fname, content := range files {
+		if err := os.WriteFile(filepath.Join(tmpDir, fname), []byte(content), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	exclude := makeExcludeMap(nil)
+	_, P, pages, _, err := buildKernel(tmpDir, false, exclude)
+	if err != nil {
+		t.Fatalf("buildKernel failed: %v", err)
+	}
+
+	idx := make(map[string]int, len(pages))
+	for i, p := range pages {
+		idx[p] = i
+	}
+	n := len(pages)
+
+	goals := []int{idx["b"], idx["c"]}
+	res, err := selectBottleneck(P, n, goals, 3)
+	if err != nil {
+		t.Fatalf("selectBottleneck failed: %v", err)
+	}
+	if len(res) != 3 {
+		t.Fatalf("expected 3 nodes, got %d", len(res))
+	}
+
+	hasHub := false
+	hasA := false
+	for _, r := range res {
+		if r == idx["hub"] {
+			hasHub = true
+		}
+		if r == idx["a"] {
+			hasA = true
+		}
+	}
+
+	if !hasHub {
+		t.Errorf("expected 'hub' (the chokepoint) in bottleneck result, got indices %v (pages: %v)", res, pages)
+	}
+	if hasA {
+		t.Errorf("'a' (tributary, not on B↔C path) should NOT be in bottleneck result")
+	}
+}
