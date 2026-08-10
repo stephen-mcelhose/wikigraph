@@ -74,21 +74,28 @@ You will see the 10 pages (default `--top 10`) closest to `error-correction`
 by MFPT, connected by their actual wikilinks. The goal page itself is always
 included regardless of `--top`.
 
-### 3. Set multiple goals
+### 3. Choose a Subgraph Selection Strategy (--strategy)
 
-If your target topic spans several pages, pass multiple `--goal` flags. Each
-page's score is the *minimum* MFPT across all goals — it is pulled into the
-subgraph if it is close to *any* of the goals.
+Specify how multiple goals are combined and partitioned into a learning subgraph:
+
+- **`union`** (default): Ranks pages by minimum MFPT across all goals ($\min_g \text{MFPT}(i,g)$). Surfacing the OR-neighborhood around any goal.
+- **`intersection`**: Ranks pages by maximum MFPT across all goals ($\max_g \text{MFPT}(i,g)$). Identifies shared prerequisite pages that sit close to *all* specified goals.
+- **`path`**: Generates a sequential curriculum chain connecting goals in flag order using Dijkstra on negative log-likelihood transition weights ($w_{ij} = -\log P_{ij}$). See [[path-sequence]].
+- **`bottleneck`**: Ranks intermediate pages by [[bottleneck-centrality|random walk betweenness centrality]] across goal pairs, surfacing chokepoints/gatekeepers. See [[absorbing-markov-chain]].
 
 ```bash
+# Find shared prerequisite bridge concepts connecting error correction and Grover's algorithm
 wikigraph goal ~/quantum-go/wiki \
   --goal error-correction \
-  --goal shors-algorithm \
-  --goal grovers-algorithm
-```
+  --goal grovers-algorithm \
+  --strategy intersection
 
-This is useful for topic clusters (e.g. "quantum algorithms") where
-no single page fully represents the target.
+# Generate a sequential reading path from quantum gates to Shor's algorithm
+wikigraph goal ~/quantum-go/wiki \
+  --goal quantum-gates \
+  --goal shors-algorithm \
+  --strategy path
+```
 
 ### 4. Expand or shrink the subgraph
 
