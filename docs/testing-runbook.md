@@ -146,16 +146,71 @@ wikigraph graph /tmp/does-not-exist
 
 ```bash
 wikigraph goal docs/ --goal analyze --top 5 -o /tmp/wg_goal.html
-open /tmp/wg_goal.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 20` and `Written: /tmp/wg_goal.html (5 nodes)`
-- Browser shows exactly 5 nodes
+- Stderr prints `Pages: 30` and `Written: /tmp/wg_goal.html (5 nodes, strategy: union)`
+- Output file `/tmp/wg_goal.html` exists with 5 nodes
 - `analyze` node is present
 - Exit code 0
 
 ---
+
+## TC-07a · goal — intersection strategy
+
+**Goal:** Surface shared prerequisite pages connecting multiple goals ($\max_g \text{MFPT}$).
+
+```bash
+wikigraph goal docs/ --goal mfpt --goal analyze --strategy intersection --top 5 -o /tmp/wg_goal_intersection.html
+```
+
+**Pass criteria:**
+- Stderr prints `Written: /tmp/wg_goal_intersection.html (5 nodes, strategy: intersection)`
+- Both goal nodes (`mfpt`, `analyze`) are present
+- Exit code 0
+
+---
+
+## TC-07b · goal — path strategy
+
+**Goal:** Sequential Dijkstra transition chain connecting goals in flag order ($w_{ij} = -\log P_{ij}$).
+
+```bash
+wikigraph goal docs/ --goal markov-model --goal analyze --strategy path --top 5 -o /tmp/wg_goal_path.html
+```
+
+**Pass criteria:**
+- Stderr prints `Written: /tmp/wg_goal_path.html (5 nodes, strategy: path)`
+- Output contains the sequential path nodes connecting `markov-model` to `analyze`
+- Exit code 0
+
+---
+
+## TC-07c · goal — bottleneck strategy
+
+**Goal:** Gatekeeper chokepoints ranked by random walk betweenness centrality across goal pairs.
+
+```bash
+wikigraph goal docs/ --goal markov-model --goal analyze --strategy bottleneck --top 5 -o /tmp/wg_goal_bottleneck.html
+```
+
+**Pass criteria:**
+- Stderr prints `Written: /tmp/wg_goal_bottleneck.html (5 nodes, strategy: bottleneck)`
+- Exit code 0
+
+---
+
+## TC-07d · goal — unknown strategy
+
+**Goal:** Helpful error message when invalid strategy name is passed.
+
+```bash
+wikigraph goal docs/ --goal analyze --strategy invalid
+```
+
+**Pass criteria:**
+- Error message: `unknown strategy "invalid" (valid: union, intersection, path, bottleneck)`
+- Non-zero exit code
 
 ## TC-08 · goal — multiple goals
 
