@@ -76,3 +76,8 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 - architecture: Added [[commute-time]] link (prose said "commute time" without linking); added [[sink-page|sink]] link in data-flow pipeline
 - stationary-distribution: Added [[commute-time]] link in command table
 - [[how-to/analyze]] in adr-002-slug-resolution: intentional (illustrates rejected Option A) — left as-is
+
+## [2026-08-09] lint | 26 pages checked, 0 orphans, 0 sinks, 1 recurrent class, entropy 2.27 bits
+- Added quickstart and llm-wiki-pattern pages
+- Verified OKF frontmatter across all 26 pages
+- Fixed cross-references and updated index.md and testing-runbook.md

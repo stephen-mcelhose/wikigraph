@@ -9,6 +9,8 @@ timestamp: 2026-08-09T06:54:46Z
 
 | Page                         | Type       | Description                                                    |
 | ---------------------------- | ---------- | -------------------------------------------------------------- |
+| [[quickstart]]               | `how-to`   | Quickstart guide: setting up llm-wiki, visualising, analysing, and linting |
+| [[llm-wiki-pattern]]         | `concept`  | Compounding knowledge base architecture (Karpathy pattern)     |
 | [[export]]                   | `how-to`   | Export graph data as JSON, CSV, or DOT for external tools      |
 | [[graph]]                    | `how-to`   | Generate an interactive force-directed HTML graph              |
 | [[analyze]]                  | `how-to`   | Wiki health report — orphans, sinks, hubs, link suggestions    |

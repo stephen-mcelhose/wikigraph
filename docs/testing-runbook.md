@@ -15,7 +15,7 @@ Comprehensive manual test plan covering all `wikigraph` subcommands (`graph`, `a
 **Binary:** built locally from `~/repos/wikigraph/`  
 **Wiki under test:** `docs/` in this repo (23 content pages)  
 **Run all commands from:** `~/repos/wikigraph/` (the repo root)  
-**Last verified:** 2026-08-09 against current wiki state (23 pages, 105 edges, 1 recurrent class)
+**Last verified:** 2026-08-09 against current wiki state (26 pages, 117 edges, 1 recurrent class)
 
 ---
 
@@ -35,8 +35,8 @@ All commands use `docs/` as the wiki path. Run from `~/repos/wikigraph`:
 cd ~/repos/wikigraph
 ```
 
-The 22 content pages (after default exclusions of `index`, `log`, `AGENTS`):
-`adr-001-embedding-layer`, `adr-002-slug-resolution`, `adr-003-orphan-threshold`, `adr-004-quantum-go-example-wiki`, `adr-005-page-type-conventions-and-proposal-storage`, `analyze`, `architecture`, `catrace`, `communicating-classes`, `commute-time`, `entropy-rate`, `export`, `goal`, `graph`, `how-to-docs-plan`, `markov-model`, `mfpt`, `page-type-conventions`, `random-walk`, `recurrent-class`, `sink-page`, `stationary-distribution`, `testing-runbook`
+The 25 content pages (after default exclusions of `index`, `log`, `AGENTS`):
+`adr-001-embedding-layer`, `adr-002-slug-resolution`, `adr-003-orphan-threshold`, `adr-004-quantum-go-example-wiki`, `adr-005-page-type-conventions-and-proposal-storage`, `adr-006-recursive-vault-traversal`, `analyze`, `architecture`, `catrace`, `communicating-classes`, `commute-time`, `entropy-rate`, `export`, `goal`, `graph`, `how-to-docs-plan`, `llm-wiki-pattern`, `markov-model`, `mfpt`, `page-type-conventions`, `quickstart`, `random-walk`, `recurrent-class`, `sink-page`, `stationary-distribution`, `testing-runbook`
 
 Verify:
 
@@ -292,11 +292,11 @@ wikigraph analyze docs/
 
 | Section         | Expected                                                                              |
 | --------------- | ------------------------------------------------------------------------------------- |
-| Overview        | Pages: 23, Edges: 105, Entropy rate: ~2.28 bits, Classes: 1                          |
-| Classes         | 1 recurrent (23 pages)                                                                |
-| Orphans (≤10%)  | `adr-005-page-type-conventions-and-proposal-storage` (π=0.011739), `adr-004-quantum-go-example-wiki` (π=0.012398), `page-type-conventions` (π=0.017609) |
+| Overview        | Pages: 26, Edges: 117, Entropy rate: ~2.27 bits, Classes: 1                          |
+| Classes         | 1 recurrent (26 pages)                                                                |
+| Orphans (≤10%)  | `llm-wiki-pattern` (π=0.001321), `quickstart` (π=0.005286), `adr-005-page-type-conventions-and-proposal-storage` (π=0.009690) |
 | Sinks           | `(none)`                                                                              |
-| Most central #1 | `analyze` (π=0.103308)                                                               |
+| Most central #1 | `analyze` (π=0.115652)                                                               |
 | Suggestions     | At least one page with 3 suggestions listed                                           |
 
 - Exit code 0

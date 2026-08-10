@@ -52,8 +52,9 @@ Create detailed, step-by-step how-to guides for each of the four subcommands. Ea
 
 ## Completed Guides
 
-All four guides were delivered on 2026-08-09:
+All five guides delivered:
 
+- [[quickstart]]
 - [[export]]
 - [[graph]]
 - [[analyze]]
