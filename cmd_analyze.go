@@ -43,7 +43,7 @@ func runAnalyze(cmd *cobra.Command, args []string) error {
 	wikiDir := args[0]
 	exclude := makeExcludeMap(flagExclude)
 
-	kern, pages, sinkPages, err := buildKernel(wikiDir, flagRecursive, exclude)
+	kern, _, pages, sinkPages, err := buildKernel(wikiDir, flagRecursive, exclude)
 	if err != nil {
 		return err
 	}

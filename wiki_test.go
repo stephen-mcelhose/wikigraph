@@ -105,13 +105,13 @@ func TestBuildKernelSampleNestedVault(t *testing.T) {
 	exclude := makeExcludeMap(nil)
 
 	// Flat scan on root -> no pages error
-	_, _, _, err := buildKernel(tmpDir, false, exclude)
+	_, _, _, _, err := buildKernel(tmpDir, false, exclude)
 	if err == nil {
 		t.Fatalf("expected error on flat scan with no root .md files, got nil")
 	}
 
 	// Recursive scan -> 3 pages found, .obsidian ignored
-	kern, pages, _, err := buildKernel(tmpDir, true, exclude)
+	kern, _, pages, _, err := buildKernel(tmpDir, true, exclude)
 	if err != nil {
 		t.Fatalf("recursive buildKernel failed: %v", err)
 	}
