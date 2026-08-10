@@ -81,3 +81,8 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 - Added quickstart and llm-wiki-pattern pages
 - Verified OKF frontmatter across all 26 pages
 - Fixed cross-references and updated index.md and testing-runbook.md
+
+## [2026-08-10] lint | 33 pages checked, 0 orphans, index updated with 4 new pages (adr-007, absorbing-markov-chain, bottleneck-centrality, path-sequence)
+- Added adr-007, absorbing-markov-chain, bottleneck-centrality, path-sequence to index.md
+- Verified OKF frontmatter across all 33 pages
+- Updated log.md
