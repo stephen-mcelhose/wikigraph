@@ -1,5 +1,9 @@
 # wikigraph
 
+Visualize, analyze, optimize your `[[slug]]` based wikis using **Markov Kernels**.
+
+## Visualize 
+
 Interactive force-directed wikilink graph for Markdown wikis using `[[slug]]` wikilinks.
 
 Visualises your wiki as a **Markov chain** — node size reflects how often a random
