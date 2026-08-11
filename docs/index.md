@@ -40,6 +40,7 @@ timestamp: 2026-08-09T06:54:46Z
 | [[absorbing-markov-chain]]   | `concept`  | Absorbing states, block canonical form, and fundamental matrix N      |
 | [[bottleneck-centrality]]    | `concept`  | Random-walk betweenness metric for gatekeeper/chokepoint pages        |
 | [[path-sequence]]            | `concept`  | Dijkstra negative log-likelihood transition sequence strategy          |
+| [[kernel-identifiability]]   | `concept`  | Which outputs (π, commute times, export, Trace) recover P, and when  |
 
 ## Sources
 

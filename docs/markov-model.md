@@ -33,6 +33,7 @@ $$\sum_{j=1}^n P_{ij} = 1 \quad \forall i$$
 - [[sink-page]] — Sink handling and uniform teleportation
 - [[catrace]] — `catrace.Kernel` wrapper
 - [[stationary-distribution]] — Power iteration on $P$
+- [[kernel-identifiability]] — Which outputs let you recover $P$, and which don't
 
 ## Sources
 
