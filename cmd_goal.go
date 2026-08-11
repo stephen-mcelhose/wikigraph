@@ -34,8 +34,10 @@ https://github.com/stephen-mcelhose/wikigraph/issues/1
 Available strategies (--strategy):
   - union        (default) Ranks pages by minimum MFPT to any goal (OR-neighborhood)
   - intersection Ranks pages by maximum MFPT across all goals (prerequisites shared by ALL goals)
-  - path         Finds the most probable sequential link chain connecting goals in flag order
-  - bottleneck   Ranks pages by random-walk betweenness centrality across goal pairs`,
+  - path         [PROTOTYPE] Finds the most probable sequential link chain connecting goals in flag order
+                 Implements Dijkstra directly on the raw transition matrix rather than via catrace.
+  - bottleneck   [PROTOTYPE] Ranks pages by random-walk betweenness centrality across goal pairs
+                 Computes the fundamental matrix N=(I-Q)^-1 directly via gonum/mat rather than via catrace.`,
 
 	Args: cobra.ExactArgs(1),
 	RunE: runGoal,
@@ -47,7 +49,7 @@ func init() {
 	goalCmd.Flags().StringVarP(&flagGoalOut, "out", "o", "goal_graph.html", "output HTML file")
 	goalCmd.Flags().Float64VarP(&flagGoalMinEdge, "min-edge", "m", 0.005, "omit edges below this transition probability")
 	goalCmd.Flags().StringArrayVarP(&flagGoalSed, "sed", "s", nil, "sed expression(s) to apply to the HTML output (repeatable)")
-	goalCmd.Flags().StringVar(&flagGoalStrategy, "strategy", "union", "selection strategy: union, intersection, path, bottleneck")
+	goalCmd.Flags().StringVar(&flagGoalStrategy, "strategy", "union", "selection strategy: union, intersection, path [PROTOTYPE], bottleneck [PROTOTYPE]")
 }
 
 func runGoal(cmd *cobra.Command, args []string) error {
@@ -98,8 +100,10 @@ func runGoal(cmd *cobra.Command, args []string) error {
 	case "intersection":
 		selectedIndices = selectIntersection(kern, n, goalIdxs, top)
 	case "path":
+		fmt.Fprintln(os.Stderr, "Warning: path strategy is a prototype — implements Dijkstra directly rather than via catrace (see ADR-008)")
 		selectedIndices = selectPath(P, n, goalIdxs, top)
 	case "bottleneck":
+		fmt.Fprintln(os.Stderr, "Warning: bottleneck strategy is a prototype — computes fundamental matrix directly rather than via catrace (see ADR-008)")
 		var err error
 		selectedIndices, err = selectBottleneck(P, n, goalIdxs, top)
 		if err != nil {
@@ -408,7 +412,11 @@ func selectBottleneck(P *mat.Dense, n int, goalIdxs []int, top int) ([]int, erro
 
 		iq := mat.NewDense(tLen, tLen, iqData)
 		var N mat.Dense
-		err := N.Solve(iq, mat.NewDiagDense(tLen, nil))
+		diagOnes := make([]float64, tLen)
+		for i := range diagOnes {
+			diagOnes[i] = 1.0
+		}
+		err := N.Solve(iq, mat.NewDiagDense(tLen, diagOnes))
 		if err != nil {
 			// Singular matrix (e.g. unreachable)
 			continue
@@ -425,6 +433,10 @@ func selectBottleneck(P *mat.Dense, n int, goalIdxs []int, top int) ([]int, erro
 		}
 	}
 
+	// rankAndSelect picks lowest scores first; negate so highest betweenness is selected.
+	for i := range scores {
+		scores[i] = -scores[i]
+	}
 	return rankAndSelect(scores, n, goalIdxs, top), nil
 }
 

@@ -8,6 +8,9 @@ timestamp: 2026-08-10T01:15:00Z
 
 # Bottleneck Centrality Metric
 
+> [!WARNING]
+> **Prototype strategy.** `--strategy bottleneck` computes the fundamental matrix $N = (I-Q)^{-1}$ directly in `cmd_goal.go` using `gonum/mat`, bypassing the catrace library. This deviates from wikigraph's standard practice of delegating all Markov chain mathematics to catrace. Accepted under [[adr-008-prototype-math-strategies|ADR-008]] while the strategy is validated; a catrace API is the intended end-state.
+
 ## Overview
 
 In `wikigraph goal --strategy bottleneck`, the **bottleneck score** $B_{s,t}(k)$ measures how critical page $k$ is as a gateway/chokepoint when navigating from source goal $s$ to target goal $t$.
@@ -43,7 +46,8 @@ where $N^{(g_b)}$ is the fundamental matrix with goal $g_b$ set as the absorbing
 - [[commute-time]] — Symmetric resistance distance metric
 - [[mfpt]] — Mean First Passage Time foundation
 - [[goal]] — Command surface utilizing bottleneck scoring
-- [[catrace]] — Matrix fundamental linear algebra engine
+- [[catrace]] — Markov chain library (trace kernel and MFPT; fundamental matrix is computed directly via `gonum/mat` in `cmd_goal.go`)
+- [[adr-007-subgraph-partitioning-and-path-strategies]] — Decision record for the four goal strategies
 
 ## Sources
 

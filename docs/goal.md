@@ -191,6 +191,7 @@ mastering them first will naturally lead you to the goal.
 ## See also
 
 - [[mfpt]] — the metric that powers goal ranking
+- [[adr-007-subgraph-partitioning-and-path-strategies]] — decision record for the four strategies
 - [[analyze]] — surface under-linked and over-linked pages in your wiki
 - [[graph]] — render your entire wiki as an interactive graph
 

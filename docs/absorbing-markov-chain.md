@@ -34,7 +34,7 @@ $$N = I + Q + Q^2 + Q^3 + \dots = \sum_{k=0}^{\infty} Q^k = (I - Q)^{-1}$$
 
 ## Usage in WikiGraph
 
-1. **Bottleneck Strategy (`wikigraph goal --strategy bottleneck`)**: Set target goal $t$ as the absorbing state. Entry $N_{s, k}$ gives the expected visits to page $k$ on walks starting at source $s$ before reaching goal $t$.
+1. **Bottleneck Strategy (`wikigraph goal --strategy bottleneck`)**: Set target goal $t$ as the absorbing state. Entry $N_{s, k}$ gives the expected visits to page $k$ on walks starting at source $s$ before reaching goal $t$. The matrix solve $(I-Q)N = I$ is performed directly in `cmd_goal.go` using `gonum/mat` — catrace does not yet expose a fundamental matrix API.
 2. **Trace Kernel Subgraphing (`catrace`)**: Computes effective transition matrices on subsets of pages by absorbing transitions outside the subset and tracking re-entry probabilities.
 
 ## Related Concepts
@@ -42,8 +42,10 @@ $$N = I + Q + Q^2 + Q^3 + \dots = \sum_{k=0}^{\infty} Q^k = (I - Q)^{-1}$$
 - [[bottleneck-centrality]] — Bottleneck scoring algorithm built on $N = (I-Q)^{-1}$
 - [[recurrent-class]] — Classification of states and communicating classes
 - [[mfpt]] — Expected steps to reach target states
-- [[catrace]] — Fundamental matrix computation engine
+- [[catrace]] — Markov chain library; trace kernel and MFPT (fundamental matrix planned)
+- [[adr-007-subgraph-partitioning-and-path-strategies]] — Decision record adopting fundamental matrix for the bottleneck strategy
 
 ## Sources
 
 - Kemeny, J. G., & Snell, J. L. (1960). *Finite Markov Chains*. D. Van Nostrand Company. [Internet Archive Link](https://archive.org/details/finitemarkovchai0000unse)
+- Kemeny, J. G., & Snell, J. L. (1976). *Finite Markov Chains*. Springer-Verlag. [DOI: 10.1007/978-0-387-90192-3](https://doi.org/10.1007/978-0-387-90192-3) | [Springer Link](https://link.springer.com/book/10.1007/978-0-387-90192-3)
