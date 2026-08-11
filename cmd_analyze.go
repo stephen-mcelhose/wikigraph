@@ -24,7 +24,26 @@ var analyzeCmd = &cobra.Command{
   3. Orphan pages      — low stationary-distribution pages (add inbound links)
   4. Sink pages        — pages with no outgoing links (add outbound links)
   5. Most central      — top 5 by stationary distribution
-  6. Suggested links   — unlinked pairs with low commute time (skip with --suggest-top 0)`,
+  6. Suggested links   — unlinked pairs with low commute time (skip with --suggest-top 0)
+
+Performance note:
+  Sections 1–5 run in well under a second even for large wikis (O(n²) matrix ops).
+  Section 6 (suggested links) solves a linear system per unlinked pair and scales
+  poorly with wiki size — fast for small wikis (~50 pages) but can take over a minute
+  at 200 pages. Use --suggest-top 0 to skip it when you only need the health overview.
+
+Examples:
+  # Full report for a small wiki — suggestions included by default
+  wikigraph analyze ~/notes
+
+  # Large wiki: skip suggestions to keep it fast
+  wikigraph analyze -r ~/notes --suggest-top 0
+
+  # Tune the orphan threshold and suggestion count
+  wikigraph analyze ~/notes --orphan-pct 0.05 --suggest-top 5
+
+  # Suggestions only matter above a minimum commute time — raise to reduce noise
+  wikigraph analyze ~/notes --min-commute 10`,
 
 	Args: cobra.ExactArgs(1),
 	RunE: runAnalyze,
