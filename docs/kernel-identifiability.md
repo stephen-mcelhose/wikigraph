@@ -123,6 +123,7 @@ Both are lossless for this graph (all non-zero $P_{ij} \geq 1/17 \approx 0.059 \
 
 - [[markov-model]] — How $P$ is constructed from wikilinks
 - [[catrace]] — `catrace.Kernel` and the `Trace` method
+- [[analyze]] — The command whose text output is intentionally lossy relative to $P$
 - [[commute-time]] — Why $K(i,j)$ is a graph metric but not a $P$-recovery tool
 - [[stationary-distribution]] — Why $\pi$ alone does not identify $P$
 - [[export]] — `wikigraph export` reference and format details
