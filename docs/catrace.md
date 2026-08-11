@@ -41,6 +41,7 @@ A `Kernel` wraps an $n \times n$ row-stochastic transition matrix $P$ and an arr
 - [[stationary-distribution]] — Power iteration implementation
 - [[communicating-classes]] — Strongly connected components
 - [[mfpt]] — Fundamental matrix calculation
+- [[kernel-identifiability]] — What each analysis output reveals about $P$; when `Trace` is lossless
 
 ## Sources
 
