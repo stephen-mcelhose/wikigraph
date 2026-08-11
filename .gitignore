@@ -2,3 +2,5 @@ wikigraph
 wiki-gen
 *.html
 wiki_graph.json
+__pycache__/
+*.pyc
