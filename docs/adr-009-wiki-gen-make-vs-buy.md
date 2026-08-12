@@ -182,6 +182,7 @@ experiment tool. A single file with a `--graph` flag and `--out` flag is suffici
 
 ## Sources
 
-- [[wiki-gen]] — current hierarchical barbell generator
+- `tools/wiki-gen/main.go` — current hierarchical barbell generator (no wiki page yet)
 - NetworkX generators: https://networkx.org/documentation/stable/reference/generators.html
-- Research notes: `research/graph-topologies.md`, `research/graph-models.md`
+- [[graph-topologies]] — named topology catalog (moved from research/ into wiki)
+- [[graph-models]] — random graph model catalog (moved from research/ into wiki)

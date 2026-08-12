@@ -13,9 +13,9 @@ timestamp: 2026-08-09T06:54:46Z
 Comprehensive manual test plan covering all `wikigraph` subcommands (`graph`, `analyze`, `goal`, `export`) and edge cases against the repository's `docs/` wiki.
 
 **Binary:** built locally from `~/repos/wikigraph/`  
-**Wiki under test:** `docs/` in this repo (30 content pages)  
+**Wiki under test:** `docs/` in this repo (35 content pages)  
 **Run all commands from:** `~/repos/wikigraph/` (the repo root)  
-**Last verified:** 2026-08-09 against current wiki state (30 pages, 137 edges, 1 recurrent class)
+**Last verified:** 2026-08-11 against current wiki state (35 pages, 176 edges, 1 recurrent class)
 
 ---
 
@@ -35,8 +35,8 @@ All commands use `docs/` as the wiki path. Run from `~/repos/wikigraph`:
 cd ~/repos/wikigraph
 ```
 
-The 30 content pages (after default exclusions of `index`, `log`, `AGENTS`):
-`absorbing-markov-chain`, `adr-001-embedding-layer`, `adr-002-slug-resolution`, `adr-003-orphan-threshold`, `adr-004-quantum-go-example-wiki`, `adr-005-page-type-conventions-and-proposal-storage`, `adr-006-recursive-vault-traversal`, `adr-007-subgraph-partitioning-and-path-strategies`, `analyze`, `architecture`, `bottleneck-centrality`, `catrace`, `communicating-classes`, `commute-time`, `entropy-rate`, `export`, `goal`, `graph`, `how-to-docs-plan`, `llm-wiki-pattern`, `markov-model`, `mfpt`, `page-type-conventions`, `path-sequence`, `quickstart`, `random-walk`, `recurrent-class`, `sink-page`, `stationary-distribution`, `testing-runbook`
+The 35 content pages (after default exclusions of `index`, `log`, `AGENTS`):
+`absorbing-markov-chain`, `adr-001-embedding-layer`, `adr-002-slug-resolution`, `adr-003-orphan-threshold`, `adr-004-quantum-go-example-wiki`, `adr-005-page-type-conventions-and-proposal-storage`, `adr-006-recursive-vault-traversal`, `adr-007-subgraph-partitioning-and-path-strategies`, `adr-008-prototype-math-strategies`, `adr-009-wiki-gen-make-vs-buy`, `analyze`, `architecture`, `bottleneck-centrality`, `catrace`, `communicating-classes`, `commute-time`, `entropy-rate`, `export`, `goal`, `graph`, `graph-models`, `graph-topologies`, `how-to-docs-plan`, `kernel-identifiability`, `llm-wiki-pattern`, `markov-model`, `mfpt`, `page-type-conventions`, `path-sequence`, `quickstart`, `random-walk`, `recurrent-class`, `sink-page`, `stationary-distribution`, `testing-runbook`
 
 Verify:
 
@@ -73,9 +73,9 @@ open /tmp/wg_graph.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 30` and `Written: /tmp/wg_graph.html`
+- Stderr prints `Pages: 35` and `Written: /tmp/wg_graph.html`
 - File exists and opens in browser showing a force-directed graph
-- 30 labelled nodes visible; nodes sized differently (stationary dist)
+- 35 labelled nodes visible; nodes sized differently (stationary dist)
 - 1 colour (1 recurrent class)
 - Exit code 0
 
@@ -312,7 +312,7 @@ head /tmp/wg_edges.csv
 **Pass criteria:**
 - `wg_nodes.csv` header: `slug,pi,class`
 - `wg_edges.csv` header: `source,target,probability`
-- Both have 30 data rows in nodes (one per page)
+- Both have 35 data rows in nodes (one per page)
 - Values are numeric floats; no empty cells
 
 ---
@@ -371,11 +371,11 @@ wikigraph analyze docs/
 
 | Section         | Expected                                                                                                                                                              |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Overview        | Pages: 30, Edges: 137, Entropy rate: ~2.30 bits, Classes: 1                                                                                                          |
-| Classes         | 1 recurrent (30 pages)                                                                                                                                                |
-| Orphans (≤10%)  | `llm-wiki-pattern` (π=0.001178), `adr-007-subgraph-partitioning-and-path-strategies` (π=0.003818), `quickstart` (π=0.004714), `path-sequence` (π=0.007192)           |
+| Overview        | Pages: 35, Edges: 176, Entropy rate: ~2.41 bits, Classes: 1                                                                                                          |
+| Classes         | 1 recurrent (35 pages)                                                                                                                                                |
+| Orphans (≤10%)  | `adr-009-wiki-gen-make-vs-buy` (π=0.002454), `llm-wiki-pattern` (π=0.002804), `graph-models` (π=0.004443), `graph-topologies` (π=0.004570)                           |
 | Sinks           | `(none)`                                                                                                                                                              |
-| Most central #1 | `analyze` (π=0.107177)                                                                                                                                                |
+| Most central #1 | `analyze` (π=0.104387)                                                                                                                                                |
 | Suggestions     | At least one page with 3 suggestions listed                                                                                                                           |
 
 - Exit code 0
@@ -403,7 +403,7 @@ wikigraph analyze docs/ --orphan-pct 0 --suggest-top 0
 ```
 
 **Pass criteria:**
-- Orphan section shows `llm-wiki-pattern` (π=0.001178) — the single lowest-π page
+- Orphan section shows `adr-009-wiki-gen-make-vs-buy` (π=0.002454) — the single lowest-π page
 - Section header says `bottom 0%`
 
 ---
@@ -415,7 +415,7 @@ wikigraph analyze docs/ --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "
 ```
 
 **Pass criteria:**
-- Count equals 30 (all pages shown as orphans at 100th percentile)
+- Count equals 35 (all pages shown as orphans at 100th percentile)
 
 ---
 
@@ -424,7 +424,7 @@ wikigraph analyze docs/ --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "
 **Goal:** Persistent flag is inherited; excluded pages disappear from every subcommand.
 
 ```bash
-# Should reduce page count to 29 in each case (30 default minus how-to-docs-plan)
+# Should reduce page count to 34 in each case (35 default minus how-to-docs-plan)
 wikigraph graph   docs/ -e index -e log -e AGENTS -e how-to-docs-plan -o /dev/null 2>&1 | grep Pages
 wikigraph goal    docs/ -e index -e log -e AGENTS -e how-to-docs-plan --goal analyze -o /dev/null 2>&1 | grep Pages
 wikigraph export  docs/ -e index -e log -e AGENTS -e how-to-docs-plan -o /tmp/excl 2>&1 | grep Pages
@@ -432,7 +432,7 @@ wikigraph analyze docs/ -e index -e log -e AGENTS -e how-to-docs-plan --suggest-
 ```
 
 **Pass criteria:**
-- All four lines print `Pages: 29`
+- All four lines print `Pages: 34`
 - `how-to-docs-plan` absent from exported JSON nodes list:
   ```bash
   jq -e '[.nodes[].id] | index("how-to-docs-plan") | not' /tmp/excl.json

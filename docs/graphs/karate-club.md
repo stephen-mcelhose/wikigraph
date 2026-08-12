@@ -1,3 +1,12 @@
+---
+type: spike
+title: Zachary's Karate Club — wikigraph Analysis
+description: Empirical wikigraph analysis of Zachary's Karate Club graph (34-node canonical two-community benchmark) as a Markov chain. Path provisional — will move to flat docs/ when #42 resolves.
+tags: [benchmark, karate-club, networkx, markov-chain, spike, draft]
+status: draft
+timestamp: 2026-08-11T00:00:00Z
+---
+
 # Zachary's Karate Club — two-community social network benchmark
 
 > ⚠️ **DRAFT** — AI-assisted write-up, not yet verified by human analysis. Treat all findings as provisional.
@@ -526,7 +535,7 @@ The force-directed HTML output (`wikigraph graph`) renders the karate club as tw
 
 ---
 
-## References
+## Sources
 
 - Zachary, W.W. (1977). An information flow model for conflict and fission in small groups. *Journal of Anthropological Research*, 33(4), 452–473. https://doi.org/10.1086/jar.33.4.3629752
 - NetworkX: https://networkx.org/documentation/stable/reference/generated/networkx.generators.social.karate_club_graph.html

@@ -74,6 +74,9 @@ catrace.Kernel  (P is now row-stochastic)
 - [[adr-007-subgraph-partitioning-and-path-strategies]] — Subgraph strategy partitioning decisions for goal subcommand
 - [[adr-008-prototype-math-strategies]] — Accepted deviation: path and bottleneck implement math directly pending catrace APIs
 - [[how-to-docs-plan]] — Documentation initiative driving subcommand interface
+- [[adr-009-wiki-gen-make-vs-buy]] — Decision: nx-to-wiki Python converter for named NetworkX benchmark graphs
+- [[graph-topologies]] — Named topology catalog (barbell, caveman, WS, SBM, …) used in benchmark experiments
+- [[graph-models]] — Random graph model catalog (ER, BA, LFR) used in benchmark experiments
 
 ## Sources
 
