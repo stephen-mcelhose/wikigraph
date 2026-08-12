@@ -2,6 +2,8 @@
 
 # Barbell Graph — two cliques joined by a bottleneck bridge
 
+> ⚠️ **DRAFT** — AI-assisted write-up, not yet verified by human analysis. Treat all findings as provisional.
+
 > **nx-to-wiki flag**: `--graph barbell --m1 [clique-size] --m2 [bridge-length]`
 > **Nodes**: 2·m1 + m2 (parameterised) · **Directed edges**: 2×undirected (parameterised)
 > **Naming**: tier1-barbell-structural-position
@@ -226,7 +228,7 @@ hub-dominated than the star-like or single-hub graphs elsewhere in this series, 
 cliques have symmetric internal structure and no single node dominates degree the way a true
 hub does. Lengthening the bridge (tight → loose, m2: 1 → 5) *lowers* both max and min π (more
 total nodes dilutes each individual node's share) but the max/min ratio stays flat at 3.0 in
-both cases, because the two connector nodes (`left-05`, `right-00`/`right-05`) always have
+both cases, because the two connector nodes (`left-05`, `right-00`) always have
 degree = m1, and the lowest-π node is always a bridge-interior node with degree 2 — the ratio
 is a function of `m1` alone (m1/2), not of `m2`. The mid set (m1=4) confirms this: ratio = 2.0 =
 4/2, exactly matching the m1/2 relationship.
@@ -384,11 +386,12 @@ clique-hubs directly touching the bridge) targets the *opposite* clique, i.e. a 
 left↔right shortcut recommendation, despite no direct left↔right edge existing by
 construction. This is the key structural finding requested by the issue: `suggest` does propose
 a left-clique↔right-clique shortcut, even though the two hubs are the closest pair on either
-side of the bridge. `bridge-00` (the lowest-π node) suggests links exclusively into the right
-clique (its already-adjacent clique is left, so it suggests the *other* side) — all 5 of its
-suggestions are non-adjacent right-clique members reachable at a uniform commute time of 85.33,
-since from the bridge's perspective every non-hub member of either clique is symmetric.
-Remaining nodes not shown (the 4 interior members of each clique) all suggest `bridge-00` first,
+side of the bridge. `bridge-00` (the lowest-π node) shows all 5 suggestions into the right clique — but this is a
+tie-breaking artifact, not a structural property. By symmetry, bridge-00's commute time to any
+left-interior node (left-00…left-04) equals its commute time to any right-interior node
+(right-01…right-05) — all 85.33. The `suggest` algorithm resolves ties by slug order (`r` sorts
+after `l`), so right-clique slugs fill the top-5 list first.
+Remaining nodes not shown (the 5 interior members of each clique) all suggest `bridge-00` first,
 confirming bridge nodes act as the mandatory waypoint for any cross-zone recommendation.
 
 ### Loose bridge (m1=6, m2=5)
@@ -741,7 +744,7 @@ after which the graph is named.
 
 ### Markov questions — answered
 
-- **Does π rank the clique hub nodes (`left-01`, `right-01` in the general case; here
+- **Does π rank the clique hub nodes (`left-{m1-1}`, `right-00` in the general case; here
   `left-05`/`right-00` for tight, `left-05`/`right-00` for loose, `left-03`/`right-00` for mid)
   above bridge path nodes (`bridge-*`)?**
   Yes, in all three parameter sets. Tight: hubs at π=0.093750 vs. bridge at π=0.031250. Loose:
