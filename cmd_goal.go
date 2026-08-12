@@ -60,7 +60,7 @@ func runGoal(cmd *cobra.Command, args []string) error {
 	wikiDir := args[0]
 	exclude := makeExcludeMap(flagExclude)
 
-	kern, P, pages, _, err := buildKernel(wikiDir, flagRecursive, exclude)
+	kern, P, pages, _, err := buildKernelWithOpts(wikiDir, flagRecursive, exclude, flagRelativeLinks)
 	if err != nil {
 		return err
 	}
@@ -307,7 +307,7 @@ func selectPath(P *mat.Dense, n int, goalIdxs []int, top int) []int {
 
 	if len(selected) < top {
 		type neighbor struct {
-			idx   int
+			idx  int
 			prob float64
 		}
 		var candidates []neighbor

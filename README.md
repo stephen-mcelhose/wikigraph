@@ -31,7 +31,27 @@ Subcommands:
 Persistent flags (all subcommands):
   -e, --exclude strings   slugs to exclude (default [index, log, AGENTS])
   -r, --recursive         recursively scan subdirectories for Markdown pages
+      --relative-links    also parse standard Markdown [label](relative/path.md)
+                          links as edges, in addition to [[wikilinks]];
+                          absolute URLs are ignored; implies --recursive
 ```
+
+### `--relative-links`
+
+Opt-in, non-breaking flag for wikis that use standard Markdown links instead of
+(or in addition to) `[[wikilink]]` syntax — e.g. a docs tree with
+`[Gate 03](03-recommend.md)` style navigation.
+
+- Targets are resolved relative to the linking file's directory.
+- Only relative paths become edges; `http://`, `https://`, `//`, and `mailto:`
+  targets are ignored (they'd add phantom nodes outside the corpus).
+- Always recursive: since relative links routinely cross subdirectories
+  (`../shared/notes.md`), enabling this flag implies `--recursive` regardless
+  of `-r`.
+- If a link resolves above the wiki root (e.g. `../../outside-project/x.md`),
+  wikigraph prints a warning to stderr and ignores the edge — relative-link
+  mode assumes all targets stay within the scanned project root.
+- `[[wikilink]]` parsing is unaffected either way.
 
 ### graph
 

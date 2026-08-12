@@ -538,6 +538,48 @@ wikigraph analyze /tmp/isolatedwiki -r --suggest-top 0
 
 ---
 
+## TC-26 · --relative-links parses standard Markdown links as edges
+
+**Goal:** `[label](relative/path.md)` links become graph edges when `--relative-links` is passed; absolute URLs are ignored; existing `[[wikilink]]` behaviour is unchanged; flag is off by default (non-breaking); mode is recursive by default; escaping the project root warns and drops the edge.
+
+```bash
+rm -rf /tmp/mdlinkwiki
+mkdir -p /tmp/mdlinkwiki/gate /tmp/mdlinkwiki/shared
+printf '# Gate 03\n' > /tmp/mdlinkwiki/gate/03-recommend.md
+printf '# Notes\n' > /tmp/mdlinkwiki/shared/notes.md
+cat > /tmp/mdlinkwiki/gate/01-discovery.md <<'EOF'
+# Gate 01
+
+[Gate 03](03-recommend.md)
+[shared notes](../shared/notes.md)
+[external site](https://example.com)
+EOF
+
+# (a) default behaviour (flag OFF): markdown links are NOT edges — non-breaking check
+wikigraph analyze /tmp/mdlinkwiki -r --suggest-top 0 2>&1
+
+# (b) flag ON: relative markdown links become edges, recursive is implied (no -r needed)
+wikigraph export /tmp/mdlinkwiki --relative-links --format json -o /tmp/mdlink 2>&1
+jq -c '.links[] | {source, target}' /tmp/mdlink.json | sort
+
+# (c) absolute URL is ignored — still only 3 pages, no phantom node
+jq '.nodes | length' /tmp/mdlink.json
+
+# (d) escaping the project root warns and the edge is dropped
+mkdir -p /tmp/mdlinkwiki-root/project /tmp/mdlinkwiki-root/outside
+printf '# Escaped\n' > /tmp/mdlinkwiki-root/outside/escaped.md
+printf '[escaped](../outside/escaped.md)\n' > /tmp/mdlinkwiki-root/project/page.md
+wikigraph analyze /tmp/mdlinkwiki-root/project --relative-links --suggest-top 0 2>&1
+```
+
+**Pass criteria:**
+- (a) `Pages: 3`; no error mentioning `03-recommend` or `notes` as inbound links from `01-discovery` (markdown links inert without the flag)
+- (b) Stderr does **not** require `-r` to find `shared/notes.md` (flag implies recursive); JSON links include `{"source":"01-discovery","target":"03-recommend"}` and `{"source":"01-discovery","target":"notes"}`
+- (c) `jq '.nodes | length'` prints `3` (the `https://example.com` target does not create a 4th node)
+- (d) Stderr prints a `warning:` line mentioning `outside the wiki root`; exit code 0 (warning, not a hard failure); `page` has no outgoing edge to `escaped`
+
+---
+
 ## See Also
 
 - [[graph]]
