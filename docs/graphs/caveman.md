@@ -595,8 +595,8 @@ that lost ties to rewiring suggest more within-clique links first.
 
 | Parameter set | Max π    | Min π    | Ratio | Label              |
 | ------------- | -------- | -------- | ----- | -------------------- |
-| p=0.05        | 0.050000 | 0.033333 | 1.5   | Effectively flat      |
-| p=0.15        | 0.050000 | 0.033333 | 1.5   | Effectively flat      |
+| p=0.05        | 0.050000 | 0.033333 | 1.50  | Effectively flat      |
+| p=0.15        | 0.050000 | 0.033333 | 1.50  | Effectively flat      |
 | p=0.30        | 0.058333 | 0.025000 | 2.33  | Mildly skewed         |
 
 ### Visual observations
@@ -630,7 +630,7 @@ visually largest node in the entire graph.
   the graph remains split into 2 communicating classes and the tool finds no useful
   not-yet-linked candidates to propose. At p=0.30, once the graph merges into a single
   communicating class, `suggest` produces 5 recommendations per node (120 total across 24
-  nodes), and for the two top-π nodes shown above, **all 10 of their combined 10 suggestions
+  nodes), and for the two top-π nodes shown above, **all 10 of their combined suggestions
   (100%) cross clique boundaries** — a jump from 0 cross-community suggestions to a fully
   cross-community suggestion set once the classes merge.
 
@@ -658,8 +658,8 @@ visually largest node in the entire graph.
 ## References
 
 - NetworkX: https://networkx.org/documentation/stable/reference/generated/networkx.generators.community.relaxed_caveman_graph.html
-- Caveman Graph section from graph-topologies research notes
-- LFR μ section from graph-models research notes
+- Caveman Graph section from [[graph-topologies]]
+- LFR μ section from [[graph-models]]
 
 ---
 
