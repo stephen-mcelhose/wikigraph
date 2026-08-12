@@ -2,6 +2,8 @@
 
 # Florentine Families — marriage-ties brokerage benchmark
 
+> ⚠️ **DRAFT** — AI-assisted write-up, not yet verified by human analysis. Treat all findings as provisional.
+
 > **nx-to-wiki flag**: `--graph florentine`
 > **Nodes**: 15 · **Directed edges**: 40 · **Naming**: tier1-florentine-family-name
 > **Source**: empirical — fixed
