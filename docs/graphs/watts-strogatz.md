@@ -2,6 +2,8 @@
 
 # Watts-Strogatz Small-World Graph — ring-lattice rewiring benchmark
 
+> ⚠️ **DRAFT** — AI-assisted write-up, not yet verified by human analysis. Treat all findings as provisional.
+
 > **nx-to-wiki flag**: `--graph watts-strogatz --n [nodes] --k [ring-degree] --p [rewire-prob] --role-names`
 > **Nodes**: n (parameterised) · **Directed edges**: 2×undirected (parameterised)
 > **Naming**: tier2-structural-role-walk
