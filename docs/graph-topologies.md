@@ -1,3 +1,11 @@
+---
+type: concept
+title: Named Graph Topologies
+description: Reference catalog of named graph topologies — structural properties, Markov walk behaviour, and NetworkX equivalents — used as benchmarks and analogues for wikigraph analysis.
+tags: [graph-theory, topology, networkx, markov-chain, benchmark]
+timestamp: 2026-08-11T00:00:00Z
+---
+
 # Named Graph Topologies — Research Notes
 
 ---
@@ -214,7 +222,16 @@ The **Krackhardt Kite** is particularly interesting — it explicitly has nodes 
 | Spine / backbone                | spine, central path                  | caterpillar        |
 | Peripheral nodes                | leaves, legs, periphery              | caterpillar, star  |
 
-## Links
+## Related Concepts
+
+- [[markov-model]] — how graph edges become a row-stochastic transition kernel
+- [[stationary-distribution]] — π is determined by degree structure; varies sharply across these topologies
+- [[communicating-classes]] — topology determines whether graph is strongly connected (e.g. pure caveman = multiple classes)
+- [[commute-time]] — boundary conductance drives commute time between communities
+- [[random-walk]] — the foundational model these topologies are benchmarked against
+- [[graph-models]] — random generative models (ER, BA, WS, SBM, LFR) complementing this named-topology catalog
+
+## Sources
 
 - https://en.wikipedia.org/wiki/Star_graph
 - https://en.wikipedia.org/wiki/Caterpillar_tree

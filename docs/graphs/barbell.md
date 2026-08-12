@@ -1,3 +1,12 @@
+---
+type: spike
+title: Barbell Graph — wikigraph Analysis
+description: Empirical wikigraph analysis of the barbell graph (two cliques joined by a bottleneck bridge) as a Markov chain benchmark. Path provisional — will move to flat docs/ when #42 resolves.
+tags: [benchmark, barbell, networkx, markov-chain, spike, draft]
+status: draft
+timestamp: 2026-08-11T00:00:00Z
+---
+
 <!-- Path provisional — will be updated when #42 resolves -->
 
 # Barbell Graph — two cliques joined by a bottleneck bridge
@@ -773,7 +782,7 @@ after which the graph is named.
 
 ---
 
-## References
+## Sources
 
 - NetworkX: https://networkx.org/documentation/stable/reference/generated/networkx.generators.classic.barbell_graph.html
 - Barbell section from graph-topologies research notes

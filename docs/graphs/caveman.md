@@ -655,7 +655,7 @@ visually largest node in the entire graph.
 
 ---
 
-## References
+## Sources
 
 - NetworkX: https://networkx.org/documentation/stable/reference/generated/networkx.generators.community.relaxed_caveman_graph.html
 - Caveman Graph section from [[graph-topologies]]

@@ -1,3 +1,12 @@
+---
+type: spike
+title: Krackhardt Kite — wikigraph Analysis
+description: Empirical wikigraph analysis of the Krackhardt Kite graph (10-node multi-centrality teaching benchmark) as a Markov chain. Path provisional — will move to flat docs/ when #42 resolves.
+tags: [benchmark, krackhardt-kite, networkx, markov-chain, spike, draft]
+status: draft
+timestamp: 2026-08-11T00:00:00Z
+---
+
 <!-- Path provisional — will be updated when #42 resolves -->
 
 # Krackhardt Kite — multi-centrality teaching benchmark
@@ -404,7 +413,7 @@ one thin edge.
 
 ---
 
-## References
+## Sources
 
 - Krackhardt, D. (1990). Assessing the Political Landscape: Structure, Cognition, and Power in
   Organizations. *Administrative Science Quarterly*, 35(2), 342–369.

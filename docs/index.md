@@ -41,6 +41,9 @@ timestamp: 2026-08-09T06:54:46Z
 | [[bottleneck-centrality]]    | `concept`  | Random-walk betweenness metric for gatekeeper/chokepoint pages        |
 | [[path-sequence]]            | `concept`  | Dijkstra negative log-likelihood transition sequence strategy          |
 | [[kernel-identifiability]]   | `concept`  | Which outputs (π, commute times, export, Trace) recover P, and when  |
+| [[graph-topologies]]         | `concept`  | Reference catalog of named graph topologies and their Markov walk properties |
+| [[graph-models]]             | `concept`  | Reference catalog of random graph generative models (ER, BA, WS, SBM, LFR)  |
+| [[adr-009-wiki-gen-make-vs-buy]] | `decision` | ADR: hybrid make+buy — keep wiki-gen for hierarchical, add nx-to-wiki for named graphs |
 
 ## Sources
 

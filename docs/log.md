@@ -106,3 +106,14 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 - Added adr-007, absorbing-markov-chain, bottleneck-centrality, path-sequence to index.md
 - Verified OKF frontmatter across all 33 pages
 - Updated log.md
+
+## [2026-08-11] lint | 35 pages checked (post-rebase on main), 14 issues found, 14 fixed
+- OKF frontmatter missing: added to graph-topologies.md, graph-models.md, graphs/caveman.md, graphs/barbell.md, graphs/karate-club.md, graphs/krackhardt-kite.md
+- Section rename: `## Links` → `## Sources` in graph-topologies, graph-models; `## References` → `## Sources` in all four graph write-ups
+- Index gap: added graph-topologies, graph-models, adr-009-wiki-gen-make-vs-buy to index.md
+- Transient class: graph-topologies, graph-models, adr-009 formed isolated transient class — fixed by adding `## Related Concepts` wikilinks in both concept pages and inbound links from architecture.md
+- Broken wikilink: `[[wiki-gen]]` in adr-009 Sources replaced with plain text (page does not exist yet)
+- Stale sources: adr-009 text references to research/ files upgraded to `[[graph-topologies]]` and `[[graph-models]]` wikilinks
+- Testing-runbook: updated to 35 pages, 176 edges, entropy 2.41 bits, new orphan/central values
+- Advisory (not fixed): graphs/*.md in subdirectory violate flat layout — provisional pending #42; low π on graph-topologies (0.005), graph-models (0.004), adr-009 (0.002) accepted per ADR-003
+- Final state: 35 pages, 176 edges, 1 recurrent class, 0 sinks, entropy 2.41 bits

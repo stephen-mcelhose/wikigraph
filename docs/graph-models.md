@@ -1,3 +1,11 @@
+---
+type: concept
+title: Random Graph Models
+description: Reference catalog of random graph generative models — ER, BA, Watts-Strogatz, SBM, LFR — with Markov walk properties and recommended parameter knob names for wiki-gen experiments.
+tags: [graph-theory, random-graphs, networkx, markov-chain, benchmark, lfr, sbm]
+timestamp: 2026-08-11T00:00:00Z
+---
+
 # Random Graph Models — Research Notes
 
 ---
@@ -129,7 +137,15 @@
 | Random rewiring / shortcut prob     | `--rewire` / `--beta`   | Watts-Strogatz (β)       |
 | Hub preferential attachment         | `--attachment`          | Barabási–Albert (`m`)    |
 
-## Links
+## Related Concepts
+
+- [[markov-model]] — how each model's edge distribution determines the transition kernel
+- [[stationary-distribution]] — π is dominated by hubs in BA; near-uniform in ER; community-structured in SBM
+- [[communicating-classes]] — SBM at p_out=0 and caveman at p=0 produce multiple communicating classes
+- [[entropy-rate]] — measures information per step; used to compare mixing across models
+- [[graph-topologies]] — named deterministic topologies (barbell, caveman, WS, …) complementing this random-model catalog
+
+## Sources
 
 - https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model
 - https://en.wikipedia.org/wiki/Barab%C3%A1si%E2%80%93Albert_model
