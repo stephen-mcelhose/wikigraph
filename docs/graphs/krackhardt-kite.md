@@ -2,6 +2,8 @@
 
 # Krackhardt Kite — multi-centrality teaching benchmark
 
+> ⚠️ **DRAFT** — AI-assisted write-up, not yet verified by human analysis. Treat all findings as provisional.
+
 > **nx-to-wiki flag**: `--graph krackhardt-kite --role-names`
 > **Nodes**: 10 · **Directed edges**: 36 · **Naming**: tier2-structural-role-walk
 > **Source**: empirical — fixed
@@ -53,7 +55,7 @@ it is not a valid DOI for this paper. The correct DOI for Krackhardt (1990), ver
 | Kite body    | 0, 1, 2, 3, 4, 5, 6 | Densely interconnected core; node 3 (degree 6) sits at its centre |
 | Bridge       | 7          | Sole connector between the kite body and the tail; highest betweenness (0.3889) |
 | Tail         | 8          | Degree-2 pendant hanging off the bridge                              |
-| Isolate      | 9          | Degree-1 leaf at the very end of the tail                           |
+| Leaf         | 9          | Degree-1 leaf at the very end of the tail                           |
 
 ---
 
@@ -83,7 +85,7 @@ is $1/6 \approx 0.167$ (`node-03`'s row), well above the `--min-edge` default fi
 # Sparse P — non-zero entries only (36 edge rows; every edge exceeds --min-edge 0.005)
 wikigraph export /tmp/nxwiki-kite --format csv -o /tmp/kite-export
 
-# Dense P — full 10×10 matrix including structural zeros (90 edge rows)
+# Dense P — full 10×10 matrix including structural zeros (100 edge rows)
 wikigraph export /tmp/nxwiki-kite --format csv -o /tmp/kite-export --min-edge 0
 ```
 
