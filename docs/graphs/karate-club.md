@@ -1,5 +1,7 @@
 # Zachary's Karate Club — two-community social network benchmark
 
+> ⚠️ **DRAFT** — AI-assisted write-up, not yet verified by human analysis. Treat all findings as provisional.
+
 > **nx-to-wiki flag**: `--graph karate`
 > **Nodes**: 34 · **Directed edges**: 156 · **Naming**: tier1-karate-club-label (mhi-* / off-*)
 > **Source**: empirical — fixed
