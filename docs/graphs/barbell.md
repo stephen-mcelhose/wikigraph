@@ -365,7 +365,7 @@ Top-2 π: `right-00` (0.093750), `left-05` (0.093750). Lowest π: `bridge-00` (0
 
 | From      | To        | Commute time | Crosses zone boundary? |
 | --------- | --------- | ------------ | ------------------------ |
-| right-00  | left-05   | 128.00       | Yes — left↔right (via implied bridge path) |
+| right-00  | left-05   | 128.00       | Yes — right→left (direct cross-clique shortcut) |
 | right-00  | left-00   | 149.33       | Yes                        |
 | right-00  | left-01   | 149.33       | Yes                        |
 | right-00  | left-03   | 149.33       | Yes                        |
@@ -711,8 +711,7 @@ Top-2 π: `left-03` (0.125000), `right-00` (0.125000). Lowest π: `bridge-00`/`b
 
 **Finding**: With the shortest cliques (m1=4) and a mid-length bridge (m2=3), the direct
 left↔right shortcut (`left-03`↔`right-00`, commute 128.00) again appears in both hubs'
-suggestion lists, this time ranked 3rd of 5 — between the tight-bridge case (ranked implicitly
-1st via `left-05`↔`right-00` at 128.00) and the loose-bridge case (ranked 5th at 432.00). This
+suggestion lists, this time ranked 3rd of 5 — between the tight-bridge case (ranked 1st via `left-05`↔`right-00` at 128.00) and the loose-bridge case (ranked 5th at 432.00). This
 confirms a monotonic trend: longer bridges push the direct-shortcut suggestion further down the
 ranked list because more, closer intermediate bridge targets become available.
 
