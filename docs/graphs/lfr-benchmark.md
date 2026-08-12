@@ -2,6 +2,8 @@
 
 # LFR Benchmark Graph — power-law community-detection gold standard
 
+> ⚠️ **DRAFT** — AI-assisted write-up, not yet verified by human analysis. Treat all findings as provisional.
+
 > **nx-to-wiki flag**: `--graph lfr --n [nodes] --tau1 [degree-exponent] --tau2 [community-exponent] --mu [mixing]`
 > **Nodes**: n (parameterised) · **Directed edges**: variable (parameterised; see self-loop note)
 > **Naming**: tier1-lfr-community-attr
