@@ -2,6 +2,8 @@
 
 # Relaxed Caveman Graph — clique-rewiring mixing benchmark
 
+> ⚠️ **DRAFT** — AI-assisted write-up, not yet verified by human analysis. Treat all findings as provisional.
+
 > **nx-to-wiki flag**: `--graph caveman --l [cliques] --k [clique-size] --p [rewire-prob]`
 > **Nodes**: l·k (parameterised) · **Directed edges**: 2×undirected (parameterised)
 > **Naming**: tier1-caveman-clique-membership
