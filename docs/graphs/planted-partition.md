@@ -2,6 +2,8 @@
 
 # Planted Partition Graph — symmetric stochastic block model benchmark
 
+> ⚠️ **DRAFT** — AI-assisted write-up, not yet verified by human analysis. Treat all findings as provisional.
+
 > **nx-to-wiki flag**: `--graph planted-partition --l [blocks] --k [block-size] --p-in [p] --p-out [p]`
 > **Nodes**: l·k (parameterised) · **Directed edges**: 2×undirected (parameterised)
 > **Naming**: tier1-planted-partition-block-attr
