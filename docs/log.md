@@ -108,6 +108,13 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 - Updated log.md
 
 ## [2026-08-11] lint | 35 pages checked (post-rebase on main), 14 issues found, 14 fixed
+## [2026-08-13] ingest | teleportation-ergodicity + adr-011-sink-teleportation-vs-pagerank-damping
+- New concept page: [[teleportation-ergodicity]] — sink-only teleportation vs full PageRank α-damping; canonical reference https://en.wikipedia.org/wiki/PageRank
+- New decision: [[adr-011-sink-teleportation-vs-pagerank-damping]] — retain sink-only teleportation; separate display adj from math adj; revisit if spider traps, π asymmetries, or catrace α-damping support emerge
+- Propagated to [[sink-page]]: added display vs math adjacency section, ADR-011 and teleportation-ergodicity cross-refs
+- Propagated to [[stationary-distribution]]: added teleportation-ergodicity and sink-page cross-refs
+- index.md updated; 38 pages total
+
 ## [2026-08-13] ingest | adr-010-path-relative-slugs — path-relative slugs in recursive mode (issue #53, PR #54)
 - Renamed from adr-007-path-relative-slugs to adr-010 (ADR-007 number already taken by subgraph-partitioning)
 - Decision: recursive mode uses path-relative slugs (e.g. subdir/page) instead of bare stems; flat mode unchanged

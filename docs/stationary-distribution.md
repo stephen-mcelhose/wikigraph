@@ -32,6 +32,8 @@ Iteration stops when $\|v^{(k+1)} - v^{(k)}\|_\infty < \text{tol}$ (default $10^
 - [[random-walk]] — Convergence to stationary vector
 - [[analyze]] — Orphan and central page sections
 - [[adr-003-orphan-threshold]] — Low $\pi$ tolerance policy for governance pages
+- [[teleportation-ergodicity]] — Why teleportation is required for π to be defined
+- [[sink-page]] — Sink handling that ensures a non-zero π for all pages
 
 ## Sources
 
