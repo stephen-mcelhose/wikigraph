@@ -73,9 +73,9 @@ open /tmp/wg_graph.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 36` and `Written: /tmp/wg_graph.html`
+- Stderr prints `Pages: 38` and `Written: /tmp/wg_graph.html`
 - File exists and opens in browser showing a force-directed graph
-- 35 labelled nodes visible; nodes sized differently (stationary dist)
+- 37 labelled nodes visible; nodes sized differently (stationary dist)
 - 1 colour (1 recurrent class)
 - Exit code 0
 
@@ -90,7 +90,7 @@ wikigraph graph docs/ -e index -e log -e AGENTS -e testing-runbook -o /tmp/wg_ex
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 35`
+- Stderr prints `Pages: 37`
 - `testing-runbook` node absent from rendered graph
 
 ---
@@ -150,7 +150,7 @@ open /tmp/wg_goal.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 36` and `Written: /tmp/wg_goal.html (5 nodes)`
+- Stderr prints `Pages: 38` and `Written: /tmp/wg_goal.html (5 nodes)`
 - Browser shows exactly 5 nodes
 - `analyze` node is present
 - Exit code 0
@@ -371,11 +371,11 @@ wikigraph analyze docs/
 
 | Section         | Expected                                                                                                                                                              |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Overview        | Pages: 36, Edges: 177, Entropy rate: ~2.40 bits, Classes: 1                                                                                                                        |
-| Classes         | 1 recurrent (36 pages)                                                                                                                                                              |
-| Orphans (≤10%)  | `adr-009-wiki-gen-make-vs-buy` (π=0.002447), `adr-007-path-relative-slugs` (π=0.002753), `llm-wiki-pattern` (π=0.002796), `graph-models` (π=0.004431)                             |
+| Overview        | Pages: 38, Edges: 193, Entropy rate: ~2.35 bits, Classes: 1                                                                                                                        |
+| Classes         | 1 recurrent (38 pages)                                                                                                                                                              |
+| Orphans (≤10%)  | `adr-009-wiki-gen-make-vs-buy` (π=0.001811), `llm-wiki-pattern` (π=0.002366), `graph-models` (π=0.003278), `graph-topologies` (π=0.003372)                                        |
 | Sinks           | `(none)`                                                                                                                                                                            |
-| Most central #1 | `analyze` (π=0.104100)                                                                                                                                                              |
+| Most central #1 | `analyze` (π=0.084987)                                                                                                                                                              |
 | Suggestions     | At least one page with 3 suggestions listed                                                                                                                           |
 
 - Exit code 0
@@ -432,7 +432,7 @@ wikigraph analyze docs/ -e index -e log -e AGENTS -e how-to-docs-plan --suggest-
 ```
 
 **Pass criteria:**
-- All four lines print `Pages: 35`
+- All four lines print `Pages: 37`
 - `how-to-docs-plan` absent from exported JSON nodes list:
   ```bash
   jq -e '[.nodes[].id] | index("how-to-docs-plan") | not' /tmp/excl.json

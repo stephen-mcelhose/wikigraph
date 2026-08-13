@@ -33,13 +33,26 @@ In `wikigraph analyze docs/`:
 
 Authors fix sinks by adding relevant outgoing `[[wikilinks]]`.
 
+### Display vs math adjacency
+
+Teleportation rows must **not** be rendered as real graph edges — they are a
+mathematical construct, not links authored in the wiki. The display adjacency
+(used by `graph` and `export`) contains only real links; zero rows for sinks
+are left as-is so sinks appear as dead-ends. The math adjacency (passed to
+catrace) has teleportation rows added before kernel construction. See
+[[adr-011-sink-teleportation-vs-pagerank-damping]] and
+[[teleportation-ergodicity]].
+
 ## Related Concepts
 
 - [[markov-model]] — Transition matrix construction
 - [[communicating-classes]] — Sink components
 - [[analyze]] — Sink reporting section
+- [[teleportation-ergodicity]] — Mathematical justification and PageRank comparison
+- [[adr-011-sink-teleportation-vs-pagerank-damping]] — Decision: retain sink-only teleportation, defer full α-damping
 
 ## Sources
 
 - `wiki.go` — `buildAdjacency` function
 - Page, L., et al. (1999). *The PageRank Citation Ranking: Bringing Order to the Web*.
+- Wikipedia: PageRank — https://en.wikipedia.org/wiki/PageRank
