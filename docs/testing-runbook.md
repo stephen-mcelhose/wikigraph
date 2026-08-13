@@ -477,7 +477,7 @@ wikigraph graph /tmp/tinywiki -o /tmp/tiny.html
 
 ## TC-23 · recursive vault traversal (-r)
 
-**Goal:** `-r / --recursive` scans nested subdirectories and skips hidden folders. See [[adr-007-path-relative-slugs]].
+**Goal:** `-r / --recursive` scans nested subdirectories and skips hidden folders. See [[adr-010-path-relative-slugs]].
 
 ```bash
 rm -rf /tmp/recwiki
@@ -497,7 +497,7 @@ wikigraph analyze /tmp/recwiki -r --suggest-top 0 2>&1
 
 ## TC-24 · same-basename files in different subdirectories produce path-relative slugs
 
-**Goal:** Two files with the same filename in different subdirectories are disambiguated by their path-relative slug; no collision error occurs. See [[adr-007-path-relative-slugs]].
+**Goal:** Two files with the same filename in different subdirectories are disambiguated by their path-relative slug; no collision error occurs. See [[adr-010-path-relative-slugs]].
 
 ```bash
 rm -rf /tmp/dupwiki
@@ -584,7 +584,7 @@ wikigraph analyze /tmp/mdlinkwiki-root/project --relative-links --suggest-top 0 
 
 ## TC-27 · structured folder wiki with repeated filenames across project directories
 
-**Goal:** A POC-portfolio-style wiki where every project subdirectory contains identically-named files (`01-discovery.md`, `02-feasibility.md`) is analysed correctly. Tests two link styles: (a/b) `--relative-links` resolves sibling paths unambiguously within each project; (c) bare `[[wikilinks]]` with digit-leading slugs are parsed and, when ambiguous across projects, warn and drop. See [[adr-007-path-relative-slugs]].
+**Goal:** A POC-portfolio-style wiki where every project subdirectory contains identically-named files (`01-discovery.md`, `02-feasibility.md`) is analysed correctly. Tests two link styles: (a/b) `--relative-links` resolves sibling paths unambiguously within each project; (c) bare `[[wikilinks]]` with digit-leading slugs are parsed and, when ambiguous across projects, warn and drop. See [[adr-010-path-relative-slugs]].
 
 ```bash
 rm -rf /tmp/portfoliowiki

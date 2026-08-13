@@ -6,7 +6,7 @@ tags: [adr, slug, recursive, obsidian, wikilink, wiki-structure]
 timestamp: 2026-08-09T16:00:00Z
 status: accepted
 supersedes: adr-002-slug-resolution
-superseded_by: adr-007-path-relative-slugs
+superseded_by: adr-010-path-relative-slugs
 ---
 
 # ADR-006 — Recursive Vault Traversal and Slug Resolution
@@ -38,4 +38,5 @@ In the context of analyzing nested Markdown vaults (e.g., Obsidian/Logseq), faci
 
 - [Obsidian internal link resolution](https://help.obsidian.md/Linking+notes+and+files/Internal+links)
 - [[adr-002-slug-resolution]] (superseded)
+- [[adr-010-path-relative-slugs]] (supersedes this ADR)
 - GitHub Issue #26

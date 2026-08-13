@@ -8,7 +8,7 @@ status: accepted
 supersedes: adr-006-recursive-vault-traversal
 ---
 
-# ADR-007 — Path-Relative Slugs in Recursive Mode
+# ADR-010 — Path-Relative Slugs in Recursive Mode
 
 ## Context
 

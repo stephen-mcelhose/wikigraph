@@ -108,6 +108,17 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 - Updated log.md
 
 ## [2026-08-11] lint | 35 pages checked (post-rebase on main), 14 issues found, 14 fixed
+## [2026-08-13] ingest | adr-010-path-relative-slugs — path-relative slugs in recursive mode (issue #53, PR #54)
+- Renamed from adr-007-path-relative-slugs to adr-010 (ADR-007 number already taken by subgraph-partitioning)
+- Decision: recursive mode uses path-relative slugs (e.g. subdir/page) instead of bare stems; flat mode unchanged
+- Lenient wikilink fallback: [[basename]] resolves when unique across all slugs; warns and drops when ambiguous
+- --exclude now matches by basename at any depth in recursive mode
+- wikilinkRe broadened to accept digit-leading slugs ([[02-feasibility]] etc.)
+- Cross-references added: architecture, markov-model, adr-006 all link to [[adr-010-path-relative-slugs]]
+- testing-runbook: 3 broken [[adr-007-path-relative-slugs]] wikilinks fixed to [[adr-010-path-relative-slugs]]
+- testing-runbook: TCs 23-27 added covering recursive mode, path-relative slugs, --relative-links, and portfolio wiki
+- wiki_integration_test.go added as automated guard for docs/ wiki graph invariants
+- index.md updated with ADR-010 row; 36 pages total
 - OKF frontmatter missing: added to graph-topologies.md, graph-models.md, graphs/caveman.md, graphs/barbell.md, graphs/karate-club.md, graphs/krackhardt-kite.md
 - Section rename: `## Links` → `## Sources` in graph-topologies, graph-models; `## References` → `## Sources` in all four graph write-ups
 - Index gap: added graph-topologies, graph-models, adr-009-wiki-gen-make-vs-buy to index.md
