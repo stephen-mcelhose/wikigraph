@@ -13,9 +13,9 @@ timestamp: 2026-08-09T06:54:46Z
 Comprehensive manual test plan covering all `wikigraph` subcommands (`graph`, `analyze`, `goal`, `export`) and edge cases against the repository's `docs/` wiki.
 
 **Binary:** built locally from `~/repos/wikigraph/`  
-**Wiki under test:** `docs/` in this repo (35 content pages)  
+**Wiki under test:** `docs/` in this repo (36 content pages)  
 **Run all commands from:** `~/repos/wikigraph/` (the repo root)  
-**Last verified:** 2026-08-11 against current wiki state (35 pages, 176 edges, 1 recurrent class)
+**Last verified:** 2026-08-12 against current wiki state (36 pages, 177 edges, 1 recurrent class)
 
 ---
 
@@ -35,8 +35,8 @@ All commands use `docs/` as the wiki path. Run from `~/repos/wikigraph`:
 cd ~/repos/wikigraph
 ```
 
-The 35 content pages (after default exclusions of `index`, `log`, `AGENTS`):
-`absorbing-markov-chain`, `adr-001-embedding-layer`, `adr-002-slug-resolution`, `adr-003-orphan-threshold`, `adr-004-quantum-go-example-wiki`, `adr-005-page-type-conventions-and-proposal-storage`, `adr-006-recursive-vault-traversal`, `adr-007-subgraph-partitioning-and-path-strategies`, `adr-008-prototype-math-strategies`, `adr-009-wiki-gen-make-vs-buy`, `analyze`, `architecture`, `bottleneck-centrality`, `catrace`, `communicating-classes`, `commute-time`, `entropy-rate`, `export`, `goal`, `graph`, `graph-models`, `graph-topologies`, `how-to-docs-plan`, `kernel-identifiability`, `llm-wiki-pattern`, `markov-model`, `mfpt`, `page-type-conventions`, `path-sequence`, `quickstart`, `random-walk`, `recurrent-class`, `sink-page`, `stationary-distribution`, `testing-runbook`
+The 36 content pages (after default exclusions of `index`, `log`, `AGENTS`):
+`absorbing-markov-chain`, `adr-001-embedding-layer`, `adr-002-slug-resolution`, `adr-003-orphan-threshold`, `adr-004-quantum-go-example-wiki`, `adr-005-page-type-conventions-and-proposal-storage`, `adr-006-recursive-vault-traversal`, `adr-007-path-relative-slugs`, `adr-007-subgraph-partitioning-and-path-strategies`, `adr-008-prototype-math-strategies`, `adr-009-wiki-gen-make-vs-buy`, `analyze`, `architecture`, `bottleneck-centrality`, `catrace`, `communicating-classes`, `commute-time`, `entropy-rate`, `export`, `goal`, `graph`, `graph-models`, `graph-topologies`, `how-to-docs-plan`, `kernel-identifiability`, `llm-wiki-pattern`, `markov-model`, `mfpt`, `page-type-conventions`, `path-sequence`, `quickstart`, `random-walk`, `recurrent-class`, `sink-page`, `stationary-distribution`, `testing-runbook`
 
 Verify:
 
@@ -73,7 +73,7 @@ open /tmp/wg_graph.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 35` and `Written: /tmp/wg_graph.html`
+- Stderr prints `Pages: 36` and `Written: /tmp/wg_graph.html`
 - File exists and opens in browser showing a force-directed graph
 - 35 labelled nodes visible; nodes sized differently (stationary dist)
 - 1 colour (1 recurrent class)
@@ -90,7 +90,7 @@ wikigraph graph docs/ -e index -e log -e AGENTS -e testing-runbook -o /tmp/wg_ex
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 29`
+- Stderr prints `Pages: 35`
 - `testing-runbook` node absent from rendered graph
 
 ---
@@ -150,7 +150,7 @@ open /tmp/wg_goal.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 20` and `Written: /tmp/wg_goal.html (5 nodes)`
+- Stderr prints `Pages: 36` and `Written: /tmp/wg_goal.html (5 nodes)`
 - Browser shows exactly 5 nodes
 - `analyze` node is present
 - Exit code 0
@@ -312,7 +312,7 @@ head /tmp/wg_edges.csv
 **Pass criteria:**
 - `wg_nodes.csv` header: `slug,pi,class`
 - `wg_edges.csv` header: `source,target,probability`
-- Both have 35 data rows in nodes (one per page)
+- Both have 36 data rows in nodes (one per page)
 - Values are numeric floats; no empty cells
 
 ---
@@ -371,11 +371,11 @@ wikigraph analyze docs/
 
 | Section         | Expected                                                                                                                                                              |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Overview        | Pages: 35, Edges: 176, Entropy rate: ~2.41 bits, Classes: 1                                                                                                          |
-| Classes         | 1 recurrent (35 pages)                                                                                                                                                |
-| Orphans (≤10%)  | `adr-009-wiki-gen-make-vs-buy` (π=0.002454), `llm-wiki-pattern` (π=0.002804), `graph-models` (π=0.004443), `graph-topologies` (π=0.004570)                           |
-| Sinks           | `(none)`                                                                                                                                                              |
-| Most central #1 | `analyze` (π=0.104387)                                                                                                                                                |
+| Overview        | Pages: 36, Edges: 177, Entropy rate: ~2.40 bits, Classes: 1                                                                                                                        |
+| Classes         | 1 recurrent (36 pages)                                                                                                                                                              |
+| Orphans (≤10%)  | `adr-009-wiki-gen-make-vs-buy` (π=0.002447), `adr-007-path-relative-slugs` (π=0.002753), `llm-wiki-pattern` (π=0.002796), `graph-models` (π=0.004431)                             |
+| Sinks           | `(none)`                                                                                                                                                                            |
+| Most central #1 | `analyze` (π=0.104100)                                                                                                                                                              |
 | Suggestions     | At least one page with 3 suggestions listed                                                                                                                           |
 
 - Exit code 0
@@ -403,7 +403,7 @@ wikigraph analyze docs/ --orphan-pct 0 --suggest-top 0
 ```
 
 **Pass criteria:**
-- Orphan section shows `adr-009-wiki-gen-make-vs-buy` (π=0.002454) — the single lowest-π page
+- Orphan section shows `adr-009-wiki-gen-make-vs-buy` (π=0.002447) — the single lowest-π page
 - Section header says `bottom 0%`
 
 ---
@@ -415,7 +415,7 @@ wikigraph analyze docs/ --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "
 ```
 
 **Pass criteria:**
-- Count equals 35 (all pages shown as orphans at 100th percentile)
+- Count equals 36 (all pages shown as orphans at 100th percentile)
 
 ---
 
@@ -432,7 +432,7 @@ wikigraph analyze docs/ -e index -e log -e AGENTS -e how-to-docs-plan --suggest-
 ```
 
 **Pass criteria:**
-- All four lines print `Pages: 34`
+- All four lines print `Pages: 35`
 - `how-to-docs-plan` absent from exported JSON nodes list:
   ```bash
   jq -e '[.nodes[].id] | index("how-to-docs-plan") | not' /tmp/excl.json
@@ -477,7 +477,7 @@ wikigraph graph /tmp/tinywiki -o /tmp/tiny.html
 
 ## TC-23 · recursive vault traversal (-r)
 
-**Goal:** `-r / --recursive` scans nested subdirectories and skips hidden folders. See [[adr-006-recursive-vault-traversal]].
+**Goal:** `-r / --recursive` scans nested subdirectories and skips hidden folders. See [[adr-007-path-relative-slugs]].
 
 ```bash
 rm -rf /tmp/recwiki
@@ -489,26 +489,28 @@ wikigraph analyze /tmp/recwiki -r --suggest-top 0 2>&1
 ```
 
 **Pass criteria:**
-- Output lists `Pages: 2` (finds `note1` and `note2`, skips `.hidden/note3`)
+- Output lists `Pages: 2` (finds `folder1/note1` and `folder1/note2` as path-relative slugs, skips `.hidden/note3`)
+- `[[note2]]` in `note1.md` resolves via lenient basename fallback to `folder1/note2`; `Edges: 2`
 - Exit code 0
 
 ---
 
-## TC-24 · duplicate slug collision in recursive mode
+## TC-24 · same-basename files in different subdirectories produce path-relative slugs
 
-**Goal:** Clear error when duplicate file basenames exist in different subdirectories under `-r`.
+**Goal:** Two files with the same filename in different subdirectories are disambiguated by their path-relative slug; no collision error occurs. See [[adr-007-path-relative-slugs]].
 
 ```bash
 rm -rf /tmp/dupwiki
 mkdir -p /tmp/dupwiki/dirA /tmp/dupwiki/dirB
 printf '# Note A\n' > /tmp/dupwiki/dirA/same.md
 printf '# Note B\n' > /tmp/dupwiki/dirB/same.md
-wikigraph analyze /tmp/dupwiki -r 2>&1
+wikigraph analyze /tmp/dupwiki -r --suggest-top 0 2>&1
 ```
 
 **Pass criteria:**
-- Non-zero exit code
-- Stderr contains `duplicate slug "same" found`
+- Exit code 0 (no collision error)
+- Output lists `Pages: 2`
+- Communicating classes section names the pages `dirA/same` and `dirB/same`
 
 ---
 
@@ -574,9 +576,49 @@ wikigraph analyze /tmp/mdlinkwiki-root/project --relative-links --suggest-top 0 
 
 **Pass criteria:**
 - (a) `Pages: 3`; no error mentioning `03-recommend` or `notes` as inbound links from `01-discovery` (markdown links inert without the flag)
-- (b) Stderr does **not** require `-r` to find `shared/notes.md` (flag implies recursive); JSON links include `{"source":"01-discovery","target":"03-recommend"}` and `{"source":"01-discovery","target":"notes"}`
+- (b) Stderr does **not** require `-r` to find `shared/notes.md` (flag implies recursive); JSON links include `{"source":"gate/01-discovery","target":"gate/03-recommend"}` and `{"source":"gate/01-discovery","target":"shared/notes"}` (path-relative slugs)
 - (c) `jq '.nodes | length'` prints `3` (the `https://example.com` target does not create a 4th node)
 - (d) Stderr prints a `warning:` line mentioning `outside the wiki root`; exit code 0 (warning, not a hard failure); `page` has no outgoing edge to `escaped`
+
+---
+
+## TC-27 · structured folder wiki with repeated filenames across project directories
+
+**Goal:** A POC-portfolio-style wiki where every project subdirectory contains identically-named files (`01-discovery.md`, `02-feasibility.md`) is analysed correctly. Tests two link styles: (a/b) `--relative-links` resolves sibling paths unambiguously within each project; (c) bare `[[wikilinks]]` with digit-leading slugs are parsed and, when ambiguous across projects, warn and drop. See [[adr-007-path-relative-slugs]].
+
+```bash
+rm -rf /tmp/portfoliowiki
+mkdir -p /tmp/portfoliowiki/project-alpha /tmp/portfoliowiki/project-beta
+
+# Each project has identically-named stages linked via relative markdown links
+printf '# Alpha Discovery\n\n[Feasibility](02-feasibility.md)\n' > /tmp/portfoliowiki/project-alpha/01-discovery.md
+printf '# Alpha Feasibility\n\n[Discovery](01-discovery.md)\n'   > /tmp/portfoliowiki/project-alpha/02-feasibility.md
+printf '# Beta Discovery\n\n[Feasibility](02-feasibility.md)\n'  > /tmp/portfoliowiki/project-beta/01-discovery.md
+printf '# Beta Feasibility\n\n[Discovery](01-discovery.md)\n'    > /tmp/portfoliowiki/project-beta/02-feasibility.md
+
+# (a) Should succeed with path-relative slugs and two isolated clusters
+wikigraph analyze /tmp/portfoliowiki --relative-links --suggest-top 0 2>&1
+
+# (b) Export to JSON and inspect node IDs
+wikigraph export /tmp/portfoliowiki --relative-links -o /tmp/portfolio 2>&1
+jq '[.nodes[].id] | sort' /tmp/portfolio.json
+
+# (c) Wikilinks with digit-leading slugs: [[02-feasibility]] is ambiguous — warn and drop
+rm -rf /tmp/wikiwiki
+mkdir -p /tmp/wikiwiki/project-alpha /tmp/wikiwiki/project-beta
+printf '# Alpha Discovery\n\n[[02-feasibility]]\n' > /tmp/wikiwiki/project-alpha/01-discovery.md
+printf '# Alpha Feasibility\n'                     > /tmp/wikiwiki/project-alpha/02-feasibility.md
+printf '# Beta Discovery\n\n[[02-feasibility]]\n'  > /tmp/wikiwiki/project-beta/01-discovery.md
+printf '# Beta Feasibility\n'                      > /tmp/wikiwiki/project-beta/02-feasibility.md
+wikigraph analyze /tmp/wikiwiki -r --suggest-top 0 2>&1
+```
+
+**Pass criteria:**
+- (a) Exit code 0; no `duplicate slug` error; `Pages: 4`; `Classes: 2`
+- (a) Each communicating class contains exactly two pages from the same project (`project-alpha/01-discovery` + `project-alpha/02-feasibility` in one class; `project-beta/01-discovery` + `project-beta/02-feasibility` in the other)
+- (b) `jq` output is `["project-alpha/01-discovery","project-alpha/02-feasibility","project-beta/01-discovery","project-beta/02-feasibility"]`
+- (b) No cross-project edges: the sibling-relative links (`02-feasibility.md` from within `project-alpha/`) resolve to `project-alpha/02-feasibility`, not `project-beta/02-feasibility`
+- (c) Stderr contains two `warning: [[02-feasibility]] … is ambiguous (2 matches); link dropped` lines (one per `01-discovery.md` file)
 
 ---
 

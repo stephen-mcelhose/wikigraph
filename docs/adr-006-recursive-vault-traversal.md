@@ -6,6 +6,7 @@ tags: [adr, slug, recursive, obsidian, wikilink, wiki-structure]
 timestamp: 2026-08-09T16:00:00Z
 status: accepted
 supersedes: adr-002-slug-resolution
+superseded_by: adr-007-path-relative-slugs
 ---
 
 # ADR-006 — Recursive Vault Traversal and Slug Resolution
