@@ -33,15 +33,15 @@ In `wikigraph analyze docs/`:
 
 Authors fix sinks by adding relevant outgoing `[[wikilinks]]`.
 
-### Display vs math adjacency
+### Noisy sink visualization
 
-Teleportation rows must **not** be rendered as real graph edges — they are a
-mathematical construct, not links authored in the wiki. The display adjacency
-(used by `graph` and `export`) contains only real links; zero rows for sinks
-are left as-is so sinks appear as dead-ends. The math adjacency (passed to
-catrace) has teleportation rows added before kernel construction. See
-[[adr-011-sink-teleportation-vs-pagerank-damping]] and
-[[teleportation-ergodicity]].
+Teleportation rows appear as real edges in `graph` and `export` output — a sink
+page shows a star pattern fanning out to every other page. This is a known,
+accepted consequence of maintaining ergodicity. Separating a display adjacency
+from the math adjacency is not viable: `catrace` rejects zero rows, computes π
+lazily from the same matrix, and self-loop substitutes create non-ergodic
+display chains. See [[adr-011-sink-teleportation-vs-pagerank-damping]] and
+[[teleportation-ergodicity]] for the full reasoning.
 
 ## Related Concepts
 

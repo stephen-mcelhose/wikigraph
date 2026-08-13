@@ -1,7 +1,7 @@
 ---
 type: decision
 title: "ADR-011: Sink-Only Teleportation vs Full PageRank Damping"
-description: Retain sink-only teleportation for ergodicity. Separate the math adjacency (with teleportation) from the display adjacency (real links only). Defer full α-damping as a future option.
+description: Retain sink-only teleportation for ergodicity. Accept noisy sink visualization as the cost of a correct Markov chain. Defer full α-damping as a future option.
 tags: [adr, ergodicity, teleportation, pagerank, markov-chain, visualization]
 timestamp: 2026-08-13T00:52:04Z
 status: accepted
@@ -19,10 +19,21 @@ produce zero rows in the transition matrix, making π undefined.
 
 The current fix: `buildAdjacencyWithOpts` fills zero rows for sinks with `1.0`
 in every column (uniform teleportation). This achieves ergodicity but has a
-side-effect: the modified adjacency matrix is passed directly to `catrace` and
-then to the graph renderer and export formats. Teleportation rows appear as
-real edges, producing misleading star patterns in the visualization — a sink
-page appears to link to every other page.
+visual side-effect: teleportation rows appear as real edges in `graph` and
+`export` output — a sink page appears to link to every other page ("noisy
+sink").
+
+We investigated separating the display adjacency (raw links only) from the math
+adjacency (with teleportation). Reading the `catrace` source revealed this is
+not viable without deeper changes:
+
+- `catrace.NewRandomWalkKernel` explicitly rejects zero rows with an error.
+- `Stationary` is computed lazily from `k.P` on every call; there is no cached
+  result to preserve if we zero out sink rows post-construction.
+- Replacing teleportation with self-loops for the display kernel creates
+  absorbing states, making the display chain non-ergodic and causing
+  `Stationary` to fail, which collapses all node sizes to equal in the
+  visualization.
 
 The question raised: is the sink-only approach mathematically sound, or should
 we adopt full PageRank-style damping (α ≈ 0.85 applied to all pages)?
@@ -35,20 +46,17 @@ In the context of achieving ergodicity for Markov chain analysis of wiki link
 graphs, facing the choice between sink-only teleportation and full PageRank
 α-damping:
 
-1. **Retain sink-only teleportation for math.** Sink pages teleport uniformly
-   to all n pages. Non-sink pages follow real links with probability 1. This is
-   mathematically legitimate: it produces a valid Markov chain with a
-   well-defined stationary distribution. The math is not faked — it is a
-   deliberate and standard modelling choice (see PageRank's original treatment
-   of dangling nodes in Page et al., 1999).
+1. **Retain sink-only teleportation and accept the noisy sink visualization.**
+   Sink pages teleport uniformly to all n pages. This is mathematically
+   legitimate and is the direct analogue of how PageRank handles dangling nodes
+   (Page et al., 1999). The "star pattern" a sink page produces in the graph
+   is an accurate representation of its role in the ergodic chain: from a sink,
+   a random reader can reach any page. It is noisy, not wrong.
 
-2. **Separate display adjacency from math adjacency.** The root cause of the
-   visualisation bug is that the same adjacency matrix was used for both the
-   Markov math and the graph renderer. Fix: `buildAdjacencyWithOpts` returns
-   the raw adjacency (real links only, zero rows for sinks). `buildKernelWithOpts`
-   adds teleportation rows to a copy before passing to catrace. The graph and
-   export commands use the raw adjacency for display — sinks appear as
-   dead-ends, which is the truth about the wiki structure.
+2. **Do not attempt to separate display adjacency from math adjacency.**
+   Doing so requires either modifying catrace (out of scope) or working around
+   its validation and lazy computation in fragile ways. The ergodicity
+   requirement is non-negotiable for correct math; the display is secondary.
 
 3. **Defer full α-damping.** Full PageRank damping (`P = α·A + (1−α)·J/n`)
    is more theoretically principled — it guarantees ergodicity unconditionally,
@@ -60,17 +68,16 @@ graphs, facing the choice between sink-only teleportation and full PageRank
 
 ## Consequences
 
-- Sink pages are correctly shown as dead-ends in `graph` and `export` output.
-- The stationary distribution, MFPT, and class computation are unchanged —
-  they continue to use the ergodic (teleportation-filled) adjacency.
-- `analyze`'s sink detection continues to report sink pages accurately.
+- Sink pages produce a star pattern in `graph` and `export` output. This is a
+  known, accepted property of the ergodic chain — not a rendering bug.
+- `analyze` reports sink pages explicitly so authors know which pages to fix.
+- The stationary distribution, MFPT, and class computation are correct.
 - **Revisit if any of the following occur:**
-  - Spider traps (small strongly-connected components with no outgoing edges)
-    cause π to concentrate undesirably on a subset of pages.
+  - Spider traps cause π to concentrate undesirably on a subset of pages.
   - Sink/non-sink asymmetry produces misleading π rankings in production wikis.
+  - catrace adds native support for α-damping or a display-only rendering path.
   - A user-facing damping factor (`--alpha`) is requested for PageRank
     compatibility.
-  - catrace adds native support for α-damping.
 
 ## Sources
 

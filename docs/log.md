@@ -108,6 +108,11 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 - Updated log.md
 
 ## [2026-08-11] lint | 35 pages checked (post-rebase on main), 14 issues found, 14 fixed
+## [2026-08-13] amend | adr-011-sink-teleportation-vs-pagerank-damping
+- Revised decision: accept noisy sink visualization (star pattern) as known consequence of ergodicity
+- Removed "separate display adj from math adj" — not viable: catrace rejects zero rows, lazy π, self-loops create non-ergodic display chain
+- Updated [[sink-page]] "noisy sink visualization" section to match revised decision
+
 ## [2026-08-13] ingest | teleportation-ergodicity + adr-011-sink-teleportation-vs-pagerank-damping
 - New concept page: [[teleportation-ergodicity]] — sink-only teleportation vs full PageRank α-damping; canonical reference https://en.wikipedia.org/wiki/PageRank
 - New decision: [[adr-011-sink-teleportation-vs-pagerank-damping]] — retain sink-only teleportation; separate display adj from math adj; revisit if spider traps, π asymmetries, or catrace α-damping support emerge
