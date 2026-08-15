@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"gonum.org/v1/gonum/mat"
 )
 
 func TestLoadPagesFlatAndRecursive(t *testing.T) {
@@ -213,6 +215,37 @@ func TestRelativeLinks_WarnsOnEscapeAboveRoot(t *testing.T) {
 	}
 }
 
+// TestNormalizeMDLinkTarget_GoldenAcceptAndRejectTable locks title/fragment/
+// query stripping and absolute/anchor rejection used by relative-link parsing.
+func TestNormalizeMDLinkTarget_GoldenAcceptAndRejectTable(t *testing.T) {
+	cases := []struct {
+		name   string
+		in     string
+		want   string
+		wantOK bool
+	}{
+		{name: "plain relative", in: "02-feasibility.md", want: "02-feasibility.md", wantOK: true},
+		{name: "strips title suffix", in: `foo.md "Title"`, want: "foo.md", wantOK: true},
+		{name: "strips fragment", in: "foo.md#section", want: "foo.md", wantOK: true},
+		{name: "strips query", in: "foo.md?x=1", want: "foo.md", wantOK: true},
+		{name: "reject empty", in: "   ", want: "", wantOK: false},
+		{name: "reject bare anchor", in: "#section", want: "", wantOK: false},
+		{name: "reject http", in: "https://example.com/a.md", want: "", wantOK: false},
+		{name: "reject mailto", in: "mailto:a@b.com", want: "", wantOK: false},
+		{name: "reject protocol-relative", in: "//cdn.example/x.md", want: "", wantOK: false},
+		{name: "fragment-only after strip empty", in: "#", want: "", wantOK: false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, ok := normalizeMDLinkTarget(tc.in)
+			if ok != tc.wantOK || got != tc.want {
+				t.Errorf("normalizeMDLinkTarget(%q) = (%q, %v), want (%q, %v)",
+					tc.in, got, ok, tc.want, tc.wantOK)
+			}
+		})
+	}
+}
+
 func TestRelativeLinks_DanglingRelativeLinkDoesNotPanic(t *testing.T) {
 	tmpDir := t.TempDir()
 	os.WriteFile(filepath.Join(tmpDir, "a.md"), []byte("[missing](does-not-exist.md)\n"), 0644)
@@ -227,14 +260,9 @@ func TestRelativeLinks_DanglingRelativeLinkDoesNotPanic(t *testing.T) {
 	}
 }
 
-func TestRelativeLinks_PortfolioRepeatedFilenames_IsolatedClusters(t *testing.T) {
-	// TC-27(a/b): portfolio wiki where every project subdirectory contains
-	// identically-named files. --relative-links must resolve sibling links within
-	// each project only, producing two isolated communicating classes with no
-	// cross-project edges. The plain wikilink path ([[02-feasibility]]) is
-	// ambiguous and covered separately in TestLenientWikilinkFallback_AmbiguousBasenameDropsLink.
+func writePortfolioFixture(t *testing.T) string {
+	t.Helper()
 	tmpDir := t.TempDir()
-
 	alpha := filepath.Join(tmpDir, "project-alpha")
 	beta := filepath.Join(tmpDir, "project-beta")
 	for _, d := range []string{alpha, beta} {
@@ -242,29 +270,28 @@ func TestRelativeLinks_PortfolioRepeatedFilenames_IsolatedClusters(t *testing.T)
 			t.Fatal(err)
 		}
 	}
-
 	// Each project: 01-discovery <-> 02-feasibility via relative markdown links.
 	os.WriteFile(filepath.Join(alpha, "01-discovery.md"), []byte("# Alpha Discovery\n\n[Feasibility](02-feasibility.md)\n"), 0644)
 	os.WriteFile(filepath.Join(alpha, "02-feasibility.md"), []byte("# Alpha Feasibility\n\n[Discovery](01-discovery.md)\n"), 0644)
 	os.WriteFile(filepath.Join(beta, "01-discovery.md"), []byte("# Beta Discovery\n\n[Feasibility](02-feasibility.md)\n"), 0644)
 	os.WriteFile(filepath.Join(beta, "02-feasibility.md"), []byte("# Beta Feasibility\n\n[Discovery](01-discovery.md)\n"), 0644)
+	return tmpDir
+}
 
-	exclude := makeExcludeMap(nil)
-	kern, rawAdj, pages, _, err := buildKernelWithOpts(tmpDir, false, exclude, true, defaultTeleportAlpha, nil)
+func loadPortfolioRaw(t *testing.T) (rawAdj *mat.Dense, pages []string, idx map[string]int) {
+	t.Helper()
+	tmpDir := writePortfolioFixture(t)
+	_, rawAdj, pages, _, err := buildKernelWithOpts(tmpDir, false, makeExcludeMap(nil), true, defaultTeleportAlpha, nil)
 	if err != nil {
 		t.Fatalf("buildKernelWithOpts: %v", err)
 	}
-
 	if len(pages) != 4 {
 		t.Fatalf("expected 4 pages, got %d (%v)", len(pages), pages)
 	}
-
-	idx := make(map[string]int, len(pages))
+	idx = make(map[string]int, len(pages))
 	for i, p := range pages {
 		idx[p] = i
 	}
-
-	// All four path-relative slugs must be present.
 	for _, slug := range []string{
 		"project-alpha/01-discovery",
 		"project-alpha/02-feasibility",
@@ -272,12 +299,14 @@ func TestRelativeLinks_PortfolioRepeatedFilenames_IsolatedClusters(t *testing.T)
 		"project-beta/02-feasibility",
 	} {
 		if _, ok := idx[slug]; !ok {
-			t.Errorf("slug %q missing from pages %v", slug, pages)
+			t.Fatalf("slug %q missing from pages %v", slug, pages)
 		}
 	}
+	return rawAdj, pages, idx
+}
 
-	// No cross-project raw edges (teleporting P is dense by construction).
-	crossProject := [][2]string{
+func portfolioCrossProjectPairs() [][2]string {
+	return [][2]string{
 		{"project-alpha/01-discovery", "project-beta/01-discovery"},
 		{"project-alpha/01-discovery", "project-beta/02-feasibility"},
 		{"project-alpha/02-feasibility", "project-beta/01-discovery"},
@@ -287,30 +316,44 @@ func TestRelativeLinks_PortfolioRepeatedFilenames_IsolatedClusters(t *testing.T)
 		{"project-beta/02-feasibility", "project-alpha/01-discovery"},
 		{"project-beta/02-feasibility", "project-alpha/02-feasibility"},
 	}
-	for _, e := range crossProject {
-		if rawAdj.At(idx[e[0]], idx[e[1]]) > 0 {
-			t.Errorf("cross-project edge %s -> %s must not exist (rawAdj=%.6f)",
-				e[0], e[1], rawAdj.At(idx[e[0]], idx[e[1]]))
-		}
-	}
+}
 
-	// Intra-project raw edges must exist in both directions.
-	intraProject := [][2]string{
+func portfolioIntraProjectPairs() [][2]string {
+	return [][2]string{
 		{"project-alpha/01-discovery", "project-alpha/02-feasibility"},
 		{"project-alpha/02-feasibility", "project-alpha/01-discovery"},
 		{"project-beta/01-discovery", "project-beta/02-feasibility"},
 		{"project-beta/02-feasibility", "project-beta/01-discovery"},
 	}
-	for _, e := range intraProject {
+}
+
+// TC-27(a/b): portfolio wiki where every project subdirectory contains
+// identically-named files. --relative-links must resolve sibling links within
+// each project only. The plain wikilink path ([[02-feasibility]]) is ambiguous
+// and covered separately in TestLenientWikilinkFallback_AmbiguousBasenameDropsLink.
+
+func TestRelativeLinks_Portfolio_NoCrossProjectEdges(t *testing.T) {
+	rawAdj, _, idx := loadPortfolioRaw(t)
+	for _, e := range portfolioCrossProjectPairs() {
+		if rawAdj.At(idx[e[0]], idx[e[1]]) > 0 {
+			t.Errorf("cross-project edge %s -> %s must not exist (rawAdj=%.6f)",
+				e[0], e[1], rawAdj.At(idx[e[0]], idx[e[1]]))
+		}
+	}
+}
+
+func TestRelativeLinks_Portfolio_IntraProjectEdges(t *testing.T) {
+	rawAdj, _, idx := loadPortfolioRaw(t)
+	for _, e := range portfolioIntraProjectPairs() {
 		if rawAdj.At(idx[e[0]], idx[e[1]]) <= 0 {
 			t.Errorf("intra-project edge %s -> %s must exist (rawAdj=%.6f)",
 				e[0], e[1], rawAdj.At(idx[e[0]], idx[e[1]]))
 		}
 	}
+}
 
-	// Two isolated raw SCCs, each containing exactly the two pages from one project.
-	// (Teleporting-kernel Classes would be 1 by construction.)
-	_ = kern
+func TestRelativeLinks_Portfolio_TwoRawSCCs(t *testing.T) {
+	rawAdj, pages, _ := loadPortfolioRaw(t)
 	sccs := rawSCCs(rawAdj)
 	if len(sccs) != 2 {
 		t.Errorf("expected 2 raw communicating classes (one per project), got %d", len(sccs))
