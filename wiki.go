@@ -53,7 +53,29 @@ func resolveRelativeLinks(raw []byte, sourceFilePath, rootDir string, pathToSlug
 // writer, for testability.
 func resolveRelativeLinksTo(warnOut io.Writer, raw []byte, sourceFilePath, rootDir string, pathToSlug map[string]string) map[string]bool {
 	linked := map[string]bool{}
+	rootAbs, sourceDir := absRootAndSourceDir(rootDir, sourceFilePath)
 
+	for _, m := range mdLinkRe.FindAllSubmatchIndex(raw, -1) {
+		if isImageMarkdownLink(raw, m[0]) {
+			continue
+		}
+		target, ok := normalizeMDLinkTarget(string(raw[m[4]:m[5]]))
+		if !ok {
+			continue
+		}
+		resolved := filepath.Clean(filepath.Join(sourceDir, target))
+		if escapesWikiRoot(rootAbs, resolved) {
+			fmt.Fprintf(warnOut, "warning: relative link %q in %s resolves outside the wiki root %q; ignoring\n", target, sourceFilePath, rootDir)
+			continue
+		}
+		if slug, ok := lookupPathSlug(pathToSlug, resolved); ok {
+			linked[slug] = true
+		}
+	}
+	return linked
+}
+
+func absRootAndSourceDir(rootDir, sourceFilePath string) (rootAbs, sourceDir string) {
 	rootAbs, err := filepath.Abs(rootDir)
 	if err != nil {
 		rootAbs = filepath.Clean(rootDir)
@@ -62,56 +84,56 @@ func resolveRelativeLinksTo(warnOut io.Writer, raw []byte, sourceFilePath, rootD
 	if err != nil {
 		sourceAbs = filepath.Clean(sourceFilePath)
 	}
-	sourceDir := filepath.Dir(sourceAbs)
+	return rootAbs, filepath.Dir(sourceAbs)
+}
 
-	for _, m := range mdLinkRe.FindAllSubmatchIndex(raw, -1) {
-		// Skip image links: ![alt](src)
-		if m[0] > 0 && raw[m[0]-1] == '!' {
-			continue
-		}
-		target := strings.TrimSpace(string(raw[m[4]:m[5]]))
-		if target == "" {
-			continue
-		}
-		// A link target may carry a trailing "title" after whitespace, e.g. (foo.md "Title").
-		if idx := strings.IndexAny(target, " \t"); idx >= 0 {
-			target = target[:idx]
-		}
-		if isAbsoluteLinkTarget(target) {
-			continue
-		}
-		if strings.HasPrefix(target, "#") {
-			// Same-page anchor only, not a cross-page edge.
-			continue
-		}
-		// Strip fragment/query suffixes.
-		if idx := strings.IndexAny(target, "#?"); idx >= 0 {
-			target = target[:idx]
-		}
-		if target == "" {
-			continue
-		}
+func isImageMarkdownLink(raw []byte, start int) bool {
+	return start > 0 && raw[start-1] == '!'
+}
 
-		resolved := filepath.Clean(filepath.Join(sourceDir, target))
+// normalizeMDLinkTarget strips optional title / fragment / query and rejects
+// absolute URLs, bare anchors, and empty targets.
+func normalizeMDLinkTarget(target string) (string, bool) {
+	target = strings.TrimSpace(target)
+	if target == "" {
+		return "", false
+	}
+	if idx := strings.IndexAny(target, " \t"); idx >= 0 {
+		target = target[:idx]
+	}
+	if isAbsoluteLinkTarget(target) {
+		return "", false
+	}
+	if strings.HasPrefix(target, "#") {
+		return "", false
+	}
+	if idx := strings.IndexAny(target, "#?"); idx >= 0 {
+		target = target[:idx]
+	}
+	if target == "" {
+		return "", false
+	}
+	return target, true
+}
 
-		if rel, err := filepath.Rel(rootAbs, resolved); err == nil {
-			if rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-				fmt.Fprintf(warnOut, "warning: relative link %q in %s resolves outside the wiki root %q; ignoring\n", target, sourceFilePath, rootDir)
-				continue
-			}
-		}
+func escapesWikiRoot(rootAbs, resolved string) bool {
+	rel, err := filepath.Rel(rootAbs, resolved)
+	if err != nil {
+		return false
+	}
+	return rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator))
+}
 
-		if slug, ok := pathToSlug[resolved]; ok {
-			linked[slug] = true
-			continue
-		}
-		if !strings.HasSuffix(resolved, ".md") {
-			if slug, ok := pathToSlug[resolved+".md"]; ok {
-				linked[slug] = true
-			}
+func lookupPathSlug(pathToSlug map[string]string, resolved string) (string, bool) {
+	if slug, ok := pathToSlug[resolved]; ok {
+		return slug, true
+	}
+	if !strings.HasSuffix(resolved, ".md") {
+		if slug, ok := pathToSlug[resolved+".md"]; ok {
+			return slug, true
 		}
 	}
-	return linked
+	return "", false
 }
 
 // makeExcludeMap converts a slice of slugs to a set for O(1) lookup.
@@ -133,66 +155,89 @@ func isExcluded(slug string, exclude map[string]bool) bool {
 // loadPages reads all non-meta .md files from dir (optionally recursively)
 // and returns sorted slugs, slug->index map, and slug->filePath map.
 func loadPages(dir string, recursive bool, exclude map[string]bool) ([]string, map[string]int, map[string]string, error) {
-	paths := make(map[string]string)
 	var pages []string
-
+	var paths map[string]string
+	var err error
 	if recursive {
-		err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
-			if d.IsDir() {
-				// Skip hidden directories like .git, .obsidian, .trash
-				if strings.HasPrefix(d.Name(), ".") && path != dir {
-					return filepath.SkipDir
-				}
-				return nil
-			}
-			if !strings.HasSuffix(d.Name(), ".md") {
-				return nil
-			}
-			rel, err := filepath.Rel(dir, path)
-			if err != nil {
-				return err
-			}
-			slug := strings.ReplaceAll(strings.TrimSuffix(rel, ".md"), string(filepath.Separator), "/")
-			if isExcluded(slug, exclude) {
-				return nil
-			}
-			if existingPath, ok := paths[slug]; ok {
-				return fmt.Errorf("duplicate slug %q found in %q and %q", slug, existingPath, path)
-			}
-			paths[slug] = path
-			pages = append(pages, slug)
-			return nil
-		})
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("walking wiki dir %q: %w", dir, err)
-		}
+		pages, paths, err = loadPagesRecursive(dir, exclude)
 	} else {
-		entries, err := os.ReadDir(dir)
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("reading wiki dir %q: %w", dir, err)
-		}
-		for _, e := range entries {
-			if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
-				continue
-			}
-			slug := strings.TrimSuffix(e.Name(), ".md")
-			if exclude[slug] {
-				continue
-			}
-			paths[slug] = filepath.Join(dir, e.Name())
-			pages = append(pages, slug)
-		}
+		pages, paths, err = loadPagesFlat(dir, exclude)
 	}
-
+	if err != nil {
+		return nil, nil, nil, err
+	}
 	sort.Strings(pages)
+	return pages, indexPages(pages), paths, nil
+}
+
+func indexPages(pages []string) map[string]int {
 	idx := make(map[string]int, len(pages))
 	for i, p := range pages {
 		idx[p] = i
 	}
-	return pages, idx, paths, nil
+	return idx
+}
+
+func loadPagesFlat(dir string, exclude map[string]bool) ([]string, map[string]string, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, nil, fmt.Errorf("reading wiki dir %q: %w", dir, err)
+	}
+	paths := make(map[string]string)
+	var pages []string
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
+			continue
+		}
+		slug := strings.TrimSuffix(e.Name(), ".md")
+		if exclude[slug] {
+			continue
+		}
+		paths[slug] = filepath.Join(dir, e.Name())
+		pages = append(pages, slug)
+	}
+	return pages, paths, nil
+}
+
+func loadPagesRecursive(dir string, exclude map[string]bool) ([]string, map[string]string, error) {
+	paths := make(map[string]string)
+	var pages []string
+	err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+		return considerWikiFile(dir, path, d, err, exclude, paths, &pages)
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("walking wiki dir %q: %w", dir, err)
+	}
+	return pages, paths, nil
+}
+
+func considerWikiFile(root, path string, d os.DirEntry, walkErr error, exclude map[string]bool, paths map[string]string, pages *[]string) error {
+	if walkErr != nil {
+		return walkErr
+	}
+	if d.IsDir() {
+		if strings.HasPrefix(d.Name(), ".") && path != root {
+			return filepath.SkipDir
+		}
+		return nil
+	}
+	if !strings.HasSuffix(d.Name(), ".md") {
+		return nil
+	}
+	rel, err := filepath.Rel(root, path)
+	if err != nil {
+		return err
+	}
+	slug := strings.ReplaceAll(strings.TrimSuffix(rel, ".md"), string(filepath.Separator), "/")
+	if isExcluded(slug, exclude) {
+		return nil
+	}
+	if existingPath, ok := paths[slug]; ok {
+		return fmt.Errorf("duplicate slug %q found in %q and %q", slug, existingPath, path)
+	}
+	paths[slug] = path
+	*pages = append(*pages, slug)
+	return nil
 }
 
 // defaultTeleportAlpha is the PageRank teleport probability (α). Link-following
@@ -224,56 +269,74 @@ func buildAdjacencyWithOpts(pages []string, idx map[string]int, paths map[string
 	}
 
 	for i, slug := range pages {
-		filePath, ok := paths[slug]
-		if !ok {
-			return nil, nil, fmt.Errorf("missing path for slug %q", slug)
-		}
-		raw, err := os.ReadFile(filePath)
+		raw, filePath, err := readPageRaw(paths, slug)
 		if err != nil {
-			return nil, nil, fmt.Errorf("reading %s: %w", filePath, err)
+			return nil, nil, err
 		}
-		linked := map[int]bool{}
-		for _, m := range wikilinkRe.FindAllSubmatch(raw, -1) {
-			ref := strings.ToLower(string(m[1]))
-			if j, ok := idx[ref]; ok && j != i {
-				linked[j] = true
-				continue
-			}
-			// Lenient fallback: match by basename for path-relative slugs.
-			// If the reference is unambiguous (exactly one slug has that base), resolve it.
-			// If multiple slugs share the same basename, warn and drop the link.
-			var matches []int
-			for candidate, j2 := range idx {
-				if filepath.Base(candidate) == ref && j2 != i {
-					matches = append(matches, j2)
-				}
-			}
-			switch len(matches) {
-			case 1:
-				linked[matches[0]] = true
-			default:
-				if len(matches) > 1 {
-					fmt.Fprintf(os.Stderr, "warning: [[%s]] in %s is ambiguous (%d matches); link dropped\n", ref, filePath, len(matches))
-				}
-			}
-		}
+		linked := resolveWikilinkTargets(raw, i, idx, filePath)
 		if relativeLinks {
-			for targetSlug := range resolveRelativeLinks(raw, filePath, rootDir, pathToSlug) {
-				if j, ok := idx[targetSlug]; ok && j != i {
-					linked[j] = true
-				}
-			}
+			mergeRelativeTargets(linked, raw, filePath, rootDir, pathToSlug, idx, i)
 		}
 		if len(linked) == 0 {
 			sinks = append(sinks, slug)
-			// Leave the row as zeros — teleporting kernel handles sinks via restart.
-		} else {
-			for j := range linked {
-				adj.Set(i, j, 1.0)
-			}
+			continue
+		}
+		for j := range linked {
+			adj.Set(i, j, 1.0)
 		}
 	}
 	return adj, sinks, nil
+}
+
+func readPageRaw(paths map[string]string, slug string) ([]byte, string, error) {
+	filePath, ok := paths[slug]
+	if !ok {
+		return nil, "", fmt.Errorf("missing path for slug %q", slug)
+	}
+	raw, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, "", fmt.Errorf("reading %s: %w", filePath, err)
+	}
+	return raw, filePath, nil
+}
+
+func resolveWikilinkTargets(raw []byte, self int, idx map[string]int, filePath string) map[int]bool {
+	linked := map[int]bool{}
+	for _, m := range wikilinkRe.FindAllSubmatch(raw, -1) {
+		ref := strings.ToLower(string(m[1]))
+		if j, ok := idx[ref]; ok && j != self {
+			linked[j] = true
+			continue
+		}
+		matches := lenientBasenameMatches(ref, self, idx)
+		switch len(matches) {
+		case 1:
+			linked[matches[0]] = true
+		default:
+			if len(matches) > 1 {
+				fmt.Fprintf(os.Stderr, "warning: [[%s]] in %s is ambiguous (%d matches); link dropped\n", ref, filePath, len(matches))
+			}
+		}
+	}
+	return linked
+}
+
+func lenientBasenameMatches(ref string, self int, idx map[string]int) []int {
+	var matches []int
+	for candidate, j := range idx {
+		if filepath.Base(candidate) == ref && j != self {
+			matches = append(matches, j)
+		}
+	}
+	return matches
+}
+
+func mergeRelativeTargets(linked map[int]bool, raw []byte, filePath, rootDir string, pathToSlug map[string]string, idx map[string]int, self int) {
+	for targetSlug := range resolveRelativeLinks(raw, filePath, rootDir, pathToSlug) {
+		if j, ok := idx[targetSlug]; ok && j != self {
+			linked[j] = true
+		}
+	}
 }
 
 // restartDistribution builds a probability vector over pages. With no seeds it
