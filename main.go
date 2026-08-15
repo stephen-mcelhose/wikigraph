@@ -20,6 +20,12 @@ var flagRecursive bool
 // Implies recursive traversal, since relative paths often cross subdirectories.
 var flagRelativeLinks bool
 
+// flagAlpha is the PageRank teleport probability (default 0.15).
+var flagAlpha float64
+
+// flagSeed, when set, personalizes the restart distribution (PPR).
+var flagSeed []string
+
 var rootCmd = &cobra.Command{
 	Use:   "wikigraph",
 	Short: "Interactive wiki link graph and analysis tools.",
@@ -33,6 +39,11 @@ Wiki format expected:
     always recursive and warns if a link resolves outside the wiki root
   - Meta-files (index, log, AGENTS) are excluded automatically via --exclude
   - All other .md files become nodes in the graph
+
+Markov / PageRank defaults:
+  - Raw wikilink adjacency for structure and display
+  - Teleporting kernel with --alpha (default 0.15) for π, MFPT, entropy
+  - Uniform restart → global PageRank; --seed <slug> → Personalized PageRank
 
 Subcommands:
   graph    Generate an interactive force-directed HTML graph
@@ -48,6 +59,10 @@ func init() {
 		"recursively scan subdirectories for Markdown pages")
 	rootCmd.PersistentFlags().BoolVar(&flagRelativeLinks, "relative-links", false,
 		"also parse standard Markdown [label](relative/path.md) links as edges (absolute URLs ignored); implies --recursive")
+	rootCmd.PersistentFlags().Float64Var(&flagAlpha, "alpha", defaultTeleportAlpha,
+		"PageRank teleport probability α (link-following weight is 1−α)")
+	rootCmd.PersistentFlags().StringArrayVar(&flagSeed, "seed", nil,
+		"personalize restart on these page slugs (repeatable; Personalized PageRank)")
 	rootCmd.AddCommand(graphCmd, goalCmd, exportCmd, analyzeCmd)
 }
 

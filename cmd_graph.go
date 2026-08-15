@@ -22,10 +22,12 @@ var graphCmd = &cobra.Command{
 	Long: `graph generates an interactive force-directed graph of a wiki's internal
 link structure and writes it to a self-contained HTML file.
 
-  Node size   ∝  stationary distribution (centrality — how often a random walk lands here)
-  Node colour =  communicating class (cluster of pages that can all reach each other)
-  Edge width  ∝  transition probability (how likely a random walk follows that link)
-  Drag, zoom, and pan are fully supported.`,
+  Node size   ∝  PageRank π (stationary of the teleporting walk; use --seed for PPR)
+  Node colour =  communicating class (from the display kernel)
+  Edge width  ∝  base link probability (real wikilinks; MinEdge hides sink restart rows)
+  Drag, zoom, and pan are fully supported.
+
+Flags --alpha and --seed are inherited from the root command.`,
 
 	Args: cobra.ExactArgs(1),
 	RunE: runGraph,
@@ -34,7 +36,7 @@ link structure and writes it to a self-contained HTML file.
 func init() {
 	graphCmd.Flags().StringVarP(&flagGraphOut, "out", "o", "wiki_graph.html", "output HTML file")
 	graphCmd.Flags().StringVarP(&flagGraphTitle, "title", "t", "", "graph title shown in browser tab (default: <wiki-dir> wiki)")
-	graphCmd.Flags().Float64VarP(&flagGraphMinEdge, "min-edge", "m", 0.005, "omit edges below this transition probability")
+	graphCmd.Flags().Float64VarP(&flagGraphMinEdge, "min-edge", "m", 0.02, "omit edges below this base-link probability (suppresses sink restart rows)")
 	graphCmd.Flags().StringArrayVarP(&flagGraphSed, "sed", "s", nil, "sed expression(s) to apply to the HTML output (repeatable, e.g. -s 's/foo/bar/')")
 }
 
@@ -60,16 +62,33 @@ func runGraph(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	k, err := catrace.NewRandomWalkKernel(adj, pages)
+	restart, err := restartDistribution(pages, flagSeed)
 	if err != nil {
-		return fmt.Errorf("building kernel: %w", err)
+		return err
 	}
 
-	html, err := k.ToHTML(&catrace.VisualiseOptions{
-		Title:   title,
-		MinEdge: flagGraphMinEdge,
-		Width:   1400,
-		Height:  900,
+	// Math kernel: full α-damping → PageRank / PPR for node mass.
+	mathK, err := catrace.NewTeleportingKernelFromAdj(adj, restart, flagAlpha, pages)
+	if err != nil {
+		return fmt.Errorf("building teleporting kernel: %w", err)
+	}
+	pi, err := mathK.Stationary(1e-12, 5000)
+	if err != nil {
+		return fmt.Errorf("PageRank stationary: %w", err)
+	}
+
+	// Display kernel: α=0 keeps real link edges; MinEdge hides sink→restart stars.
+	baseK, err := catrace.NewTeleportingKernelFromAdj(adj, restart, 0, pages)
+	if err != nil {
+		return fmt.Errorf("building display kernel: %w", err)
+	}
+
+	html, err := baseK.ToHTML(&catrace.VisualiseOptions{
+		Title:    title,
+		MinEdge:  flagGraphMinEdge,
+		Width:    1400,
+		Height:   900,
+		NodeMass: pi,
 	})
 	if err != nil {
 		return fmt.Errorf("generating HTML: %w", err)

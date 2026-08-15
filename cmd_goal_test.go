@@ -31,7 +31,7 @@ func TestGoalStrategies(t *testing.T) {
 	}
 
 	exclude := makeExcludeMap(nil)
-	kern, P, pages, _, err := buildKernel(tmpDir, false, exclude)
+	kern, _, pages, _, err := buildKernel(tmpDir, false, exclude)
 	if err != nil {
 		t.Fatalf("buildKernel failed: %v", err)
 	}
@@ -42,6 +42,7 @@ func TestGoalStrategies(t *testing.T) {
 	}
 
 	n := len(pages)
+	P := kern.P
 
 	// 1. Union strategy test
 	t.Run("Union Strategy", func(t *testing.T) {
@@ -179,10 +180,11 @@ func TestBottleneckSelectsPathNode(t *testing.T) {
 	}
 
 	exclude := makeExcludeMap(nil)
-	_, P, pages, _, err := buildKernel(tmpDir, false, exclude)
+	kern2, _, pages, _, err := buildKernel(tmpDir, false, exclude)
 	if err != nil {
 		t.Fatalf("buildKernel failed: %v", err)
 	}
+	P := kern2.P
 
 	idx := make(map[string]int, len(pages))
 	for i, p := range pages {

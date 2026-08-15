@@ -86,7 +86,7 @@ func TestRelativeLinks_SiblingAndTraversalAndAbsoluteURL(t *testing.T) {
 	}, "\n")), 0644)
 
 	exclude := makeExcludeMap(nil)
-	kern, _, pages, _, err := buildKernelWithOpts(tmpDir, false, exclude, true)
+	kern, _, pages, _, err := buildKernelWithOpts(tmpDir, false, exclude, true, defaultTeleportAlpha, nil)
 	if err != nil {
 		t.Fatalf("buildKernelWithOpts failed: %v", err)
 	}
@@ -140,13 +140,13 @@ func TestRelativeLinks_DisabledByDefault_NonBreaking(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// relativeLinks=false: identical behaviour to pre-#51 buildAdjacency.
+	// relativeLinks=false: markdown links ignored; pages with only md links are sinks.
 	adj, sinks, err := buildAdjacencyWithOpts(pages, idx, paths, false, tmpDir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if adj.At(idx["a"], idx["b"]) != 1.0 {
-		t.Errorf("expected uniform sink teleport row for 'a' (markdown link ignored), got adj[a][b]=%v", adj.At(idx["a"], idx["b"]))
+	if adj.At(idx["a"], idx["b"]) != 0 {
+		t.Errorf("expected no raw edge for markdown link when relativeLinks=false, got adj[a][b]=%v", adj.At(idx["a"], idx["b"]))
 	}
 	if len(sinks) != 2 {
 		t.Errorf("expected both pages to be sinks without relative-link parsing, got sinks=%v", sinks)
@@ -159,7 +159,7 @@ func TestRelativeLinks_WikilinksStillWorkWhenEnabled(t *testing.T) {
 	os.WriteFile(filepath.Join(tmpDir, "b.md"), []byte("# B\n"), 0644)
 
 	exclude := makeExcludeMap(nil)
-	kern, _, pages, _, err := buildKernelWithOpts(tmpDir, false, exclude, true)
+	kern, _, pages, _, err := buildKernelWithOpts(tmpDir, false, exclude, true, defaultTeleportAlpha, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,7 +181,7 @@ func TestRelativeLinks_ImpliesRecursive(t *testing.T) {
 
 	exclude := makeExcludeMap(nil)
 	// recursive=false explicitly, but relativeLinks=true should force recursion.
-	_, _, pages, _, err := buildKernelWithOpts(tmpDir, false, exclude, true)
+	_, _, pages, _, err := buildKernelWithOpts(tmpDir, false, exclude, true, defaultTeleportAlpha, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -218,7 +218,7 @@ func TestRelativeLinks_DanglingRelativeLinkDoesNotPanic(t *testing.T) {
 	os.WriteFile(filepath.Join(tmpDir, "a.md"), []byte("[missing](does-not-exist.md)\n"), 0644)
 
 	exclude := makeExcludeMap(nil)
-	_, _, pages, _, err := buildKernelWithOpts(tmpDir, false, exclude, true)
+	_, _, pages, _, err := buildKernelWithOpts(tmpDir, false, exclude, true, defaultTeleportAlpha, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -250,7 +250,7 @@ func TestRelativeLinks_PortfolioRepeatedFilenames_IsolatedClusters(t *testing.T)
 	os.WriteFile(filepath.Join(beta, "02-feasibility.md"), []byte("# Beta Feasibility\n\n[Discovery](01-discovery.md)\n"), 0644)
 
 	exclude := makeExcludeMap(nil)
-	kern, _, pages, _, err := buildKernelWithOpts(tmpDir, false, exclude, true)
+	kern, rawAdj, pages, _, err := buildKernelWithOpts(tmpDir, false, exclude, true, defaultTeleportAlpha, nil)
 	if err != nil {
 		t.Fatalf("buildKernelWithOpts: %v", err)
 	}
@@ -276,7 +276,7 @@ func TestRelativeLinks_PortfolioRepeatedFilenames_IsolatedClusters(t *testing.T)
 		}
 	}
 
-	// No cross-project edges.
+	// No cross-project raw edges (teleporting P is dense by construction).
 	crossProject := [][2]string{
 		{"project-alpha/01-discovery", "project-beta/01-discovery"},
 		{"project-alpha/01-discovery", "project-beta/02-feasibility"},
@@ -288,13 +288,13 @@ func TestRelativeLinks_PortfolioRepeatedFilenames_IsolatedClusters(t *testing.T)
 		{"project-beta/02-feasibility", "project-alpha/02-feasibility"},
 	}
 	for _, e := range crossProject {
-		if kern.P.At(idx[e[0]], idx[e[1]]) > 0 {
-			t.Errorf("cross-project edge %s -> %s must not exist (P=%.6f)",
-				e[0], e[1], kern.P.At(idx[e[0]], idx[e[1]]))
+		if rawAdj.At(idx[e[0]], idx[e[1]]) > 0 {
+			t.Errorf("cross-project edge %s -> %s must not exist (rawAdj=%.6f)",
+				e[0], e[1], rawAdj.At(idx[e[0]], idx[e[1]]))
 		}
 	}
 
-	// Intra-project edges must exist in both directions.
+	// Intra-project raw edges must exist in both directions.
 	intraProject := [][2]string{
 		{"project-alpha/01-discovery", "project-alpha/02-feasibility"},
 		{"project-alpha/02-feasibility", "project-alpha/01-discovery"},
@@ -302,28 +302,26 @@ func TestRelativeLinks_PortfolioRepeatedFilenames_IsolatedClusters(t *testing.T)
 		{"project-beta/02-feasibility", "project-beta/01-discovery"},
 	}
 	for _, e := range intraProject {
-		if kern.P.At(idx[e[0]], idx[e[1]]) <= 0 {
-			t.Errorf("intra-project edge %s -> %s must exist (P=%.6f)",
-				e[0], e[1], kern.P.At(idx[e[0]], idx[e[1]]))
+		if rawAdj.At(idx[e[0]], idx[e[1]]) <= 0 {
+			t.Errorf("intra-project edge %s -> %s must exist (rawAdj=%.6f)",
+				e[0], e[1], rawAdj.At(idx[e[0]], idx[e[1]]))
 		}
 	}
 
-	// Two isolated communicating classes, each containing exactly the two
-	// pages from one project.
-	cd, err := kern.Classes(1e-10)
-	if err != nil {
-		t.Fatalf("class decomposition: %v", err)
+	// Two isolated raw SCCs, each containing exactly the two pages from one project.
+	// (Teleporting-kernel Classes would be 1 by construction.)
+	_ = kern
+	sccs := rawSCCs(rawAdj)
+	if len(sccs) != 2 {
+		t.Errorf("expected 2 raw communicating classes (one per project), got %d", len(sccs))
 	}
-	if len(cd.SCCs) != 2 {
-		t.Errorf("expected 2 communicating classes (one per project), got %d", len(cd.SCCs))
-	}
-	for _, scc := range cd.SCCs {
-		if len(scc) != 2 {
-			slugs := make([]string, len(scc))
-			for i, s := range scc {
+	for _, scc := range sccs {
+		if len(scc.Members) != 2 {
+			slugs := make([]string, len(scc.Members))
+			for i, s := range scc.Members {
 				slugs[i] = pages[s]
 			}
-			t.Errorf("expected each class to have 2 pages, got %d: %v", len(scc), slugs)
+			t.Errorf("expected each class to have 2 pages, got %d: %v", len(scc.Members), slugs)
 		}
 	}
 }
@@ -533,14 +531,12 @@ func TestLenientWikilinkFallback_AmbiguousBasenameDropsLink(t *testing.T) {
 	if !found {
 		t.Errorf("expected 'root' to be a sink when its only wikilink is ambiguous; sinks=%v", sinks)
 	}
-	// Neither a/note nor b/note should have an explicit edge from root.
+	// Neither a/note nor b/note should have an explicit raw edge from root.
+	// Sink rows in the teleporting kernel collapse to the uniform restart (1/n).
 	if kern.P.At(idx["root"], idx["a/note"]) > 0 && kern.P.At(idx["root"], idx["b/note"]) > 0 {
-		// Both have weight — this could be the sink teleport, which is uniform.
-		// Verify root is actually a sink by confirming no targeted edge was created.
-		// (Sink rows are uniform 1/n, so each cell == 1/n)
 		n := float64(len(pages))
 		if kern.P.At(idx["root"], idx["a/note"])*n != 1.0 {
-			t.Errorf("expected uniform sink row for root (ambiguous link dropped), got non-uniform P[root][a/note]=%v", kern.P.At(idx["root"], idx["a/note"]))
+			t.Errorf("expected uniform restart row for sink root, got P[root][a/note]=%v", kern.P.At(idx["root"], idx["a/note"]))
 		}
 	}
 }

@@ -47,7 +47,7 @@ func init() {
 	goalCmd.Flags().StringArrayVar(&flagGoalGoals, "goal", nil, "goal page slug (repeatable, at least one required)")
 	goalCmd.Flags().IntVar(&flagGoalTop, "top", 10, "number of pages in the subgraph")
 	goalCmd.Flags().StringVarP(&flagGoalOut, "out", "o", "goal_graph.html", "output HTML file")
-	goalCmd.Flags().Float64VarP(&flagGoalMinEdge, "min-edge", "m", 0.005, "omit edges below this transition probability")
+	goalCmd.Flags().Float64VarP(&flagGoalMinEdge, "min-edge", "m", 0.02, "omit edges below this transition probability")
 	goalCmd.Flags().StringArrayVarP(&flagGoalSed, "sed", "s", nil, "sed expression(s) to apply to the HTML output (repeatable)")
 	goalCmd.Flags().StringVar(&flagGoalStrategy, "strategy", "union", "selection strategy: union, intersection, path [PROTOTYPE], bottleneck [PROTOTYPE]")
 }
@@ -60,7 +60,7 @@ func runGoal(cmd *cobra.Command, args []string) error {
 	wikiDir := args[0]
 	exclude := makeExcludeMap(flagExclude)
 
-	kern, P, pages, _, err := buildKernelWithOpts(wikiDir, flagRecursive, exclude, flagRelativeLinks)
+	kern, _, pages, _, err := buildKernelWithOpts(wikiDir, flagRecursive, exclude, flagRelativeLinks, flagAlpha, flagSeed)
 	if err != nil {
 		return err
 	}
@@ -92,6 +92,9 @@ func runGoal(cmd *cobra.Command, args []string) error {
 		top = n
 	}
 
+	// Math transition matrix for prototype path/bottleneck strategies.
+	P := kern.P
+
 	var selectedIndices []int
 
 	switch flagGoalStrategy {
@@ -116,18 +119,24 @@ func runGoal(cmd *cobra.Command, args []string) error {
 	subset := selectedIndices
 	sort.Ints(subset)
 
-	// Compute effective kernel on subset via trace.
+	// Compute effective kernel on subset via trace (teleporting math).
 	traceKern, err := kern.Trace(subset, 1e-9)
 	if err != nil {
 		return fmt.Errorf("trace failed (try increasing --top): %w", err)
 	}
 
+	pi, err := traceKern.Stationary(1e-12, 5000)
+	if err != nil {
+		pi = nil // ToHTML falls back to its own Stationary when NodeMass is empty
+	}
+
 	title := filepath.Base(wikiDir) + " → " + flagGoalGoals[0] + " [" + flagGoalStrategy + "]"
 	html, err := traceKern.ToHTML(&catrace.VisualiseOptions{
-		Title:   title,
-		MinEdge: flagGoalMinEdge,
-		Width:   1400,
-		Height:  900,
+		Title:    title,
+		MinEdge:  flagGoalMinEdge,
+		Width:    1400,
+		Height:   900,
+		NodeMass: pi,
 	})
 	if err != nil {
 		return fmt.Errorf("generating HTML: %w", err)
