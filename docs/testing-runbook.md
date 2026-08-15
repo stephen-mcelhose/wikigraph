@@ -13,9 +13,9 @@ timestamp: 2026-08-09T06:54:46Z
 Comprehensive manual test plan covering all `wikigraph` subcommands (`graph`, `analyze`, `goal`, `export`) and edge cases against the repository's `docs/` wiki.
 
 **Binary:** built locally from `~/repos/wikigraph/`  
-**Wiki under test:** `docs/` in this repo (40 content pages)  
+**Wiki under test:** `docs/` in this repo (41 content pages)  
 **Run all commands from:** `~/repos/wikigraph/` (the repo root)  
-**Last verified:** 2026-08-15 against PageRank foundation rewrite + ADR-012 (40 pages, 210 raw edges, entropy ~3.26 bits, 1 raw SCC; π via α=0.15)
+**Last verified:** 2026-08-15 after PDA lint (41 pages, 244 raw edges, entropy ~3.46 bits, 1 raw SCC; π via α=0.15)
 
 ---
 
@@ -35,8 +35,8 @@ All commands use `docs/` as the wiki path. Run from `~/repos/wikigraph`:
 cd ~/repos/wikigraph
 ```
 
-The 39 content pages (after default exclusions of `index`, `log`, `AGENTS`):
-`absorbing-markov-chain`, `adr-001-embedding-layer`, `adr-002-slug-resolution`, `adr-003-orphan-threshold`, `adr-004-quantum-go-example-wiki`, `adr-005-page-type-conventions-and-proposal-storage`, `adr-006-recursive-vault-traversal`, `adr-007-subgraph-partitioning-and-path-strategies`, `adr-008-prototype-math-strategies`, `adr-009-wiki-gen-make-vs-buy`, `adr-010-path-relative-slugs`, `adr-011-sink-teleportation-vs-pagerank-damping`, `adr-012-teleporting-pagerank-default`, `analyze`, `architecture`, `bottleneck-centrality`, `catrace`, `communicating-classes`, `commute-time`, `entropy-rate`, `export`, `goal`, `graph`, `graph-models`, `graph-topologies`, `how-to-docs-plan`, `kernel-identifiability`, `llm-wiki-pattern`, `markov-model`, `mfpt`, `page-type-conventions`, `pagerank-foundation-rewrite`, `path-sequence`, `quickstart`, `random-walk`, `recurrent-class`, `sink-page`, `stationary-distribution`, `teleportation-ergodicity`, `testing-runbook`
+The 41 content pages (after default exclusions of `index`, `log`, `AGENTS`):
+`absorbing-markov-chain`, `adr-001-embedding-layer`, `adr-002-slug-resolution`, `adr-003-orphan-threshold`, `adr-004-quantum-go-example-wiki`, `adr-005-page-type-conventions-and-proposal-storage`, `adr-006-recursive-vault-traversal`, `adr-007-subgraph-partitioning-and-path-strategies`, `adr-008-prototype-math-strategies`, `adr-009-wiki-gen-make-vs-buy`, `adr-010-path-relative-slugs`, `adr-011-sink-teleportation-vs-pagerank-damping`, `adr-012-teleporting-pagerank-default`, `analyze`, `architecture`, `bottleneck-centrality`, `catrace`, `communicating-classes`, `commute-time`, `entropy-rate`, `export`, `goal`, `graph`, `graph-models`, `graph-topologies`, `how-to-docs-plan`, `kernel-identifiability`, `knowledge-graph-to-pda-agents`, `llm-wiki-pattern`, `markov-model`, `mfpt`, `page-type-conventions`, `pagerank-foundation-rewrite`, `path-sequence`, `quickstart`, `random-walk`, `recurrent-class`, `sink-page`, `stationary-distribution`, `teleportation-ergodicity`, `testing-runbook`
 
 Verify:
 
@@ -73,9 +73,9 @@ open /tmp/wg_graph.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 40` and `Written: /tmp/wg_graph.html`
+- Stderr prints `Pages: 41` and `Written: /tmp/wg_graph.html`
 - File exists and opens in browser showing a force-directed graph
-- 40 labelled nodes visible; nodes sized differently (PageRank π)
+- 41 labelled nodes visible; nodes sized differently (PageRank π)
 - Edges are real wikilinks (no sink stars); default `--min-edge 0.02`
 - Exit code 0
 
@@ -150,7 +150,7 @@ open /tmp/wg_goal.html
 ```
 
 **Pass criteria:**
-- Stderr prints `Pages: 40` and `Written: /tmp/wg_goal.html (5 nodes)`
+- Stderr prints `Pages: 41` and `Written: /tmp/wg_goal.html (5 nodes)`
 - Browser shows exactly 5 nodes
 - `analyze` node is present
 - Exit code 0
@@ -312,7 +312,7 @@ head /tmp/wg_edges.csv
 **Pass criteria:**
 - `wg_nodes.csv` header: `slug,pi,class`
 - `wg_edges.csv` header: `source,target,weight`
-- Both have 40 data rows in nodes (one per page)
+- Both have 41 data rows in nodes (one per page)
 - Values are numeric floats; no empty cells
 
 ---
@@ -350,12 +350,13 @@ wikigraph export docs/ --format xml -o /tmp/wg
 ## TC-15 · export — --min-edge filters edges
 
 ```bash
-wikigraph export docs/ --format json --min-edge 0.5 -o /tmp/wg_sparse
+wikigraph export docs/ --format json --min-edge 1.5 -o /tmp/wg_sparse
 jq '.links | length' /tmp/wg_sparse.json
 ```
 
 **Pass criteria:**
-- Link count is significantly lower than with default `--min-edge 0.005` (raw edges are weight 1.0, so `--min-edge 0.5` still keeps all real links; use a threshold `> 1` to drop all)
+- Link count is `0` (raw edges have weight `1.0`, so threshold `> 1` drops all)
+- Default export without `--min-edge` override keeps all raw links (244 for docs/)
 
 ---
 
@@ -371,11 +372,11 @@ wikigraph analyze docs/
 
 | Section         | Expected                                                                                                                                                              |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Overview        | Pages: 40, Edges: 210 (raw wikilinks), Entropy rate: ~3.26 bits, Classes: 1 (raw digraph SCCs)                                                                                     |
-| Classes         | 1 closed raw SCC (40 pages) — teleporting math kernel is ergodic by construction                                                                                                  |
-| Orphans (≤10%)  | `adr-009-wiki-gen-make-vs-buy` (π=0.005047), `llm-wiki-pattern` (π=0.006344), `graph-models` (π=0.008413), `graph-topologies` (π=0.008622), `adr-008-prototype-math-strategies` (π=0.008995) |
+| Overview        | Pages: 41, Edges: 244 (raw wikilinks), Entropy rate: ~3.46 bits, Classes: 1 (raw digraph SCCs)                                                                                     |
+| Classes         | 1 closed raw SCC (41 pages) — teleporting math kernel is ergodic by construction                                                                                                  |
+| Orphans (≤10%)  | `adr-009-wiki-gen-make-vs-buy` (π=0.004816), `adr-004-quantum-go-example-wiki` (π=0.007761), `graph-models` (π=0.008028), `graph-topologies` (π=0.008227), `adr-008-prototype-math-strategies` (π=0.008314) |
 | Sinks           | `(none)`                                                                                                                                                                            |
-| Most central #1 | `analyze` (π=0.068946)                                                                                                                                                              |
+| Most central #1 | `stationary-distribution` (π=0.072136)                                                                                                                                              |
 | Suggestions     | At least one page with 3 suggestions listed                                                                                                                           |
 
 - Exit code 0
@@ -403,7 +404,7 @@ wikigraph analyze docs/ --orphan-pct 0 --suggest-top 0
 ```
 
 **Pass criteria:**
-- Orphan section shows `adr-009-wiki-gen-make-vs-buy` (π=0.005047) — the single lowest-π page
+- Orphan section shows `adr-009-wiki-gen-make-vs-buy` (π=0.004816) — the single lowest-π page
 - Section header says `bottom 0%`
 
 ---
@@ -415,7 +416,7 @@ wikigraph analyze docs/ --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "
 ```
 
 **Pass criteria:**
-- Count equals 40 (all pages shown as orphans at 100th percentile)
+- Count equals 41 (all pages shown as orphans at 100th percentile)
 
 ---
 
@@ -424,7 +425,7 @@ wikigraph analyze docs/ --orphan-pct 1.0 --suggest-top 0 2>/dev/null | grep -c "
 **Goal:** Persistent flag is inherited; excluded pages disappear from every subcommand.
 
 ```bash
-# Should reduce page count to 39 in each case (40 default minus how-to-docs-plan)
+# Should reduce page count to 40 in each case (41 default minus how-to-docs-plan)
 wikigraph graph   docs/ -e index -e log -e AGENTS -e how-to-docs-plan -o /dev/null 2>&1 | grep Pages
 wikigraph goal    docs/ -e index -e log -e AGENTS -e how-to-docs-plan --goal analyze -o /dev/null 2>&1 | grep Pages
 wikigraph export  docs/ -e index -e log -e AGENTS -e how-to-docs-plan -o /tmp/excl 2>&1 | grep Pages
@@ -432,7 +433,7 @@ wikigraph analyze docs/ -e index -e log -e AGENTS -e how-to-docs-plan --suggest-
 ```
 
 **Pass criteria:**
-- All four lines print `Pages: 39`
+- All four lines print `Pages: 40`
 - `how-to-docs-plan` absent from exported JSON nodes list:
   ```bash
   jq -e '[.nodes[].id] | index("how-to-docs-plan") | not' /tmp/excl.json

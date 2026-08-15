@@ -155,3 +155,23 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 - Superseded [[adr-011-sink-teleportation-vs-pagerank-damping]]
 - Updated [[markov-model]], [[sink-page]], [[teleportation-ergodicity]], [[architecture]], [[testing-runbook]], index
 - Code: raw adj + NewTeleportingKernelFromAdj; --alpha/--seed; NodeMass graph viz; raw SCCs/edges in analyze/export
+
+## [2026-08-15] lint | 46 pages checked, 12 issues found, 10 fixed
+- Fixed stale ADR-012 contradictions in [[analyze]], [[export]], [[graph]], [[catrace]], [[kernel-identifiability]], [[pagerank-foundation-rewrite]]
+- OKF: added `resource` to [[quickstart]] + graphs spikes; frontmatter for [[graphs/caveman]]
+- Index descriptions for markov-model / sink-page / catrace; runbook TC-15 + “40 pages” wording; re-golden (214 edges, central=`stationary-distribution`)
+- Left unresolved: graphs/* remain directory orphans pending #42 (flat-layout exception); illustrative `[[slug]]` tokens in how-tos are not real pages
+
+## [2026-08-15] ingest | knowledge-graph-to-pda-agents — KG → PDA agents leap
+- New concept: [[knowledge-graph-to-pda-agents]] — same Markov craft (π / PPR / α / MFPT / entropy) read as wiki health *and* as PDA agent / multi-agent dynamics; ADR-012 as the honesty condition for the leap
+- Propagated: [[catrace]], [[stationary-distribution]], [[teleportation-ergodicity]], [[markov-model]], [[architecture]], [[adr-012-teleporting-pagerank-default]], [[llm-wiki-pattern]], [[analyze]], [[graph]], [[mfpt]], [[random-walk]]
+- index.md updated; re-golden: 41 pages, 243 edges, entropy ~3.45 bits; central=`stationary-distribution`; lowest=`adr-009-wiki-gen-make-vs-buy` (π≈0.004806); PDA page itself #4 by π
+
+## [2026-08-15] lint | 41 content pages + priority PDA hub audit, 6 issues found, 5 fixed
+- Contradiction: [[adr-012-teleporting-pagerank-default]] still said “optimizing … agents” after GAN tightened [[knowledge-graph-to-pda-agents]] — rewritten to measure/compare/diagnose; ADR framed as PageRank defaults not teleology
+- Stale index blurb: [[knowledge-graph-to-pda-agents]] row now stresses shared operators / no ontology identity
+- Missing backlink: [[goal]] → [[knowledge-graph-to-pda-agents]]
+- Hygiene: duplicate [[catrace]] in [[mfpt]] Sources; softened teleology-ish Related Concepts blurbs on [[architecture]], [[catrace]], [[markov-model]], [[random-walk]]
+- Re-golden: 41 pages, 244 edges, entropy ~3.46 bits; central=`stationary-distribution`; lowest=`adr-009-wiki-gen-make-vs-buy` (π≈0.004816); PDA page #3 by π
+- Left unresolved: graphs/* directory orphans pending #42; ADR-003 low-π orphans; historical ingest log line still says “honesty condition” (append-only)
+- Integration test: pass after wiki_integration_test.go + [[testing-runbook]] update

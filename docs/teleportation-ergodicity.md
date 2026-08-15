@@ -38,6 +38,10 @@ the **teleport** probability (firehose / catrace style), so link-following
 weight is $1-\alpha$. Literature often writes damping $d \approx 0.85$ with
 teleport $1-d$.
 
+In the PDA / agent reading, $v$ is **intent** and $\alpha$ is **intentionality
+weight** — the same dials as Personalized PageRank on a qualia or world kernel.
+See [[knowledge-graph-to-pda-agents]].
+
 ### Sink-only teleportation (historical)
 
 Earlier wikigraph pre-filled sink rows with $1/n$ and used
@@ -68,9 +72,11 @@ signal, and lists sinks separately so dangling pages are not mistaken for
 - [[mfpt]] — Defined on the teleporting kernel
 - [[communicating-classes]] — Raw digraph SCCs in analyze
 - [[markov-model]] — Pipeline
+- [[knowledge-graph-to-pda-agents]] — α / v as agent intent
 - [[adr-012-teleporting-pagerank-default]] — Current decision
 - [[adr-011-sink-teleportation-vs-pagerank-damping]] — Superseded
 - [[pagerank-foundation-rewrite]] — Proposal that drove ADR-012
+- [[catrace]] — TeleportingKernel / PPR APIs
 
 ## Sources
 

@@ -3,7 +3,7 @@ type: decision
 title: "ADR-012: Teleporting PageRank as Default Markov Math"
 description: Supersede ADR-011. Default math is full α-damping via NewTeleportingKernelFromAdj; raw adjacency for structure/display; NodeMass for PageRank-sized graphs.
 tags: [adr, pagerank, teleportation, ergodicity, visualization, markov-chain]
-timestamp: 2026-08-15T21:30:00Z
+timestamp: 2026-08-15T21:52:45Z
 status: accepted
 ---
 
@@ -68,6 +68,11 @@ Concretely:
   is additive later via #22).
 - Sink-only teleportation remains a valid Markov construction for teaching
   ("dead ends break π") but is not the product default.
+- Aligning the wiki CLI with full α-damping and `--seed` makes the wiki walk use
+  the same **intent** dials (`v`, `α`) catrace uses on PDA kernels — practice for
+  measuring, comparing, and diagnosing agents and networks
+  ([[knowledge-graph-to-pda-agents]]). This ADR is PageRank product defaults, not
+  an agents-teleology decision.
 
 ## Options Considered
 
@@ -90,6 +95,7 @@ Concretely:
 - [[pagerank-foundation-rewrite]] — accepted proposal (epic #56)
 - [[adr-011-sink-teleportation-vs-pagerank-damping]] — superseded predecessor
 - [[teleportation-ergodicity]] — mathematical background
+- [[knowledge-graph-to-pda-agents]] — shared operators / intent dials (craft analogy)
 - https://github.com/stephen-mcelhose/wikigraph/issues/56
 - https://github.com/stephen-mcelhose/wikigraph/issues/55
 - https://github.com/stephen-mcelhose/catrace/pull/39

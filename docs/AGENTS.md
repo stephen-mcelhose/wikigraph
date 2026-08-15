@@ -9,11 +9,16 @@ Documentation for the `wikigraph` CLI — a tool that models a markdown wiki as
 a Markov chain and exposes graph-theoretic analysis: stationary distribution,
 communicating classes, MFPT-based learning paths, and multi-format export.
 
+The same Markov craft (PageRank π, Personalized PageRank via `--seed`/`--alpha`,
+MFPT, entropy) is the bridge from knowledge-graph analysis to PDA agents and
+multi-agent networks in [[catrace]] — see [[knowledge-graph-to-pda-agents]].
+
 Topics in scope:
 - How-to guides for each subcommand (`graph`, `analyze`, `goal`, `export`)
 - Architecture decision records (ADRs)
 - Operational runbooks (testing, releases)
 - Proposals and design docs
+- Concept pages for Markov / PageRank foundations and the KG→PDA agent leap
 
 ## Conventions
 

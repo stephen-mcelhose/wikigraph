@@ -34,14 +34,18 @@ git clone https://github.com/stephen-mcelhose/quantum-go ~/quantum-go
 
 | Visual property | What it means                                                                 |
 | --------------- | ----------------------------------------------------------------------------- |
-| **Node size**   | Stationary distribution π — how often a random walker lands on this page; a proxy for systemic importance |
-| **Node colour** | Communicating class — pages that can all reach each other share a colour      |
-| **Edge width**  | Transition probability — how likely the walker follows that specific link     |
+| **Node size**   | PageRank π (teleporting walk; use `--seed` for Personalized PageRank)         |
+| **Node colour** | Communicating class from the display kernel                                   |
+| **Edge width**  | Base-link transition weight (real wikilinks; `MinEdge` hides sink restart rows) |
 
 Pages that are large and central are your wiki's hubs. Pages that are small
-and isolated need more inbound links. Pages sharing a colour form a
-self-contained cluster. For a full breakdown of what these properties mean and
-how to act on them, see [[analyze]].
+and isolated need more inbound links. For health metrics and remediation, see
+[[analyze]]. Defaults: `--alpha 0.15`, graph `--min-edge 0.02`
+([[adr-012-teleporting-pagerank-default]]).
+
+`--seed` is not just a viz filter: it is **intent** over the corpus — the same
+Personalized PageRank construction used for goal-directed agents
+([[knowledge-graph-to-pda-agents]]).
 
 ## Steps
 
@@ -140,7 +144,7 @@ Open the HTML and confirm:
 | `wikigraph: command not found`        | Binary not on PATH                         | Run `go install github.com/stephen-mcelhose/wikigraph@latest` or add its bin dir to PATH |
 | No `Written:` line on stderr          | Bad output path or write-permission error  | Omit `-o` to write to the current directory, or check permissions on the target path |
 | `Pages: 1` — almost empty graph      | Wrong directory, or only one `.md` file    | Check the path; ensure files use `.md` extension     |
-| All nodes the same size              | All pages have near-equal π — happens when every page is a sink (uniform teleportation) or the link graph is highly symmetric | Add pages with varied out-degree; check for widespread sink pages with `wikigraph analyze` |
+| All nodes the same size              | Near-equal PageRank π (highly symmetric links, or tiny wiki) | Add varied structure; check sinks with `wikigraph analyze` |
 | Graph is a hairball of edges         | `--min-edge` too low                       | Raise to `0.02` or higher                            |
 | `--sed` flag not recognised          | Running on Windows                         | Use `--title` / `--min-edge` instead                 |
 | Output HTML is blank in browser      | Very large wiki (1000+ pages)              | Filter with `--min-edge 0.02` to reduce render load  |
@@ -148,9 +152,11 @@ Open the HTML and confirm:
 ## See also
 
 - [[analyze]] — interpret the communicating classes and centrality shown in the graph
+- [[knowledge-graph-to-pda-agents]] — `--seed` / `--alpha` as agent intent dials
 - [[testing-runbook]] — end-to-end verification steps for the `graph` subcommand
 
 ## Sources
 
 - `cmd_graph.go`
 - `wiki.go`
+- [[adr-012-teleporting-pagerank-default]]

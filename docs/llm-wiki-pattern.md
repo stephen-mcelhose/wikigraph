@@ -30,8 +30,12 @@ Rather than relying purely on ad-hoc RAG or unindexed conversational memory, an 
 
 `wikigraph` models this wiki structure as a Markov chain random walk. Running [[analyze]] or [[graph]] on an LLM-maintained wiki reveals topological health, hub centrality, and missing link suggestions that feed back into maintenance prompts.
 
+The same measurements are the training ground for agent work: a compounding wiki is both a knowledge codebase *and* a one-kernel slice of the PDA perceive→decide→act story. See [[knowledge-graph-to-pda-agents]] for how PageRank π, `--seed` intent, MFPT, and entropy transfer from vault health to agents and networks of agents.
+
 ## Sources
 
 - [Karpathy's LLM Wiki Gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
 - [[quickstart]]
 - [[AGENTS]]
+- [[knowledge-graph-to-pda-agents]]
+- [[catrace]]
