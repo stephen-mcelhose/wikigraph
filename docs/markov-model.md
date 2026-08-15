@@ -1,41 +1,54 @@
 ---
 type: concept
 title: Wikilink Markov Model
-description: How wikilinks are extracted and converted into an n×n row-stochastic transition matrix P and catrace.Kernel struct.
-tags: [markov-chain, transition-matrix, adjacency, parser]
-timestamp: 2026-08-09T08:35:00Z
+description: How wikilinks become raw adjacency and a teleporting PageRank kernel (π, MFPT) in wikigraph.
+tags: [markov-chain, transition-matrix, adjacency, parser, pagerank]
+timestamp: 2026-08-15T21:30:00Z
 ---
 
 # Wikilink Markov Model
 
 ## Overview
 
-`wikigraph` models a markdown wiki as a discrete-time Markov chain $X_t$ on $n$ states, where states are pages and transitions correspond to a reader clicking `[[wikilinks]]`.
+`wikigraph` models a markdown wiki as a discrete-time Markov chain on $n$
+pages. **Structure** is the raw digraph of `[[wikilinks]]`. **Math** (π, MFPT,
+entropy) uses a teleporting / PageRank kernel over that digraph.
 
 ## Key Properties
 
 ### Pipeline steps (`wiki.go`)
 
-1. **`loadPages`**: Discovers markdown files in `docs/`, sorts slugs alphabetically, builds `slug -> index` map.
-2. **`buildAdjacency`**: Parses `[[slug]]` and `[[slug|alias]]` wikilinks from page bodies using regular expressions (`\\[\\[([A-Za-z0-9][A-Za-z0-9-]*)(?:\\|[^\\]]+)?\\]\\]`). In recursive mode, slugs are path-relative (`subdir/page`); a lenient basename fallback resolves `[[page]]` to `subdir/page` when the basename is globally unique (see [[adr-010-path-relative-slugs]]).
-3. **Teleportation for sinks**: If a page has zero outgoing links ([[sink-page]]), a uniform row $P_{ij} = 1/n$ is inserted.
-4. **Row-stochastic normalization**: Row $i$ with $k_i > 0$ outgoing links gets uniform probability $P_{ij} = 1/k_i$ for linked targets $j$.
+1. **`loadPages`**: Discovers markdown files, sorts slugs, builds
+   `slug → index` (path-relative slugs in recursive mode; see
+   [[adr-010-path-relative-slugs]]).
+2. **`buildAdjacency`**: Parses `[[slug]]` / `[[slug|alias]]` (and optional
+   relative Markdown links). Real links only; [[sink-page|sink]] rows stay
+   zero.
+3. **`NewTeleportingKernelFromAdj`**: Builds
+   $T_{ij} = \alpha v_j + (1-\alpha) A_{ij}/\mathrm{rowsum}_i$ (sinks → $v$).
+   Default $\alpha = 0.15$; $v$ uniform unless `--seed` (PPR).
 
-### Transition Matrix $P$
+### What is raw vs math
 
-The resulting matrix $P$ satisfies:
+| Artifact | Source |
+| -------- | ------ |
+| Edge count, export edges, raw SCCs | Raw adjacency $A$ |
+| π, entropy, commute, MFPT / `goal` | Teleporting $T$ |
+| `graph` node size | Stationary of $T$ via `NodeMass` |
+| `graph` edges | Base-link kernel ($\alpha=0$) + `MinEdge` |
 
-$$\sum_{j=1}^n P_{ij} = 1 \quad \forall i$$
+See [[adr-012-teleporting-pagerank-default]].
 
 ## Related Concepts
 
 - [[architecture]] — Data-flow pipeline
-- [[sink-page]] — Sink handling and uniform teleportation
-- [[catrace]] — `catrace.Kernel` wrapper
-- [[stationary-distribution]] — Power iteration on $P$
-- [[kernel-identifiability]] — Which outputs let you recover $P$, and which don't
+- [[sink-page]] — Structural sinks vs restart handling
+- [[catrace]] — `NewTeleportingKernelFromAdj`, `NodeMass`
+- [[stationary-distribution]] — PageRank π
+- [[teleportation-ergodicity]] — Why α-damping guarantees ergodicity
+- [[kernel-identifiability]] — Recovering structure from outputs
 
 ## Sources
 
 - `wiki.go`
-- Norris, J. R. (1998). *Markov Chains*. Cambridge University Press.
+- [[adr-012-teleporting-pagerank-default]]
