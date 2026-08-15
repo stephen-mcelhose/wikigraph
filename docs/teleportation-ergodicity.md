@@ -1,9 +1,9 @@
 ---
 type: concept
 title: Teleportation and Ergodicity in Markov Wiki Graphs
-description: Why sink-only teleportation is mathematically legitimate, how it relates to PageRank's damping factor, and when to reconsider full α-damping.
+description: Why α-damping PageRank makes the wiki walk ergodic; sink-only teleportation as historical pedagogy; raw structure vs teleporting math.
 tags: [markov-chain, ergodicity, pagerank, teleportation, sink-page, stationary-distribution]
-timestamp: 2026-08-13T00:52:04Z
+timestamp: 2026-08-15T21:30:00Z
 resource: https://en.wikipedia.org/wiki/PageRank
 ---
 
@@ -11,81 +11,70 @@ resource: https://en.wikipedia.org/wiki/PageRank
 
 ## Overview
 
-wikigraph models a wiki as a discrete-time Markov chain. For the core math to
-work — stationary distribution π, MFPT, communicating classes — the chain must
-be **ergodic**: irreducible (every state reachable from every other) and
-aperiodic. A raw wiki graph almost never satisfies this: sink pages (no
-outgoing links) produce zero rows in the transition matrix, making π undefined.
+wikigraph models a wiki as a discrete-time Markov chain. For π, MFPT, and
+related math the chain must be **ergodic**. A raw wiki digraph almost never is:
+[[sink-page|sink]] pages produce zero rows, and disconnected clusters stay
+unreachable.
 
-**Teleportation** is the standard fix: a surfer who lands on a sink page is
-assumed to jump uniformly to any page at random. This is not a mathematical
-hack — it is the same mechanism Google's PageRank uses to handle dangling
-nodes.
+**Teleportation** (PageRank α-damping) is the fix: at each step the surfer
+follows a real link with probability $1-\alpha$ or jumps according to a restart
+distribution $v$ with probability $\alpha$. Default $\alpha = 0.15$ (user-facing
+`--alpha`); uniform $v$ → global PageRank; `--seed` → Personalized PageRank.
 
 ## Key Properties
 
-### PageRank's damping factor
+### PageRank form (current default)
 
-Page, Brin, Motwani, and Winograd (1998) introduced the **damping factor** `d`
-(≈ 0.85) to model a surfer who, at each step, either follows a link with
-probability `d` or teleports to a uniformly random page with probability `1−d`:
+With raw adjacency $A$ and restart $v$:
 
-```
-PR(pᵢ) = (1−d)/N + d · Σⱼ PR(pⱼ) / L(pⱼ)
-```
+$$
+T_{ij} = \alpha v_j + (1-\alpha)\frac{A_{ij}}{\mathrm{rowsum}_i}
+\quad\text{(non-sink)},\qquad
+T_{ij} = v_j \quad\text{(sink)}.
+$$
 
-Applied to **all** pages (not just sinks), this guarantees ergodicity and
-models the "bored surfer" who occasionally types a new URL. The stationary
-distribution of this modified chain is PageRank.
+This is `catrace.NewTeleportingKernelFromAdj`. Naming: wikigraph's `--alpha` is
+the **teleport** probability (firehose / catrace style), so link-following
+weight is $1-\alpha$. Literature often writes damping $d \approx 0.85$ with
+teleport $1-d$.
 
-### Sink-only teleportation (wikigraph's approach)
+### Sink-only teleportation (historical)
 
-wikigraph applies teleportation only to sink pages — pages with zero outgoing
-links after wikilink and relative-link parsing. Non-sink pages follow their
-real links with probability 1. This is a strict subset of full PageRank
-damping:
+Earlier wikigraph pre-filled sink rows with $1/n$ and used
+`NewRandomWalkKernel` with implicit $\alpha = 1$ on non-sinks. That is a valid
+Markov construction and a useful teaching step ("dead ends break π"), but it is
+**not** the product default anymore. See superseded
+[[adr-011-sink-teleportation-vs-pagerank-damping]] and current
+[[adr-012-teleporting-pagerank-default]].
 
-| | wikigraph | Full PageRank |
-|---|---|---|
-| Sink pages | uniform jump to all n pages | uniform jump (via 1−d term) |
-| Non-sink pages | pure link-following | d · link + (1−d) · random jump |
-| Damping parameter | none (implicit α = 1 for non-sinks) | α ≈ 0.85 |
-| Ergodicity guarantee | only if no isolated non-sink components | always |
+### Raw structure vs teleporting math
 
-Sink-only teleportation is a valid Markov chain with a well-defined stationary
-distribution. The math is not faked. The stationary distribution reflects the
-genuine link structure — sink pages act as uniform redistributors in the chain,
-which is a reasonable model of a reader who gets stuck and picks a random next
-page.
+| Signal | Where |
+| ------ | ----- |
+| Edge count, export edges, authoring SCCs | Raw digraph |
+| π, entropy, commute, MFPT | Teleporting $T$ |
+| Graph node sizes | `NodeMass` ← stationary of $T$ |
+| Graph edges | Real links (α=0 base + `MinEdge`) |
 
-### Why this matters for visualization
-
-The teleportation rows in the transition matrix P should **not** be rendered as
-graph edges — they are a mathematical construct, not real links. Rendering them
-produces misleading star patterns (a sink appears to link to every page). The
-correct approach is to build two separate adjacency representations:
-
-- **Raw adjacency** — real links only, zero rows for sinks; used for display
-- **Math adjacency** — teleportation rows added for sinks; passed to catrace for π, MFPT, and class computation
-
-See [[adr-011-sink-teleportation-vs-pagerank-damping]] for the architectural decision
-currently in force. [[pagerank-foundation-rewrite]] proposes moving the product
-default to full α-damping (PageRank) while teaching dangling-node handling
-*inside* that model rather than as a competing walk.
+Communicating classes on $T$ are nearly always one class (ergodic by
+construction). `analyze` therefore reports **raw** SCCs as the fragmentation
+signal, and lists sinks separately so dangling pages are not mistaken for
+"fifty classes."
 
 ## Related Concepts
 
-- [[sink-page]] — Zero-outgoing-link pages and how they are detected
-- [[stationary-distribution]] — π requires an ergodic chain
-- [[mfpt]] — Mean first passage time is undefined on non-ergodic chains
-- [[communicating-classes]] — Sink pages form transient classes without teleportation
-- [[markov-model]] — The full pipeline from wikilinks to P
-- [[adr-011-sink-teleportation-vs-pagerank-damping]] — Decision record (current)
-- [[pagerank-foundation-rewrite]] — Proposed PageRank foundation rewrite (epic #56)
+- [[sink-page]] — Structural sinks and restart handling
+- [[stationary-distribution]] — PageRank π
+- [[mfpt]] — Defined on the teleporting kernel
+- [[communicating-classes]] — Raw digraph SCCs in analyze
+- [[markov-model]] — Pipeline
+- [[adr-012-teleporting-pagerank-default]] — Current decision
+- [[adr-011-sink-teleportation-vs-pagerank-damping]] — Superseded
+- [[pagerank-foundation-rewrite]] — Proposal that drove ADR-012
 
 ## Sources
 
 - Wikipedia: PageRank — https://en.wikipedia.org/wiki/PageRank
-- Page, L., Brin, S., Motwani, R., & Winograd, T. (1999). *The PageRank Citation Ranking: Bringing Order to the Web*. Stanford InfoLab Technical Report. http://ilpubs.stanford.edu:8090/422/
-- Brin, S., & Page, L. (1998). *The Anatomy of a Large-Scale Hypertextual Web Search Engine*. Computer Networks and ISDN Systems, 30(1–7), 107–117. https://doi.org/10.1016/S0169-7552(98)00110-X
-- [[pagerank-foundation-rewrite]] — planning capture for epic #56
+- Page, L., Brin, S., Motwani, R., & Winograd, T. (1999). *The PageRank Citation Ranking*. http://ilpubs.stanford.edu:8090/422/
+- [[adr-012-teleporting-pagerank-default]]
+- catrace PR #39 — `NewTeleportingKernelFromAdj`, `NodeMass`

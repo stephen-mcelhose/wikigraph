@@ -45,9 +45,10 @@ timestamp: 2026-08-09T06:54:46Z
 | [[graph-models]]             | `concept`  | Reference catalog of random graph generative models (ER, BA, WS, SBM, LFR)  |
 | [[adr-009-wiki-gen-make-vs-buy]] | `decision` | ADR: hybrid make+buy — keep wiki-gen for hierarchical, add nx-to-wiki for named graphs |
 | [[adr-010-path-relative-slugs]]       | `decision` | ADR: path-relative slugs in recursive mode; lenient wikilink basename fallback for structured folder wikis |
-| [[adr-011-sink-teleportation-vs-pagerank-damping]] | `decision` | ADR: retain sink-only teleportation; separate display adj from math adj; defer full α-damping |
-| [[teleportation-ergodicity]]          | `concept`  | Why sink-only teleportation is legitimate; PageRank damping factor comparison; when to reconsider |
-| [[pagerank-foundation-rewrite]]     | `proposal` | Propose PageRank (α-damping) as default math + clean NodeMass viz; supersede ADR-011 (epic #56) |
+| [[adr-011-sink-teleportation-vs-pagerank-damping]] | `decision` | ADR (superseded): sink-only teleportation; deferred full α-damping |
+| [[adr-012-teleporting-pagerank-default]] | `decision` | ADR: teleporting PageRank default math; raw adj + NodeMass viz |
+| [[teleportation-ergodicity]]          | `concept`  | α-damping ergodicity; raw structure vs teleporting math |
+| [[pagerank-foundation-rewrite]]     | `proposal` | Proposal for PageRank foundation rewrite (accepted as ADR-012; epic #56) |
 
 ## Sources
 

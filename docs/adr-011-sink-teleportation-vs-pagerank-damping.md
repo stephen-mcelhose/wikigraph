@@ -4,10 +4,13 @@ title: "ADR-011: Sink-Only Teleportation vs Full PageRank Damping"
 description: Retain sink-only teleportation for ergodicity. Accept noisy sink visualization as the cost of a correct Markov chain. Defer full α-damping as a future option.
 tags: [adr, ergodicity, teleportation, pagerank, markov-chain, visualization]
 timestamp: 2026-08-13T00:52:04Z
-status: accepted
+status: superseded
 ---
 
 # ADR-011 — Sink-Only Teleportation vs Full PageRank Damping
+
+> **Superseded by [[adr-012-teleporting-pagerank-default]].** Kept for history.
+> Default math is now full α-damping PageRank; see that ADR for current behaviour.
 
 ## Context
 
@@ -79,20 +82,18 @@ graphs, facing the choice between sink-only teleportation and full PageRank
   - A user-facing damping factor (`--alpha`) is requested for PageRank
     compatibility.
 
-## Supersession candidate
+## Supersession
 
-[[pagerank-foundation-rewrite]] (epic
-https://github.com/stephen-mcelhose/wikigraph/issues/56) proposes replacing
-this ADR’s defaults with full α-damping PageRank, raw-edge display via
-`NodeMass`, and an `analyze` section revisit. Until that proposal is accepted
-and a successor ADR is written, this decision remains in force.
+**Superseded by [[adr-012-teleporting-pagerank-default]]** (2026-08-15), which
+accepts [[pagerank-foundation-rewrite]] and makes full α-damping the default.
 
 ## Sources
 
 - [[teleportation-ergodicity]] — mathematical background
 - [[sink-page]] — sink detection and reporting
 - [[stationary-distribution]] — requires ergodic chain
-- [[pagerank-foundation-rewrite]] — proposed supersession (epic #56)
+- [[adr-012-teleporting-pagerank-default]] — successor decision
+- [[pagerank-foundation-rewrite]] — proposal that drove supersession
 - Wikipedia: PageRank — https://en.wikipedia.org/wiki/PageRank
 - Page, L., Brin, S., Motwani, R., & Winograd, T. (1999). *The PageRank
   Citation Ranking: Bringing Order to the Web*. Stanford InfoLab. http://ilpubs.stanford.edu:8090/422/

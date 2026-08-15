@@ -149,3 +149,9 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 
 ## [2026-08-15] amend | pagerank-foundation-rewrite + epic #56
 - Fixed epic/proposal “out of scope”: changing default adjacency / π for analyze and export is **in scope** for the foundation rewrite; out of scope is only semantic goals, PPR-only goal, and permanent dual-math
+
+## [2026-08-15] decision | adr-012-teleporting-pagerank-default
+- Accepted [[adr-012-teleporting-pagerank-default]] implementing [[pagerank-foundation-rewrite]] (epic #56 / #55)
+- Superseded [[adr-011-sink-teleportation-vs-pagerank-damping]]
+- Updated [[markov-model]], [[sink-page]], [[teleportation-ergodicity]], [[architecture]], [[testing-runbook]], index
+- Code: raw adj + NewTeleportingKernelFromAdj; --alpha/--seed; NodeMass graph viz; raw SCCs/edges in analyze/export

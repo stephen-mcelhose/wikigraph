@@ -22,8 +22,8 @@ import (
 // Update these whenever a page is added, removed, or significantly relinked.
 // Edges = raw directed wikilinks; π = PageRank on the teleporting kernel (α=0.15).
 const (
-	docsWantPages    = 39
-	docsWantEdges    = 201 // rawAdj entries > 0
+	docsWantPages    = 40
+	docsWantEdges    = 210 // rawAdj entries > 0
 	docsWantClasses  = 1   // raw digraph SCCs
 	docsWantCentral  = "analyze"
 	docsWantLowestPi = "adr-009-wiki-gen-make-vs-buy"

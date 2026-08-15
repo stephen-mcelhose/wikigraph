@@ -148,19 +148,14 @@ Literature treats PPR and MFPT as complementary, not substitutes. Rejected.
 
 ## Open Questions
 
-1. **Communicating classes in `analyze`:** report SCCs on the **raw** graph
-   (authoring signal), the **teleporting** chain (math), or both?
-2. **Edge count:** confirm raw directed wikilink count as the Overview metric
-   (recommended).
-3. **Legacy flag:** is a `--kernel sink-only` (or similar) needed for one
-   release, or is a hard cut with ADR-012 enough?
-4. **Default α:** `0.15` (teleport probability, firehose / catrace style) vs
-   damping `d = 0.85` naming — pick one user-facing convention and document it
-   everywhere.
-5. **Export formats:** should JSON/CSV/DOT export raw adj, teleporting `P`,
-   or both (with clear field names)?
-6. **Estimate:** sizing the analyze semantics pass + runbook/integration
-   re-golden before coding starts.
+Resolved in [[adr-012-teleporting-pagerank-default]]:
+
+1. Communicating classes → **raw** digraph SCCs
+2. Edge count → **raw** directed wikilinks
+3. Legacy flag → **hard cut** (no `--kernel sink-only`)
+4. Default α → **`--alpha 0.15`** teleport probability
+5. Export → **raw edges** + PageRank π
+6. Estimate → shipped with docs-wiki re-golden in the same change set
 
 ## Out of Scope
 
@@ -176,20 +171,19 @@ Literature treats PPR and MFPT as complementary, not substitutes. Rejected.
 - Epic: https://github.com/stephen-mcelhose/wikigraph/issues/56
 - Children: https://github.com/stephen-mcelhose/wikigraph/issues/55,
   https://github.com/stephen-mcelhose/wikigraph/issues/22
+- Accepted as [[adr-012-teleporting-pagerank-default]] (supersedes
+  [[adr-011-sink-teleportation-vs-pagerank-damping]])
 - Firehose reference: `eis-intake-firehose/tools/firehose-graph`
-- External pattern sources informing this proposal: Neo4j PageRank /
-  Personalized PageRank docs; igraph personalized PageRank tutorial; Obsidian
-  Advanced Graph View / Cartographer (PageRank-sized nodes, real edges).
 
 ## Related Proposals and Decisions
 
-- [[adr-011-sink-teleportation-vs-pagerank-damping]] — current accepted decision;
-  supersession target
+- [[adr-012-teleporting-pagerank-default]] — accepted decision implementing this proposal
+- [[adr-011-sink-teleportation-vs-pagerank-damping]] — superseded predecessor
 - [[teleportation-ergodicity]] — mathematical background
 - [[sink-page]] — structural sink reporting
 - [[stationary-distribution]] — π semantics
-- [[analyze]] — health report whose section semantics need planning
-- [[page-type-conventions]] — this page is a `proposal` pending a future ADR
+- [[analyze]] — health report section semantics
+- [[page-type-conventions]] — proposals remain history; ADR is the decision record
 
 ## Sources
 
@@ -197,6 +191,7 @@ Literature treats PPR and MFPT as complementary, not substitutes. Rejected.
 - https://github.com/stephen-mcelhose/wikigraph/issues/55
 - https://github.com/stephen-mcelhose/wikigraph/issues/22
 - https://github.com/stephen-mcelhose/catrace/pull/39
+- [[adr-012-teleporting-pagerank-default]]
 - [[adr-011-sink-teleportation-vs-pagerank-damping]]
 - [[teleportation-ergodicity]]
 - Neo4j GDS PageRank — https://neo4j.com/docs/graph-data-science/current/algorithms/page-rank/

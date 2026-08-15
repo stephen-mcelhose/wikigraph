@@ -16,13 +16,14 @@ wikigraph is ~1,567 lines of Go across seven files. The design is deliberately t
 
 | File | Role |
 | --- | --- |
-| `main.go` | Cobra root command, `--exclude` and `-r/--recursive` persistent flags, subcommand wiring |
-| `wiki.go` | `loadPages`, `buildAdjacency`, `buildKernel` — the translation layer |
+| `main.go` | Cobra root command, persistent flags (`--exclude`, `-r`, `--relative-links`, `--alpha`, `--seed`), subcommand wiring |
+| `wiki.go` | `loadPages`, `buildAdjacency`, `buildKernel` — raw adj + teleporting kernel |
+| `digraph.go` | Raw digraph SCCs (`rawSCCs`) and `rawEdgeCount` for authoring signals |
 | `wiki_test.go` | Unit tests for flat/recursive page loading, duplicate slug validation, and kernel construction |
-| `cmd_graph.go` | `graph` subcommand — renders full kernel as interactive HTML |
-| `cmd_analyze.go` | `analyze` subcommand — prints health report with six sections |
+| `cmd_graph.go` | `graph` subcommand — PageRank `NodeMass` + base-link HTML |
+| `cmd_analyze.go` | `analyze` subcommand — health report (raw structure + PageRank π) |
 | `cmd_goal.go` | `goal` subcommand — MFPT ranking + trace kernel; four strategies: `union`, `intersection`, `path`, `bottleneck` (see [[adr-007-subgraph-partitioning-and-path-strategies]]) |
-| `cmd_export.go` | `export` subcommand — serialises kernel as JSON, CSV, or DOT |
+| `cmd_export.go` | `export` subcommand — raw edges + PageRank π as JSON, CSV, or DOT |
 | `sed.go` | `applySed` — applies arbitrary sed expressions to HTML output |
 
 ## Key Properties
@@ -31,14 +32,14 @@ wikigraph is ~1,567 lines of Go across seven files. The design is deliberately t
 
 All Markov maths lives in [[catrace|github.com/stephen-mcelhose/catrace]]. wikigraph never implements its own linear algebra. The `catrace.Kernel` struct exposes:
 
-- `P` (`mat.Dense`) — the n×n row-stochastic transition matrix
+- `NewTeleportingKernelFromAdj`, `NodeMass`, PPR helpers
 - `Stationary(tol, maxIter)` — power iteration to find [[stationary-distribution|π]]
-- `Classes(tol)` — Kosaraju SCC decomposition → [[communicating-classes|recurrent vs transient sets]]
+- `Classes(tol)` — Kosaraju SCC on math $P$ (usually one class under α-damping; analyze uses raw SCCs instead)
 - `EntropyRate(base)` — [[entropy-rate|H]] = −Σᵢ πᵢ Σⱼ Pᵢⱼ log Pᵢⱼ
 - `MeanFirstPassage(i, j)` — MFPT via fundamental matrix
 - `CommuteTime(i, j)` — MFPT(i,j) + MFPT(j,i)
 - `Trace(subset, tol)` — effective kernel on a subset of states
-- `ToHTML(opts)` — D3-based force-directed graph
+- `ToHTML(opts)` — D3-based force-directed graph (`NodeMass` optional)
 
 ### Data-flow pipeline
 
@@ -49,20 +50,24 @@ docs/*.md
 sorted []string slugs + slug→index map
   │
   ▼ buildAdjacency (wiki.go)
-mat.Dense  n×n adjacency (0/1 + [[sink-page|sink]] teleportation)
+mat.Dense  n×n raw adjacency (0/1; [[sink-page|sink]] rows stay zero)
   │
-  ▼ catrace.NewRandomWalkKernel
-catrace.Kernel  (P is now row-stochastic)
+  ▼ catrace.NewTeleportingKernelFromAdj (α, restart)
+catrace.Kernel  (teleporting / PageRank P)
   │
-  ├──▶ cmd_graph.go   → k.ToHTML → wiki_graph.html
-  ├──▶ cmd_analyze.go → Stationary + Classes + CommuteTime → text report
+  ├──▶ cmd_graph.go   → NodeMass(π) + α=0 base edges → wiki_graph.html
+  ├──▶ cmd_analyze.go → PageRank π + raw SCCs/edges + CommuteTime → text report
   ├──▶ cmd_goal.go    → MeanFirstPassage + Trace + ToHTML → goal_graph.html
-  └──▶ cmd_export.go  → Stationary + Classes → JSON / CSV / DOT
+  └──▶ cmd_export.go  → raw edges + PageRank π → JSON / CSV / DOT
 ```
 
-### Persistent --exclude flag
+See [[adr-012-teleporting-pagerank-default]].
 
-`main.go` declares `--exclude` (`-e`) as a `PersistentFlag` on the root command. Cobra makes it available to all subcommands. The default value is `["index", "log", "AGENTS"]` — the three meta-files used by `llm-wiki`.
+### Persistent flags
+
+`main.go` declares persistent flags on the root command (available to all
+subcommands). Defaults include `--exclude index,log,AGENTS`, `--alpha 0.15`,
+and optional `--seed` for Personalized PageRank.
 
 ## Related Concepts
 
@@ -74,6 +79,7 @@ catrace.Kernel  (P is now row-stochastic)
 - [[adr-010-path-relative-slugs]] — Path-relative slug scheme and lenient wikilink fallback for structured folder wikis
 - [[adr-007-subgraph-partitioning-and-path-strategies]] — Subgraph strategy partitioning decisions for goal subcommand
 - [[adr-008-prototype-math-strategies]] — Accepted deviation: path and bottleneck implement math directly pending catrace APIs
+- [[adr-012-teleporting-pagerank-default]] — Default PageRank / teleporting kernel
 - [[how-to-docs-plan]] — Documentation initiative driving subcommand interface
 - [[adr-009-wiki-gen-make-vs-buy]] — Decision: nx-to-wiki Python converter for named NetworkX benchmark graphs
 - [[graph-topologies]] — Named topology catalog (barbell, caveman, WS, SBM, …) used in benchmark experiments
@@ -83,8 +89,10 @@ catrace.Kernel  (P is now row-stochastic)
 
 - `main.go`
 - `wiki.go`
+- `digraph.go`
 - `cmd_graph.go`
 - `cmd_analyze.go`
 - `cmd_goal.go`
 - `cmd_export.go`
 - `sed.go`
+- [[adr-012-teleporting-pagerank-default]]
