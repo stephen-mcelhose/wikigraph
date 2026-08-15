@@ -47,6 +47,7 @@ timestamp: 2026-08-09T06:54:46Z
 | [[adr-010-path-relative-slugs]]       | `decision` | ADR: path-relative slugs in recursive mode; lenient wikilink basename fallback for structured folder wikis |
 | [[adr-011-sink-teleportation-vs-pagerank-damping]] | `decision` | ADR: retain sink-only teleportation; separate display adj from math adj; defer full α-damping |
 | [[teleportation-ergodicity]]          | `concept`  | Why sink-only teleportation is legitimate; PageRank damping factor comparison; when to reconsider |
+| [[pagerank-foundation-rewrite]]     | `proposal` | Propose PageRank (α-damping) as default math + clean NodeMass viz; supersede ADR-011 (epic #56) |
 
 ## Sources
 
