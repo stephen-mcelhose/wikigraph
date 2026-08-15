@@ -3,6 +3,7 @@ type: how-to
 title: Quickstart Guide — Minimal LLM-Wiki Setup & Wikigraph Analysis
 description: Step-by-step guide to setting up a minimal llm-wiki skill, visualising and analysing the wiki, and feeding analysis output into maintenance prompts.
 tags: [quickstart, llm-wiki, setup, graph, analyze, maintenance]
+resource: https://github.com/stephen-mcelhose/wikigraph
 timestamp: 2026-08-09T17:15:00Z
 ---
 

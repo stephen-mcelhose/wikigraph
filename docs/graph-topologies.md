@@ -230,6 +230,7 @@ The **Krackhardt Kite** is particularly interesting — it explicitly has nodes 
 - [[commute-time]] — boundary conductance drives commute time between communities
 - [[random-walk]] — the foundational model these topologies are benchmarked against
 - [[graph-models]] — random generative models (ER, BA, WS, SBM, LFR) complementing this named-topology catalog
+- Benchmark write-ups (provisional `docs/graphs/` pending issue #42): karate-club, krackhardt-kite, barbell, caveman
 
 ## Sources
 

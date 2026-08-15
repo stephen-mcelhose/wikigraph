@@ -4,6 +4,7 @@ title: Zachary's Karate Club — wikigraph Analysis
 description: Empirical wikigraph analysis of Zachary's Karate Club graph (34-node canonical two-community benchmark) as a Markov chain. Path provisional — will move to flat docs/ when #42 resolves.
 tags: [benchmark, karate-club, networkx, markov-chain, spike, draft]
 status: draft
+resource: https://github.com/stephen-mcelhose/wikigraph/issues/42
 timestamp: 2026-08-11T00:00:00Z
 ---
 

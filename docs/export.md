@@ -15,8 +15,8 @@ D3/Observable, Gephi, Graphviz, a spreadsheet, or your own script.
 ## Goal
 
 At the end of this guide you will have one or more files on disk containing
-every page's centrality score and every link's transition probability, filtered
-to the edges that matter.
+every page's PageRank π and every **raw** wikilink edge (not teleportation mass),
+filtered by `--min-edge` on edge weight.
 
 ## Prerequisites
 
@@ -65,9 +65,9 @@ The JSON is D3 node-link format:
 }
 ```
 
-- `pi` — stationary probability (centrality): how often a random walker visits this page (see [[graph]] for a visual explanation)
-- `class` — communicating class index (`-1` means the page is transient / isolated; see [[analyze]] for what classes mean)
-- `value` — transition probability on that edge
+- `pi` — PageRank π (teleporting kernel; see [[stationary-distribution]])
+- `class` — raw digraph SCC index (see [[analyze]])
+- `value` — raw directed wikilink weight (typically `1.0`), not teleporting math $P$
 
 ### 2. Export as CSV
 
@@ -91,11 +91,11 @@ arithmetic-gates,0.0417959521,0
 bb84-qkd,0.0144622871,0
 ```
 
-`/tmp/wiki_edges.csv` (295 rows + header):
+`/tmp/wiki_edges.csv` (header `source,target,weight`; one row per raw wikilink):
 ```
-source,target,probability
-algorithm-comparison,arithmetic-gates,0.0277777778
-arithmetic-gates,bb84-qkd,0.0277777778
+source,target,weight
+algorithm-comparison,arithmetic-gates,1.0000000000
+arithmetic-gates,bb84-qkd,1.0000000000
 ```
 
 ### 3. Export as DOT (Graphviz)
@@ -119,7 +119,7 @@ digraph wiki {
   "arithmetic-gates" [weight=0.041796];
   "bb84-qkd" [weight=0.014462];
   ...
-  "algorithm-comparison" -> "arithmetic-gates" [weight=0.027778];
+  "algorithm-comparison" -> "arithmetic-gates" [weight=1.000000];
 ```
 
 Render it immediately:
@@ -131,8 +131,9 @@ open /tmp/wiki.png
 
 ### 4. Filter out weak edges
 
-By default, edges with a transition probability below `0.005` are omitted.
-Raise the threshold to focus only on the strongest links:
+Raw export edges are weight `1.0` by default, so the historical `--min-edge 0.005`
+threshold keeps all real wikilinks. Raise above `1` to drop edges, or use
+`graph --min-edge` on the base-link kernel when visualising:
 
 ```bash
 wikigraph export ~/quantum-go/wiki --format json -o /tmp/wiki --min-edge 0.05
