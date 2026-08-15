@@ -77,8 +77,15 @@ func runGraph(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("PageRank stationary: %w", err)
 	}
 
-	// Display kernel: α=0 keeps real link edges; MinEdge hides sink→restart stars.
-	baseK, err := catrace.NewTeleportingKernelFromAdj(adj, restart, 0, pages)
+	// Display kernel: α=0 + uniform restart so sink rows are ~1/n and MinEdge
+	// can suppress them (firehose pattern). Do not reuse a seeded restart here —
+	// that would draw sink→seed stars past MinEdge.
+	n := len(pages)
+	uniform := make([]float64, n)
+	for i := range uniform {
+		uniform[i] = 1.0 / float64(n)
+	}
+	baseK, err := catrace.NewTeleportingKernelFromAdj(adj, uniform, 0, pages)
 	if err != nil {
 		return fmt.Errorf("building display kernel: %w", err)
 	}
