@@ -185,44 +185,41 @@ func selectUnion(kern *catrace.Kernel, n int, goalIdxs []int, top int) []int {
 
 // selectIntersection scores pages by max MFPT to all goals (AND-prerequisites).
 func selectIntersection(kern *catrace.Kernel, n int, goalIdxs []int, top int) []int {
-	const inf = 1e18
-	// maxMFPT[i] stores the max MFPT from page i to any goal.
+	goalSet := indexSet(goalIdxs)
 	maxMFPT := make([]float64, n)
-
 	for i := 0; i < n; i++ {
-		isGoal := false
-		for _, g := range goalIdxs {
-			if i == g {
-				isGoal = true
-				break
-			}
-		}
-		if isGoal {
+		if goalSet[i] {
 			maxMFPT[i] = 0
 			continue
 		}
+		maxMFPT[i] = maxMFPTToGoals(kern, i, goalIdxs)
+	}
+	return rankAndSelect(maxMFPT, n, goalIdxs, top)
+}
 
-		maxVal := 0.0
-		reachableAll := true
-		for _, gIdx := range goalIdxs {
-			mfpt, err := kern.MeanFirstPassage(i, gIdx)
-			if err != nil {
-				reachableAll = false
-				break
-			}
-			if mfpt > maxVal {
-				maxVal = mfpt
-			}
+func indexSet(idxs []int) map[int]bool {
+	s := make(map[int]bool, len(idxs))
+	for _, i := range idxs {
+		s[i] = true
+	}
+	return s
+}
+
+// maxMFPTToGoals returns the max MeanFirstPassage(from, g) over goals, or +inf
+// if any goal is unreachable from from.
+func maxMFPTToGoals(kern *catrace.Kernel, from int, goalIdxs []int) float64 {
+	const inf = 1e18
+	maxVal := 0.0
+	for _, g := range goalIdxs {
+		mfpt, err := kern.MeanFirstPassage(from, g)
+		if err != nil {
+			return inf
 		}
-
-		if reachableAll {
-			maxMFPT[i] = maxVal
-		} else {
-			maxMFPT[i] = inf
+		if mfpt > maxVal {
+			maxVal = mfpt
 		}
 	}
-
-	return rankAndSelect(maxMFPT, n, goalIdxs, top)
+	return maxVal
 }
 
 // Item for priority queue in Dijkstra
@@ -250,106 +247,86 @@ func (pq *priorityQueue) Pop() interface{} {
 
 // selectPath computes sequential Dijkstra on -log(P_ij) edge weights.
 func selectPath(P *mat.Dense, n int, goalIdxs []int, top int) []int {
-
-	pathNodesSet := make(map[int]bool)
+	pathNodes := make(map[int]bool, len(goalIdxs))
 	for _, g := range goalIdxs {
-		pathNodesSet[g] = true
+		pathNodes[g] = true
 	}
-
-	if len(goalIdxs) >= 2 {
-		for k := 0; k < len(goalIdxs)-1; k++ {
-			src := goalIdxs[k]
-			dst := goalIdxs[k+1]
-
-			dist := make([]float64, n)
-			prev := make([]int, n)
-			for i := 0; i < n; i++ {
-				dist[i] = math.Inf(1)
-				prev[i] = -1
-			}
-			dist[src] = 0
-
-			pq := &priorityQueue{}
-			heap.Init(pq)
-			heap.Push(pq, &pathItem{node: src, dist: 0})
-
-			for pq.Len() > 0 {
-				curr := heap.Pop(pq).(*pathItem)
-				u := curr.node
-				if curr.dist > dist[u] {
-					continue
-				}
-				if u == dst {
-					break
-				}
-
-				for v := 0; v < n; v++ {
-					p := P.At(u, v)
-					if p <= 0 {
-						continue
-					}
-					w := -math.Log(p)
-					if dist[u]+w < dist[v] {
-						dist[v] = dist[u] + w
-						prev[v] = u
-						heap.Push(pq, &pathItem{node: v, dist: dist[v]})
-					}
-				}
-			}
-
-			// Reconstruct path
-			if prev[dst] != -1 || src == dst {
-				curr := dst
-				for curr != -1 {
-					pathNodesSet[curr] = true
-					curr = prev[curr]
-				}
-			}
+	for k := 0; k+1 < len(goalIdxs); k++ {
+		for _, v := range dijkstraNegLogPath(P, n, goalIdxs[k], goalIdxs[k+1]) {
+			pathNodes[v] = true
 		}
 	}
+	return expandPathNeighbors(P, n, pathNodes, top)
+}
 
-	// Neighbor expansion if pathNodes < top
-	selected := make(map[int]bool)
-	for idx := range pathNodesSet {
+// dijkstraNegLogPath returns nodes on the shortest path from src to dst using
+// edge weights -log(P_ij). If dst is unreachable, returns nil (caller already
+// seeded pathNodes with the goals themselves).
+func dijkstraNegLogPath(P *mat.Dense, n, src, dst int) []int {
+	dist := make([]float64, n)
+	prev := make([]int, n)
+	for i := 0; i < n; i++ {
+		dist[i] = math.Inf(1)
+		prev[i] = -1
+	}
+	dist[src] = 0
+
+	pq := &priorityQueue{}
+	heap.Init(pq)
+	heap.Push(pq, &pathItem{node: src, dist: 0})
+
+	for pq.Len() > 0 {
+		curr := heap.Pop(pq).(*pathItem)
+		u := curr.node
+		if curr.dist > dist[u] {
+			continue
+		}
+		if u == dst {
+			break
+		}
+		relaxNegLogNeighbors(P, n, u, dist, prev, pq)
+	}
+
+	if prev[dst] == -1 && src != dst {
+		return nil
+	}
+	var path []int
+	for curr := dst; curr != -1; curr = prev[curr] {
+		path = append(path, curr)
+	}
+	return path
+}
+
+func relaxNegLogNeighbors(P *mat.Dense, n, u int, dist []float64, prev []int, pq *priorityQueue) {
+	for v := 0; v < n; v++ {
+		p := P.At(u, v)
+		if p <= 0 {
+			continue
+		}
+		w := -math.Log(p)
+		if dist[u]+w < dist[v] {
+			dist[v] = dist[u] + w
+			prev[v] = u
+			heap.Push(pq, &pathItem{node: v, dist: dist[v]})
+		}
+	}
+}
+
+type pathNeighbor struct {
+	idx  int
+	prob float64
+}
+
+// expandPathNeighbors returns path node indices, padding up to top with the
+// highest bidirectional transition probabilities off the path.
+func expandPathNeighbors(P *mat.Dense, n int, pathNodes map[int]bool, top int) []int {
+	selected := make(map[int]bool, len(pathNodes))
+	for idx := range pathNodes {
 		selected[idx] = true
 	}
-
 	if len(selected) < top {
-		type neighbor struct {
-			idx  int
-			prob float64
-		}
-		var candidates []neighbor
-		for i := 0; i < n; i++ {
-			if selected[i] {
-				continue
-			}
-			maxProb := 0.0
-			for pNode := range pathNodesSet {
-				if pOut := P.At(pNode, i); pOut > maxProb {
-					maxProb = pOut
-				}
-				if pIn := P.At(i, pNode); pIn > maxProb {
-					maxProb = pIn
-				}
-			}
-			if maxProb > 0 {
-				candidates = append(candidates, neighbor{idx: i, prob: maxProb})
-			}
-		}
-
-		sort.Slice(candidates, func(i, j int) bool {
-			return candidates[i].prob > candidates[j].prob
-		})
-
-		for _, cand := range candidates {
-			if len(selected) >= top {
-				break
-			}
-			selected[cand.idx] = true
-		}
+		fillPathNeighbors(P, n, pathNodes, selected, top)
 	}
-
 	res := make([]int, 0, len(selected))
 	for idx := range selected {
 		res = append(res, idx)
@@ -357,96 +334,140 @@ func selectPath(P *mat.Dense, n int, goalIdxs []int, top int) []int {
 	return res
 }
 
+func fillPathNeighbors(P *mat.Dense, n int, pathNodes, selected map[int]bool, top int) {
+	candidates := pathNeighborCandidates(P, n, pathNodes, selected)
+	sort.Slice(candidates, func(i, j int) bool {
+		return candidates[i].prob > candidates[j].prob
+	})
+	for _, cand := range candidates {
+		if len(selected) >= top {
+			return
+		}
+		selected[cand.idx] = true
+	}
+}
+
+func pathNeighborCandidates(P *mat.Dense, n int, pathNodes, selected map[int]bool) []pathNeighbor {
+	var candidates []pathNeighbor
+	for i := 0; i < n; i++ {
+		if selected[i] {
+			continue
+		}
+		maxProb := maxBidirectionalProb(P, i, pathNodes)
+		if maxProb > 0 {
+			candidates = append(candidates, pathNeighbor{idx: i, prob: maxProb})
+		}
+	}
+	return candidates
+}
+
+func maxBidirectionalProb(P *mat.Dense, i int, pathNodes map[int]bool) float64 {
+	maxProb := 0.0
+	for pNode := range pathNodes {
+		if pOut := P.At(pNode, i); pOut > maxProb {
+			maxProb = pOut
+		}
+		if pIn := P.At(i, pNode); pIn > maxProb {
+			maxProb = pIn
+		}
+	}
+	return maxProb
+}
+
+type nodePair struct {
+	src int
+	dst int
+}
+
 // selectBottleneck scores nodes by random walk betweenness centrality across goal pairs.
 func selectBottleneck(P *mat.Dense, n int, goalIdxs []int, top int) ([]int, error) {
 	scores := make([]float64, n)
-
-	// Goal pairs
-	type pair struct {
-		src int
-		dst int
+	for _, pr := range bottleneckPairs(n, goalIdxs) {
+		addFundamentalVisits(P, n, pr.src, pr.dst, scores)
 	}
-	var pairs []pair
-
-	if len(goalIdxs) == 1 {
-		// Single goal: pair with every other node as source
-		g := goalIdxs[0]
-		for i := 0; i < n; i++ {
-			if i != g {
-				pairs = append(pairs, pair{src: i, dst: g})
-			}
-		}
-	} else {
-		for i := 0; i < len(goalIdxs); i++ {
-			for j := 0; j < len(goalIdxs); j++ {
-				if i != j {
-					pairs = append(pairs, pair{src: goalIdxs[i], dst: goalIdxs[j]})
-				}
-			}
-		}
-	}
-
-	for _, pr := range pairs {
-		s, t := pr.src, pr.dst
-
-		// Build transient index map (all nodes except target t)
-		transientMap := make([]int, 0, n-1)
-		origToTrans := make(map[int]int, n-1)
-		for i := 0; i < n; i++ {
-			if i != t {
-				origToTrans[i] = len(transientMap)
-				transientMap = append(transientMap, i)
-			}
-		}
-
-		tLen := len(transientMap)
-		if tLen == 0 {
-			continue
-		}
-
-		// Build I - Q
-		iqData := make([]float64, tLen*tLen)
-		for i := 0; i < tLen; i++ {
-			origI := transientMap[i]
-			for j := 0; j < tLen; j++ {
-				origJ := transientMap[j]
-				val := 0.0
-				if i == j {
-					val = 1.0
-				}
-				val -= P.At(origI, origJ)
-				iqData[i*tLen+j] = val
-			}
-		}
-
-		iq := mat.NewDense(tLen, tLen, iqData)
-		var N mat.Dense
-		diagOnes := make([]float64, tLen)
-		for i := range diagOnes {
-			diagOnes[i] = 1.0
-		}
-		err := N.Solve(iq, mat.NewDiagDense(tLen, diagOnes))
-		if err != nil {
-			// Singular matrix (e.g. unreachable)
-			continue
-		}
-
-		sTrans, ok := origToTrans[s]
-		if !ok {
-			continue
-		}
-
-		for kTrans := 0; kTrans < tLen; kTrans++ {
-			origK := transientMap[kTrans]
-			scores[origK] += N.At(sTrans, kTrans)
-		}
-	}
-
 	// rankAndSelect picks lowest scores first; negate so highest betweenness is selected.
 	for i := range scores {
 		scores[i] = -scores[i]
 	}
 	return rankAndSelect(scores, n, goalIdxs, top), nil
+}
+
+func bottleneckPairs(n int, goalIdxs []int) []nodePair {
+	if len(goalIdxs) == 1 {
+		g := goalIdxs[0]
+		pairs := make([]nodePair, 0, n-1)
+		for i := 0; i < n; i++ {
+			if i != g {
+				pairs = append(pairs, nodePair{src: i, dst: g})
+			}
+		}
+		return pairs
+	}
+	var pairs []nodePair
+	for i := 0; i < len(goalIdxs); i++ {
+		for j := 0; j < len(goalIdxs); j++ {
+			if i != j {
+				pairs = append(pairs, nodePair{src: goalIdxs[i], dst: goalIdxs[j]})
+			}
+		}
+	}
+	return pairs
+}
+
+// addFundamentalVisits accumulates expected visits on the transient set
+// (all nodes except absorbing target t) for walks from s, via (I-Q)^{-1}.
+func addFundamentalVisits(P *mat.Dense, n, s, t int, scores []float64) {
+	transientMap := make([]int, 0, n-1)
+	origToTrans := make(map[int]int, n-1)
+	for i := 0; i < n; i++ {
+		if i != t {
+			origToTrans[i] = len(transientMap)
+			transientMap = append(transientMap, i)
+		}
+	}
+	tLen := len(transientMap)
+	if tLen == 0 {
+		return
+	}
+
+	N, ok := fundamentalMatrix(P, transientMap)
+	if !ok {
+		return
+	}
+	sTrans, ok := origToTrans[s]
+	if !ok {
+		return
+	}
+	for kTrans := 0; kTrans < tLen; kTrans++ {
+		scores[transientMap[kTrans]] += N.At(sTrans, kTrans)
+	}
+}
+
+func fundamentalMatrix(P *mat.Dense, transientMap []int) (*mat.Dense, bool) {
+	tLen := len(transientMap)
+	iqData := make([]float64, tLen*tLen)
+	for i := 0; i < tLen; i++ {
+		origI := transientMap[i]
+		for j := 0; j < tLen; j++ {
+			origJ := transientMap[j]
+			val := 0.0
+			if i == j {
+				val = 1.0
+			}
+			val -= P.At(origI, origJ)
+			iqData[i*tLen+j] = val
+		}
+	}
+	iq := mat.NewDense(tLen, tLen, iqData)
+	var N mat.Dense
+	diagOnes := make([]float64, tLen)
+	for i := range diagOnes {
+		diagOnes[i] = 1.0
+	}
+	if err := N.Solve(iq, mat.NewDiagDense(tLen, diagOnes)); err != nil {
+		return nil, false
+	}
+	return &N, true
 }
 
 func rankAndSelect(scores []float64, n int, goalIdxs []int, top int) []int {

@@ -18,84 +18,110 @@ func rawSCCs(adj *mat.Dense) []digraphSCC {
 	if n == 0 {
 		return nil
 	}
+	return annotateClosed(adj, tarjanSCCs(adj))
+}
 
-	index := make([]int, n)
-	lowlink := make([]int, n)
-	onStack := make([]bool, n)
-	for i := range index {
-		index[i] = -1
+type tarjanState struct {
+	adj            *mat.Dense
+	n              int
+	index, lowlink []int
+	onStack        []bool
+	stack          []int
+	dfsNum         int
+	sccs           [][]int
+}
+
+func tarjanSCCs(adj *mat.Dense) [][]int {
+	n, _ := adj.Dims()
+	s := &tarjanState{
+		adj:     adj,
+		n:       n,
+		index:   make([]int, n),
+		lowlink: make([]int, n),
+		onStack: make([]bool, n),
 	}
-	var stack []int
-	var sccs [][]int
-	dfsNum := 0
-
-	var strongConnect func(v int)
-	strongConnect = func(v int) {
-		index[v] = dfsNum
-		lowlink[v] = dfsNum
-		dfsNum++
-		stack = append(stack, v)
-		onStack[v] = true
-
-		for w := 0; w < n; w++ {
-			if adj.At(v, w) <= 0 {
-				continue
-			}
-			if index[w] == -1 {
-				strongConnect(w)
-				if lowlink[w] < lowlink[v] {
-					lowlink[v] = lowlink[w]
-				}
-			} else if onStack[w] {
-				if index[w] < lowlink[v] {
-					lowlink[v] = index[w]
-				}
-			}
-		}
-
-		if lowlink[v] == index[v] {
-			var comp []int
-			for {
-				w := stack[len(stack)-1]
-				stack = stack[:len(stack)-1]
-				onStack[w] = false
-				comp = append(comp, w)
-				if w == v {
-					break
-				}
-			}
-			sccs = append(sccs, comp)
-		}
+	for i := range s.index {
+		s.index[i] = -1
 	}
-
 	for v := 0; v < n; v++ {
-		if index[v] == -1 {
-			strongConnect(v)
+		if s.index[v] == -1 {
+			s.strongConnect(v)
 		}
 	}
+	return s.sccs
+}
 
+func (s *tarjanState) strongConnect(v int) {
+	s.index[v] = s.dfsNum
+	s.lowlink[v] = s.dfsNum
+	s.dfsNum++
+	s.stack = append(s.stack, v)
+	s.onStack[v] = true
+
+	s.considerOutNeighbors(v)
+
+	if s.lowlink[v] == s.index[v] {
+		s.sccs = append(s.sccs, s.popSCC(v))
+	}
+}
+
+func (s *tarjanState) considerOutNeighbors(v int) {
+	for w := 0; w < s.n; w++ {
+		if s.adj.At(v, w) <= 0 {
+			continue
+		}
+		if s.index[w] == -1 {
+			s.strongConnect(w)
+			if s.lowlink[w] < s.lowlink[v] {
+				s.lowlink[v] = s.lowlink[w]
+			}
+			continue
+		}
+		if s.onStack[w] && s.index[w] < s.lowlink[v] {
+			s.lowlink[v] = s.index[w]
+		}
+	}
+}
+
+func (s *tarjanState) popSCC(root int) []int {
+	var comp []int
+	for {
+		w := s.stack[len(s.stack)-1]
+		s.stack = s.stack[:len(s.stack)-1]
+		s.onStack[w] = false
+		comp = append(comp, w)
+		if w == root {
+			return comp
+		}
+	}
+}
+
+func annotateClosed(adj *mat.Dense, comps [][]int) []digraphSCC {
+	n, _ := adj.Dims()
 	compOf := make([]int, n)
-	for ci, comp := range sccs {
+	for ci, comp := range comps {
 		for _, v := range comp {
 			compOf[v] = ci
 		}
 	}
-
-	out := make([]digraphSCC, len(sccs))
-	for ci, comp := range sccs {
-		closed := true
-		for _, v := range comp {
-			for w := 0; w < n; w++ {
-				if adj.At(v, w) > 0 && compOf[w] != ci {
-					closed = false
-					break
-				}
-			}
-			if !closed {
-				break
-			}
+	out := make([]digraphSCC, len(comps))
+	for ci, comp := range comps {
+		out[ci] = digraphSCC{
+			Members: comp,
+			Closed:  componentIsClosed(adj, comp, compOf, ci),
 		}
-		out[ci] = digraphSCC{Members: comp, Closed: closed}
 	}
 	return out
+}
+
+func componentIsClosed(adj *mat.Dense, members []int, compOf []int, ci int) bool {
+	n, _ := adj.Dims()
+	for _, v := range members {
+		for w := 0; w < n; w++ {
+			if adj.At(v, w) > 0 && compOf[w] != ci {
+				return false
+			}
+		}
+	}
+	return true
 }
