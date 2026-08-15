@@ -15,7 +15,7 @@ Comprehensive manual test plan covering all `wikigraph` subcommands (`graph`, `a
 **Binary:** built locally from `~/repos/wikigraph/`  
 **Wiki under test:** `docs/` in this repo (39 content pages)  
 **Run all commands from:** `~/repos/wikigraph/` (the repo root)  
-**Last verified:** 2026-08-15 against current wiki state (39 pages, 201 edges, 1 recurrent class)
+**Last verified:** 2026-08-15 against PageRank foundation rewrite (39 pages, 201 raw edges, entropy ~3.24 bits, 1 raw SCC; π via α=0.15 teleporting kernel)
 
 ---
 
@@ -75,8 +75,8 @@ open /tmp/wg_graph.html
 **Pass criteria:**
 - Stderr prints `Pages: 39` and `Written: /tmp/wg_graph.html`
 - File exists and opens in browser showing a force-directed graph
-- 39 labelled nodes visible; nodes sized differently (stationary dist)
-- 1 colour (1 recurrent class)
+- 39 labelled nodes visible; nodes sized differently (PageRank π)
+- Edges are real wikilinks (no sink stars); default `--min-edge 0.02`
 - Exit code 0
 
 ---
@@ -311,7 +311,7 @@ head /tmp/wg_edges.csv
 
 **Pass criteria:**
 - `wg_nodes.csv` header: `slug,pi,class`
-- `wg_edges.csv` header: `source,target,probability`
+- `wg_edges.csv` header: `source,target,weight`
 - Both have 39 data rows in nodes (one per page)
 - Values are numeric floats; no empty cells
 
@@ -355,7 +355,7 @@ jq '.links | length' /tmp/wg_sparse.json
 ```
 
 **Pass criteria:**
-- Link count is significantly lower than with default `--min-edge 0.005`
+- Link count is significantly lower than with default `--min-edge 0.005` (raw edges are weight 1.0, so `--min-edge 0.5` still keeps all real links; use a threshold `> 1` to drop all)
 
 ---
 
@@ -371,11 +371,11 @@ wikigraph analyze docs/
 
 | Section         | Expected                                                                                                                                                              |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Overview        | Pages: 39, Edges: 201, Entropy rate: ~2.36 bits, Classes: 1                                                                                                                        |
-| Classes         | 1 recurrent (39 pages)                                                                                                                                                              |
-| Orphans (≤10%)  | `adr-009-wiki-gen-make-vs-buy` (π=0.001788), `llm-wiki-pattern` (π=0.002407), `graph-models` (π=0.003236), `graph-topologies` (π=0.003329)                                        |
+| Overview        | Pages: 39, Edges: 201 (raw wikilinks), Entropy rate: ~3.24 bits, Classes: 1 (raw digraph SCCs)                                                                                     |
+| Classes         | 1 closed raw SCC (39 pages) — teleporting math kernel is ergodic by construction                                                                                                  |
+| Orphans (≤10%)  | `adr-009-wiki-gen-make-vs-buy` (π=0.005304), `llm-wiki-pattern` (π=0.006599), `graph-models` (π=0.008842), `graph-topologies` (π=0.009061)                                        |
 | Sinks           | `(none)`                                                                                                                                                                            |
-| Most central #1 | `analyze` (π=0.085742)                                                                                                                                                              |
+| Most central #1 | `analyze` (π=0.077642)                                                                                                                                                              |
 | Suggestions     | At least one page with 3 suggestions listed                                                                                                                           |
 
 - Exit code 0
@@ -403,7 +403,7 @@ wikigraph analyze docs/ --orphan-pct 0 --suggest-top 0
 ```
 
 **Pass criteria:**
-- Orphan section shows `adr-009-wiki-gen-make-vs-buy` (π=0.001788) — the single lowest-π page
+- Orphan section shows `adr-009-wiki-gen-make-vs-buy` (π=0.005304) — the single lowest-π page
 - Section header says `bottom 0%`
 
 ---
@@ -535,7 +535,7 @@ wikigraph analyze /tmp/isolatedwiki -r --suggest-top 0
 
 **Pass criteria:**
 - Overview reports `Pages: 4` and `Classes: 2`
-- Communicating classes section lists two distinct recurrent classes (`Class 1` with 2 pages, `Class 2` with 2 pages)
+- Communicating classes section lists two distinct raw SCCs (`Class 1` with 2 pages, `Class 2` with 2 pages), each marked closed
 - Exit code 0
 
 ---
