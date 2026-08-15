@@ -25,16 +25,16 @@ timestamp: 2026-08-09T06:54:46Z
 | [[how-to-docs-plan]]         | `proposal` | Proposal tracking the how-to docs initiative (GitHub issue #3) |
 | [[page-type-conventions]]    | `proposal` | Proposal to define required sections for each wiki page type   |
 | [[architecture]]             | `concept`  | Seven Go files, catrace dependency, and data-flow pipeline     |
-| [[markov-model]]             | `concept`  | How wikilinks become a row-stochastic Markov kernel            |
+| [[markov-model]]             | `concept`  | Raw wikilink adjacency + teleporting PageRank kernel           |
 | [[mfpt]]                     | `concept`  | Mean first passage time — used by goal and analyze             |
 | [[communicating-classes]]    | `concept`  | Maximal mutually-reachable page sets; the wiki connectivity test |
 | [[recurrent-class]]          | `concept`  | Recurrent vs transient classes — what gets π, what doesn't     |
 | [[random-walk]]              | `concept`  | Random walk on a graph — the foundational model behind all analysis   |
 | [[stationary-distribution]]  | `concept`  | π — long-run visit frequency, centrality, orphan detection            |
 | [[entropy-rate]]             | `concept`  | Bits per step of the random walk — a wiki health signal               |
-| [[sink-page]]                | `concept`  | Zero-outgoing-link pages and the teleportation fix                    |
+| [[sink-page]]                | `concept`  | Zero-outgoing-link pages; restart handling in teleporting kernel      |
 | [[commute-time]]             | `concept`  | Symmetric MFPT-based distance metric for link suggestions             |
-| [[catrace]]                  | `concept`  | The Go library providing all Markov chain mathematics                 |
+| [[catrace]]                  | `concept`  | Go library: teleporting kernels, MFPT, NodeMass viz; PDA agents |
 | [[adr-007-subgraph-partitioning-and-path-strategies]] | `decision` | ADR: Subgraph partitioning and path strategies for goal subcommand |
 | [[adr-008-prototype-math-strategies]]                 | `decision` | ADR: Accept in-process math for prototype path/bottleneck strategies |
 | [[absorbing-markov-chain]]   | `concept`  | Absorbing states, block canonical form, and fundamental matrix N      |
@@ -49,6 +49,7 @@ timestamp: 2026-08-09T06:54:46Z
 | [[adr-012-teleporting-pagerank-default]] | `decision` | ADR: teleporting PageRank default math; raw adj + NodeMass viz |
 | [[teleportation-ergodicity]]          | `concept`  | α-damping ergodicity; raw structure vs teleporting math |
 | [[pagerank-foundation-rewrite]]     | `proposal` | Proposal for PageRank foundation rewrite (accepted as ADR-012; epic #56) |
+| [[knowledge-graph-to-pda-agents]]   | `concept`  | Same Markov operators on wiki walks and PDA agents — measure, compare, diagnose (not ontology identity) |
 
 ## Sources
 

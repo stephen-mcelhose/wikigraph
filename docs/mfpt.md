@@ -29,13 +29,20 @@ $$M(i,j) = \frac{Z_{jj} - Z_{ij}}{\pi_j}$$
 1. **`wikigraph goal --goal <slug>`**: Ranks all candidate prerequisite pages $i$ by ascending $M(i, \text{goal})$ to generate an optimal learning path.
 2. **`wikigraph analyze`**: Forms symmetric [[commute-time]] $K(i,j) = M(i,j) + M(j,i)$ for link recommendations.
 
+On PDA agent kernels the same $M(i,j)$ is **access cost** to a target
+experience or task-complete state — complementary to PPR occupancy under
+intent. See [[knowledge-graph-to-pda-agents]].
+
 ## Related Concepts
 
 - [[commute-time]] — Symmetric $M(i,j) + M(j,i)$ metric
 - [[goal]] — CLI subcommand utilizing MFPT
 - [[catrace]] — Linear algebra implementation of $Z$ matrix
+- [[knowledge-graph-to-pda-agents]] — MFPT as agent latency / access cost
+- [[stationary-distribution]] — Complementary long-run mass
 
 ## Sources
 
 - Kemeny, J. G., & Snell, J. L. (1976). *Finite Markov Chains*. Springer-Verlag.
 - [[catrace]]
+- [[knowledge-graph-to-pda-agents]]

@@ -37,18 +37,21 @@ entropy) uses a teleporting / PageRank kernel over that digraph.
 | `graph` node size | Stationary of $T$ via `NodeMass` |
 | `graph` edges | Base-link kernel ($\alpha=0$) + `MinEdge` |
 
-See [[adr-012-teleporting-pagerank-default]].
+See [[adr-012-teleporting-pagerank-default]]. The same teleporting construction
+is how catrace encodes **intent** on agent kernels — [[knowledge-graph-to-pda-agents]].
 
 ## Related Concepts
 
 - [[architecture]] — Data-flow pipeline
 - [[sink-page]] — Structural sinks vs restart handling
-- [[catrace]] — `NewTeleportingKernelFromAdj`, `NodeMass`
+- [[catrace]] — `NewTeleportingKernelFromAdj`, `NodeMass`, PDA agents
 - [[stationary-distribution]] — PageRank π
 - [[teleportation-ergodicity]] — Why α-damping guarantees ergodicity
+- [[knowledge-graph-to-pda-agents]] — Shared operators: wiki walk ↔ PDA agents
 - [[kernel-identifiability]] — Recovering structure from outputs
 
 ## Sources
 
 - `wiki.go`
 - [[adr-012-teleporting-pagerank-default]]
+- [[knowledge-graph-to-pda-agents]]

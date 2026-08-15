@@ -18,6 +18,10 @@ section so you know exactly what to act on. The same structure is visualised
 interactively by [[graph]], and the data
 can be exported for external tools via [[export]].
 
+Those health signals (sinks, orphans, hubs, commute suggestions) are the same
+kind of diagnostics you want on PDA agent kernels — see
+[[knowledge-graph-to-pda-agents]].
+
 ## Goal
 
 A terminal report that tells you:
@@ -66,9 +70,9 @@ Classes:      3
 | Field          | What it means                                                                      |
 | -------------- | ---------------------------------------------------------------------------------- |
 | **Pages**      | Total number of `.md` files loaded (after exclusions)                              |
-| **Edges**      | Number of directed links with probability > 1e-10                                 |
-| **Entropy rate** | Bits per step of the random walk. Higher = more evenly spread link structure.   |
-| **Classes**    | Number of [[communicating-classes]] (see next section)                            |
+| **Edges**      | Number of directed raw wikilinks (not teleportation mass in math $P$)            |
+| **Entropy rate** | Bits per step of the teleporting / PageRank walk. Higher = more evenly spread. |
+| **Classes**    | Number of raw digraph [[communicating-classes]] (authoring signal; see next)   |
 
 A high entropy rate (close to log₂(Pages)) means the walker has genuine choice
 at each step — a sign of a well-connected wiki. A low entropy rate means a few
@@ -77,7 +81,7 @@ pages dominate.
 ### 3. Read the Communicating classes section
 
 ```
-=== Communicating classes ===
+=== Communicating classes (raw wikilink digraph) ===
 Class 1 (recurrent): 44 page(s)
   machine-learning
   neural-networks
@@ -108,13 +112,15 @@ pointing into the main (largest) recurrent class.
 ### 4. Read the Orphan pages section
 
 ```
-=== Orphan pages (bottom 10% by stationary distribution) ===
+=== Orphan pages (bottom 10% by PageRank π) ===
   how-to-add-a-new-gate                     π=0.001603  → add inbound links
   gate-zoo                                  π=0.001749  → add inbound links
 ```
 
-Orphans are pages in the **bottom N% by [[stationary-distribution|stationary probability]]**
-— pages the [[random-walk|random walker]] rarely visits because few other pages link to them.
+Orphans are pages in the **bottom N% by [[stationary-distribution|PageRank π]]**
+(teleporting kernel; default `--alpha 0.15`) — pages the [[random-walk|random walker]]
+rarely visits because few other pages link to them. Governance / ADR pages often
+sit here by design — see [[adr-003-orphan-threshold]].
 
 The default threshold is the bottom 10% (`--orphan-pct 0.10`). Widen it to
 see more candidates:
@@ -140,10 +146,10 @@ section title tells you the exact remedy: "add inbound links".
   fuzz-testing                              → add outgoing links
 ```
 
-[[sink-page|Sinks]] have **no outbound wikilinks at all**. In the [[markov-model]], a [[random-walk|random walker]]
-landing on a sink teleports uniformly to any page. This is handled gracefully
-by wikigraph, but sinks are usually an oversight — pages that were written
-in isolation and never linked forward.
+[[sink-page|Sinks]] have **no outbound wikilinks at all**. Structurally they are
+dead ends; in the teleporting [[markov-model]] the walker restarts from the
+restart distribution (see [[adr-012-teleporting-pagerank-default]]). Sinks are
+usually an oversight — pages written in isolation and never linked forward.
 
 **Action:** Open each sink page and add at least one `[[slug]]` wikilink to a
 related page. Even one link is enough to stop it being a sink.
@@ -151,7 +157,7 @@ related page. Even one link is enough to stop it being a sink.
 ### 6. Read the Most central section
 
 ```
-=== Most central (top 5 by stationary distribution) ===
+=== Most central (top 5 by PageRank π) ===
   1. composite-gates                        π=0.096414
   2. gate-application                       π=0.090011
   3. quantum-linear-algebra                 π=0.076762
@@ -159,8 +165,8 @@ related page. Even one link is enough to stop it being a sink.
   5. quantum-dsl                            π=0.057854
 ```
 
-These are your **hubs**: pages that a random walker visits most often. They
-are the most influential pages for spreading information across your wiki.
+These are your **hubs**: pages with the highest PageRank π. They are the most
+influential pages for spreading attention across your wiki.
 
 Use this list to:
 - Ensure hubs are high quality and up to date
@@ -266,9 +272,9 @@ A healthy wiki typically looks like this:
 
 | Signal                          | Healthy            | Needs work                      |
 | ------------------------------- | ------------------ | ------------------------------- |
-| Classes                         | 1 recurrent class  | Multiple classes, any transient |
-| Orphan π values                 | > 0.005            | < 0.001                         |
-| Sink count                      | 0                  | Many sinks                      |
+| Classes                         | 1 raw SCC (healthy) | Many classes; check sinks separately |
+| Orphan π values                 | context-dependent  | Unexpectedly tiny hubs               |
+| Sink count                      | 0                  | Many sinks                           |
 | [[entropy-rate]] vs log₂(pages)               | > 70%  | < 50%                           |
 | Top hub π                       | < 0.15             | > 0.25 (one page dominates)     |
 
@@ -287,5 +293,6 @@ A healthy wiki typically looks like this:
 - [`cmd_analyze.go`](https://github.com/stephen-mcelhose/wikigraph/blob/main/cmd_analyze.go)
 - [`wiki.go`](https://github.com/stephen-mcelhose/wikigraph/blob/main/wiki.go)
 - [[architecture]] — full data-flow pipeline from wikilinks to Markov output
+- [[knowledge-graph-to-pda-agents]] — how analyze signals transfer to PDA agents
 - [[how-to-docs-plan]] — proposal that drove the creation of these guides
 - [[quickstart]] — getting-started guide covering installation through first analysis run

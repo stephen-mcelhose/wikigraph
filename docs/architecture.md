@@ -12,6 +12,8 @@ timestamp: 2026-08-09T07:31:56Z
 
 wikigraph is ~1,567 lines of Go across seven files. The design is deliberately thin: the tool's job is to translate a wiki's `[[wikilinks]]` into a Markov kernel and then hand off to the `catrace` library for linear algebra and graph analysis. The `union` and `intersection` goal strategies delegate fully to catrace; `path` (Dijkstra on the raw transition matrix) and `bottleneck` (fundamental matrix via `gonum/mat`) implement their own math directly — both are candidates for future catrace APIs where the math is stochastic-matrix-specific.
 
+That thin slice is intentional pedagogy as well as product: the same kernels, π / PPR, MFPT, and entropy you measure on a wiki are the craft for PDA agents and multi-agent networks in catrace — see [[knowledge-graph-to-pda-agents]].
+
 ### File map
 
 | File | Role |
@@ -80,6 +82,7 @@ and optional `--seed` for Personalized PageRank.
 - [[adr-007-subgraph-partitioning-and-path-strategies]] — Subgraph strategy partitioning decisions for goal subcommand
 - [[adr-008-prototype-math-strategies]] — Accepted deviation: path and bottleneck implement math directly pending catrace APIs
 - [[adr-012-teleporting-pagerank-default]] — Default PageRank / teleporting kernel
+- [[knowledge-graph-to-pda-agents]] — Shared operators from wiki walks to PDA / multi-agent kernels
 - [[how-to-docs-plan]] — Documentation initiative driving subcommand interface
 - [[adr-009-wiki-gen-make-vs-buy]] — Decision: nx-to-wiki Python converter for named NetworkX benchmark graphs
 - [[graph-topologies]] — Named topology catalog (barbell, caveman, WS, SBM, …) used in benchmark experiments
