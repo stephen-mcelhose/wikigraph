@@ -44,6 +44,7 @@ timestamp: 2026-08-09T06:54:46Z
 | [[graph-topologies]]         | `concept`  | Reference catalog of named graph topologies and their Markov walk properties |
 | [[graph-models]]             | `concept`  | Reference catalog of random graph generative models (ER, BA, WS, SBM, LFR)  |
 | [[adr-009-wiki-gen-make-vs-buy]] | `decision` | ADR: hybrid make+buy — keep wiki-gen for hierarchical, add nx-to-wiki for named graphs |
+| [[adr-010-path-relative-slugs]]  | `decision` | ADR: path-relative slugs in recursive mode; lenient wikilink basename fallback for structured folder wikis |
 
 ## Sources
 

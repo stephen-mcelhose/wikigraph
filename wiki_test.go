@@ -47,13 +47,13 @@ func TestLoadPagesFlatAndRecursive(t *testing.T) {
 		t.Errorf("expected [page1], got %v", pagesFlat)
 	}
 
-	// Recursive scan: should find page1 and page2, skipping .hidden
+	// Recursive scan: should find page1 and sub/page2 (path-relative slug), skipping .hidden
 	pagesRec, _, _, err := loadPages(tmpDir, true, exclude)
 	if err != nil {
 		t.Fatalf("recursive loadPages failed: %v", err)
 	}
-	if len(pagesRec) != 2 || pagesRec[0] != "page1" || pagesRec[1] != "page2" {
-		t.Errorf("expected [page1, page2], got %v", pagesRec)
+	if len(pagesRec) != 2 || pagesRec[0] != "page1" || pagesRec[1] != "sub/page2" {
+		t.Errorf("expected [page1, sub/page2], got %v", pagesRec)
 	}
 }
 
@@ -99,12 +99,12 @@ func TestRelativeLinks_SiblingAndTraversalAndAbsoluteURL(t *testing.T) {
 		idx[p] = i
 	}
 
-	src := idx["01-discovery"]
-	if kern.P.At(src, idx["03-recommend"]) <= 0 {
-		t.Errorf("expected edge 01-discovery -> 03-recommend (sibling relative link)")
+	src := idx["gate/01-discovery"]
+	if kern.P.At(src, idx["gate/03-recommend"]) <= 0 {
+		t.Errorf("expected edge gate/01-discovery -> gate/03-recommend (sibling relative link)")
 	}
-	if kern.P.At(src, idx["notes"]) <= 0 {
-		t.Errorf("expected edge 01-discovery -> notes (../ relative traversal)")
+	if kern.P.At(src, idx["shared/notes"]) <= 0 {
+		t.Errorf("expected edge gate/01-discovery -> shared/notes (../ relative traversal)")
 	}
 	if len(pages) != 3 {
 		t.Errorf("absolute URL should not add a node; got pages=%v", pages)
@@ -227,7 +227,110 @@ func TestRelativeLinks_DanglingRelativeLinkDoesNotPanic(t *testing.T) {
 	}
 }
 
-func TestLoadPagesDuplicateSlugError(t *testing.T) {
+func TestRelativeLinks_PortfolioRepeatedFilenames_IsolatedClusters(t *testing.T) {
+	// TC-27(a/b): portfolio wiki where every project subdirectory contains
+	// identically-named files. --relative-links must resolve sibling links within
+	// each project only, producing two isolated communicating classes with no
+	// cross-project edges. The plain wikilink path ([[02-feasibility]]) is
+	// ambiguous and covered separately in TestLenientWikilinkFallback_AmbiguousBasenameDropsLink.
+	tmpDir := t.TempDir()
+
+	alpha := filepath.Join(tmpDir, "project-alpha")
+	beta := filepath.Join(tmpDir, "project-beta")
+	for _, d := range []string{alpha, beta} {
+		if err := os.MkdirAll(d, 0755); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// Each project: 01-discovery <-> 02-feasibility via relative markdown links.
+	os.WriteFile(filepath.Join(alpha, "01-discovery.md"), []byte("# Alpha Discovery\n\n[Feasibility](02-feasibility.md)\n"), 0644)
+	os.WriteFile(filepath.Join(alpha, "02-feasibility.md"), []byte("# Alpha Feasibility\n\n[Discovery](01-discovery.md)\n"), 0644)
+	os.WriteFile(filepath.Join(beta, "01-discovery.md"), []byte("# Beta Discovery\n\n[Feasibility](02-feasibility.md)\n"), 0644)
+	os.WriteFile(filepath.Join(beta, "02-feasibility.md"), []byte("# Beta Feasibility\n\n[Discovery](01-discovery.md)\n"), 0644)
+
+	exclude := makeExcludeMap(nil)
+	kern, _, pages, _, err := buildKernelWithOpts(tmpDir, false, exclude, true)
+	if err != nil {
+		t.Fatalf("buildKernelWithOpts: %v", err)
+	}
+
+	if len(pages) != 4 {
+		t.Fatalf("expected 4 pages, got %d (%v)", len(pages), pages)
+	}
+
+	idx := make(map[string]int, len(pages))
+	for i, p := range pages {
+		idx[p] = i
+	}
+
+	// All four path-relative slugs must be present.
+	for _, slug := range []string{
+		"project-alpha/01-discovery",
+		"project-alpha/02-feasibility",
+		"project-beta/01-discovery",
+		"project-beta/02-feasibility",
+	} {
+		if _, ok := idx[slug]; !ok {
+			t.Errorf("slug %q missing from pages %v", slug, pages)
+		}
+	}
+
+	// No cross-project edges.
+	crossProject := [][2]string{
+		{"project-alpha/01-discovery", "project-beta/01-discovery"},
+		{"project-alpha/01-discovery", "project-beta/02-feasibility"},
+		{"project-alpha/02-feasibility", "project-beta/01-discovery"},
+		{"project-alpha/02-feasibility", "project-beta/02-feasibility"},
+		{"project-beta/01-discovery", "project-alpha/01-discovery"},
+		{"project-beta/01-discovery", "project-alpha/02-feasibility"},
+		{"project-beta/02-feasibility", "project-alpha/01-discovery"},
+		{"project-beta/02-feasibility", "project-alpha/02-feasibility"},
+	}
+	for _, e := range crossProject {
+		if kern.P.At(idx[e[0]], idx[e[1]]) > 0 {
+			t.Errorf("cross-project edge %s -> %s must not exist (P=%.6f)",
+				e[0], e[1], kern.P.At(idx[e[0]], idx[e[1]]))
+		}
+	}
+
+	// Intra-project edges must exist in both directions.
+	intraProject := [][2]string{
+		{"project-alpha/01-discovery", "project-alpha/02-feasibility"},
+		{"project-alpha/02-feasibility", "project-alpha/01-discovery"},
+		{"project-beta/01-discovery", "project-beta/02-feasibility"},
+		{"project-beta/02-feasibility", "project-beta/01-discovery"},
+	}
+	for _, e := range intraProject {
+		if kern.P.At(idx[e[0]], idx[e[1]]) <= 0 {
+			t.Errorf("intra-project edge %s -> %s must exist (P=%.6f)",
+				e[0], e[1], kern.P.At(idx[e[0]], idx[e[1]]))
+		}
+	}
+
+	// Two isolated communicating classes, each containing exactly the two
+	// pages from one project.
+	cd, err := kern.Classes(1e-10)
+	if err != nil {
+		t.Fatalf("class decomposition: %v", err)
+	}
+	if len(cd.SCCs) != 2 {
+		t.Errorf("expected 2 communicating classes (one per project), got %d", len(cd.SCCs))
+	}
+	for _, scc := range cd.SCCs {
+		if len(scc) != 2 {
+			slugs := make([]string, len(scc))
+			for i, s := range scc {
+				slugs[i] = pages[s]
+			}
+			t.Errorf("expected each class to have 2 pages, got %d: %v", len(scc), slugs)
+		}
+	}
+}
+
+func TestLoadPagesPathRelativeSlugs(t *testing.T) {
+	// Two files with the same basename in different subdirectories must not
+	// collide: recursive mode uses path-relative slugs.
 	tmpDir := t.TempDir()
 
 	if err := os.WriteFile(filepath.Join(tmpDir, "note.md"), []byte("hello"), 0644); err != nil {
@@ -242,9 +345,36 @@ func TestLoadPagesDuplicateSlugError(t *testing.T) {
 	}
 
 	exclude := makeExcludeMap(nil)
-	_, _, _, err := loadPages(tmpDir, true, exclude)
-	if err == nil {
-		t.Fatalf("expected error on duplicate slug, got nil")
+	pages, _, _, err := loadPages(tmpDir, true, exclude)
+	if err != nil {
+		t.Fatalf("unexpected error with path-relative slugs: %v", err)
+	}
+	// Sorted: "folder/note" < "note"
+	if len(pages) != 2 || pages[0] != "folder/note" || pages[1] != "note" {
+		t.Errorf("expected [folder/note, note], got %v", pages)
+	}
+}
+
+func TestIsExcluded(t *testing.T) {
+	exclude := makeExcludeMap([]string{"index", "log"})
+
+	// Exact match on bare stem (flat-mode slug).
+	if !isExcluded("index", exclude) {
+		t.Error("expected 'index' to be excluded (exact match)")
+	}
+	// Basename match on path-relative slug (recursive-mode slug).
+	if !isExcluded("subdir/index", exclude) {
+		t.Error("expected 'subdir/index' to be excluded (basename match)")
+	}
+	if !isExcluded("a/b/c/log", exclude) {
+		t.Error("expected 'a/b/c/log' to be excluded (deep basename match)")
+	}
+	// Non-excluded slug.
+	if isExcluded("my-page", exclude) {
+		t.Error("expected 'my-page' not to be excluded")
+	}
+	if isExcluded("subdir/my-page", exclude) {
+		t.Error("expected 'subdir/my-page' not to be excluded")
 	}
 }
 
@@ -292,7 +422,8 @@ func TestBuildKernelSampleNestedVault(t *testing.T) {
 		t.Fatalf("expected 3 pages, got %d (%v)", len(pages), pages)
 	}
 
-	expectedPages := []string{"index-note", "old-notes", "quantum-intro"}
+	// Path-relative slugs, sorted lexicographically.
+	expectedPages := []string{"archive/2025/old-notes", "projects/quantum/quantum-intro", "root_notes/index-note"}
 	for i, p := range pages {
 		if p != expectedPages[i] {
 			t.Errorf("expected page %d to be %s, got %s", i, expectedPages[i], p)
@@ -304,8 +435,112 @@ func TestBuildKernelSampleNestedVault(t *testing.T) {
 		t.Fatalf("stationary distribution failed: %v", err)
 	}
 
-	// quantum-intro has inbound links from both index-note and old-notes, so it should have highest pi
-	if pi[2] <= pi[0] || pi[2] <= pi[1] {
-		t.Errorf("expected quantum-intro to be most central, got pi=%v", pi)
+	// quantum-intro (index 1) has inbound links from both index-note and old-notes, so it should have highest pi.
+	// [[wikilinks]] in fixtures resolve via the lenient basename fallback.
+	if pi[1] <= pi[0] || pi[1] <= pi[2] {
+		t.Errorf("expected projects/quantum/quantum-intro to be most central, got pi=%v", pi)
+	}
+}
+
+func TestWikilinkRe_DigitLeadingSlug(t *testing.T) {
+	// wikilinkRe must match slugs that start with a digit, e.g. [[02-feasibility]].
+	cases := []struct {
+		input string
+		want  string // empty string means no match expected
+	}{
+		{"[[02-feasibility]]", "02-feasibility"},
+		{"[[1-intro]]", "1-intro"},
+		{"[[my-note]]", "my-note"},                 // letter-leading still works
+		{"[[note2]]", "note2"},                     // digit in body still works
+		{"[[02-feasibility|Alias]]", "02-feasibility"}, // alias form
+	}
+	for _, tc := range cases {
+		m := wikilinkRe.FindStringSubmatch(tc.input)
+		if tc.want == "" {
+			if m != nil {
+				t.Errorf("input %q: expected no match, got %v", tc.input, m)
+			}
+			continue
+		}
+		if m == nil {
+			t.Errorf("input %q: expected match %q, got no match", tc.input, tc.want)
+			continue
+		}
+		if m[1] != tc.want {
+			t.Errorf("input %q: got group[1]=%q, want %q", tc.input, m[1], tc.want)
+		}
+	}
+}
+
+func TestLenientWikilinkFallback_UniqueBasename(t *testing.T) {
+	// [[02-note]] (digit-leading) in a recursive vault where only one file
+	// matches the basename should resolve via the lenient fallback.
+	tmpDir := t.TempDir()
+	subDir := filepath.Join(tmpDir, "sub")
+	if err := os.MkdirAll(subDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	// root.md links to [[02-note]], which lives at sub/02-note.md (slug: sub/02-note)
+	os.WriteFile(filepath.Join(tmpDir, "root.md"), []byte("[[02-note]]"), 0644)
+	os.WriteFile(filepath.Join(subDir, "02-note.md"), []byte("# Note"), 0644)
+
+	exclude := makeExcludeMap(nil)
+	kern, _, pages, _, err := buildKernel(tmpDir, true, exclude)
+	if err != nil {
+		t.Fatalf("buildKernel failed: %v", err)
+	}
+	idx := make(map[string]int, len(pages))
+	for i, p := range pages {
+		idx[p] = i
+	}
+	if kern.P.At(idx["root"], idx["sub/02-note"]) <= 0 {
+		t.Errorf("expected lenient fallback to resolve [[02-note]] -> sub/02-note; P=%v", kern.P)
+	}
+}
+
+func TestLenientWikilinkFallback_AmbiguousBasenameDropsLink(t *testing.T) {
+	// [[note]] in a recursive vault where two files share the basename
+	// must be dropped (not mis-resolved) and a warning printed to stderr.
+	tmpDir := t.TempDir()
+	aDir := filepath.Join(tmpDir, "a")
+	bDir := filepath.Join(tmpDir, "b")
+	for _, d := range []string{aDir, bDir} {
+		if err := os.MkdirAll(d, 0755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// root links to [[note]]; both a/note.md and b/note.md exist — ambiguous.
+	os.WriteFile(filepath.Join(tmpDir, "root.md"), []byte("[[note]]"), 0644)
+	os.WriteFile(filepath.Join(aDir, "note.md"), []byte("# A"), 0644)
+	os.WriteFile(filepath.Join(bDir, "note.md"), []byte("# B"), 0644)
+
+	exclude := makeExcludeMap(nil)
+	kern, _, pages, sinks, err := buildKernel(tmpDir, true, exclude)
+	if err != nil {
+		t.Fatalf("buildKernel failed: %v", err)
+	}
+	idx := make(map[string]int, len(pages))
+	for i, p := range pages {
+		idx[p] = i
+	}
+	// root should be a sink (no resolved links) because the only wikilink was ambiguous.
+	found := false
+	for _, s := range sinks {
+		if s == "root" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected 'root' to be a sink when its only wikilink is ambiguous; sinks=%v", sinks)
+	}
+	// Neither a/note nor b/note should have an explicit edge from root.
+	if kern.P.At(idx["root"], idx["a/note"]) > 0 && kern.P.At(idx["root"], idx["b/note"]) > 0 {
+		// Both have weight — this could be the sink teleport, which is uniform.
+		// Verify root is actually a sink by confirming no targeted edge was created.
+		// (Sink rows are uniform 1/n, so each cell == 1/n)
+		n := float64(len(pages))
+		if kern.P.At(idx["root"], idx["a/note"])*n != 1.0 {
+			t.Errorf("expected uniform sink row for root (ambiguous link dropped), got non-uniform P[root][a/note]=%v", kern.P.At(idx["root"], idx["a/note"]))
+		}
 	}
 }

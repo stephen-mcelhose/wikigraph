@@ -13,7 +13,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-var wikilinkRe = regexp.MustCompile(`\[\[([A-Za-z][A-Za-z0-9-]*)(?:\|[^\]]+)?\]\]`)
+var wikilinkRe = regexp.MustCompile(`\[\[([A-Za-z0-9][A-Za-z0-9-]*)(?:\|[^\]]+)?\]\]`)
 
 // mdLinkRe matches standard Markdown [label](target) links (but not [[wikilinks]]).
 var mdLinkRe = regexp.MustCompile(`\[([^\]]*)\]\(([^)]+)\)`)
@@ -123,6 +123,13 @@ func makeExcludeMap(slugs []string) map[string]bool {
 	return m
 }
 
+// isExcluded reports whether slug should be excluded.
+// It checks for an exact match first, then a basename match so that
+// --exclude index suppresses any */index.md at any directory depth.
+func isExcluded(slug string, exclude map[string]bool) bool {
+	return exclude[slug] || exclude[filepath.Base(slug)]
+}
+
 // loadPages reads all non-meta .md files from dir (optionally recursively)
 // and returns sorted slugs, slug->index map, and slug->filePath map.
 func loadPages(dir string, recursive bool, exclude map[string]bool) ([]string, map[string]int, map[string]string, error) {
@@ -144,8 +151,12 @@ func loadPages(dir string, recursive bool, exclude map[string]bool) ([]string, m
 			if !strings.HasSuffix(d.Name(), ".md") {
 				return nil
 			}
-			slug := strings.TrimSuffix(d.Name(), ".md")
-			if exclude[slug] {
+			rel, err := filepath.Rel(dir, path)
+			if err != nil {
+				return err
+			}
+			slug := strings.ReplaceAll(strings.TrimSuffix(rel, ".md"), string(filepath.Separator), "/")
+			if isExcluded(slug, exclude) {
 				return nil
 			}
 			if existingPath, ok := paths[slug]; ok {
@@ -220,8 +231,27 @@ func buildAdjacencyWithOpts(pages []string, idx map[string]int, paths map[string
 		}
 		linked := map[int]bool{}
 		for _, m := range wikilinkRe.FindAllSubmatch(raw, -1) {
-			if j, ok := idx[strings.ToLower(string(m[1]))]; ok && j != i {
+			ref := strings.ToLower(string(m[1]))
+			if j, ok := idx[ref]; ok && j != i {
 				linked[j] = true
+				continue
+			}
+			// Lenient fallback: match by basename for path-relative slugs.
+			// If the reference is unambiguous (exactly one slug has that base), resolve it.
+			// If multiple slugs share the same basename, warn and drop the link.
+			var matches []int
+			for candidate, j2 := range idx {
+				if filepath.Base(candidate) == ref && j2 != i {
+					matches = append(matches, j2)
+				}
+			}
+			switch len(matches) {
+			case 1:
+				linked[matches[0]] = true
+			default:
+				if len(matches) > 1 {
+					fmt.Fprintf(os.Stderr, "warning: [[%s]] in %s is ambiguous (%d matches); link dropped\n", ref, filePath, len(matches))
+				}
 			}
 		}
 		if relativeLinks {
