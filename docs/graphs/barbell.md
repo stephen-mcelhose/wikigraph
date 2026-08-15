@@ -4,6 +4,7 @@ title: Barbell Graph — wikigraph Analysis
 description: Empirical wikigraph analysis of the barbell graph (two cliques joined by a bottleneck bridge) as a Markov chain benchmark. Path provisional — will move to flat docs/ when #42 resolves.
 tags: [benchmark, barbell, networkx, markov-chain, spike, draft]
 status: draft
+resource: https://github.com/stephen-mcelhose/wikigraph/issues/42
 timestamp: 2026-08-11T00:00:00Z
 ---
 

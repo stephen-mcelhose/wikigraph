@@ -4,6 +4,7 @@ title: Krackhardt Kite — wikigraph Analysis
 description: Empirical wikigraph analysis of the Krackhardt Kite graph (10-node multi-centrality teaching benchmark) as a Markov chain. Path provisional — will move to flat docs/ when #42 resolves.
 tags: [benchmark, krackhardt-kite, networkx, markov-chain, spike, draft]
 status: draft
+resource: https://github.com/stephen-mcelhose/wikigraph/issues/42
 timestamp: 2026-08-11T00:00:00Z
 ---
 

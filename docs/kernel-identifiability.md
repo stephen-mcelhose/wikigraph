@@ -26,9 +26,8 @@ The answer depends on which output you have.
 | Full $N \times N$ commute time matrix          | No (general graphs) | Recovers $P$ only for trees; non-trees have multiple realizations                  |
 | `catrace.Trace(S)` on a subset $S$             | Yes, for $S$        | Lossless collapsed kernel $P_S$ — see below                                        |
 | `catrace.Trace(S = \text{all states})`         | Yes                 | Trivially returns $P$ itself                                                       |
-| `wikigraph export --min-edge 0` (edges CSV)    | Yes                 | Every $(i,j)$ entry of $P$ is in the file, including structural zeros              |
-| `wikigraph export` (default `--min-edge 0.005`)| Yes (for nx-to-wiki graphs) | All non-zero edges exceed 0.005; sparse format encodes $P$ completely      |
-| The `.md` files themselves                     | Yes (uniform walks) | $P_{ij} = 1/\deg(i)$ if `[[j]]` appears in `i.md`; files are a lossless encoding |
+| `wikigraph export` (default)                   | Raw adj + π | Edges are raw wikilinks (weight 1), not dense teleporting $P$          |
+| The `.md` files themselves                     | Structure   | Recover raw adj; math $P$ also needs α and restart (see below)         |
 
 ## Why π alone is insufficient
 
@@ -58,35 +57,25 @@ instead. When $S$ is all states, $P_S = P$ exactly.
 `wikigraph goal` uses this to build meaningful subgraphs: it extracts the effective kernel
 over the goal-relevant subset rather than the full $N \times N$ matrix.
 
-## For nx-to-wiki uniform walks: the .md files ARE P
+## For nx-to-wiki uniform walks: the .md files encode raw structure
 
 Every graph produced by `nx-to-wiki` runs `G.to_directed()` on a connected undirected graph.
 Because every node in the source graph has at least one neighbour, every generated `.md` file
-has at least one `[[wikilink]]` — there are **no sink pages**. This matters because `wiki.go`
-handles sink pages differently:
+has at least one `[[wikilink]]` — there are **no sink pages**.
 
-```
-// wiki.go — buildAdjacency
-if len(linked) == 0 {
-    // Sink node: teleport uniformly to avoid a zero row.
-    for j := 0; j < n; j++ { adj.Set(i, j, 1.0) }
-}
-```
+After [[adr-012-teleporting-pagerank-default]], math $P$ is the **teleporting**
+kernel over raw adjacency $A$ (default $\alpha = 0.15$, usually uniform restart).
+Sink rows are **not** pre-filled in $A$; they collapse to the restart distribution
+inside `NewTeleportingKernelFromAdj`. For sink-free wikis the raw walk piece is:
 
-A sink page's row is set to $P_{ij} = 1/n$ for all $j$ — uniform teleportation, not derivable
-from the file's wikilinks alone. **For sink-free wikis only**, the transition matrix is a
-uniform random walk:
+$$A_{ij} = 1 \text{ if } \texttt{[[j]]} \text{ appears in } \texttt{i.md},\quad
+P_{ij} = \alpha v_j + (1-\alpha)\frac{A_{ij}}{\deg(i)}$$
 
-$$P_{ij} = \frac{1}{\deg(i)} \quad \text{if } \texttt{[[j]]} \text{ appears in } \texttt{i.md} \text{ (self-links excluded)}, \quad \text{else } 0$$
-
-All nx-to-wiki generated wikis are sink-free by construction, so for these graphs the `.md`
-files fully determine $P$ without running `catrace`. For a general user wiki — which may contain
-sink pages — the `.md` files alone are insufficient; you must also know which pages are sinks
-and apply the $1/n$ teleportation rule.
+So `.md` files determine $A$ losslessly; recovering math $P$ also requires knowing
+$\alpha$ and $v$. Export emits **raw** edges + PageRank $\pi$, not dense $P$.
 
 Consequently, the `wikigraph analyze` text output is **lossy** relative to $P$: it reports $\pi$
-and top-5 commute times per node, but not the individual $P_{ij}$ values (156 entries for the
-karate club, scaling as $O(n \cdot \bar{d})$ for general graphs).
+and top-5 commute times per node, but not the individual $P_{ij}$ values.
 
 ## Exporting P
 

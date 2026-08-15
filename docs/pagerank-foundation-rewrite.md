@@ -11,9 +11,9 @@ timestamp: 2026-08-15T20:50:08Z
 
 ## Problem
 
-wikigraph today builds a Markov chain by pre-filling sink rows with uniform
-`1/n` mass (`buildAdjacencyWithOpts`), then runs `NewRandomWalkKernel`. That
-achieves ergodicity but:
+Before [[adr-012-teleporting-pagerank-default]], wikigraph built a Markov chain by
+pre-filling sink rows with uniform `1/n` mass (`buildAdjacencyWithOpts`), then
+ran `NewRandomWalkKernel`. That achieved ergodicity but:
 
 1. **Visualization is noisy** — teleportation rows render as fake edges
    (sink → everywhere “star”), which fights the product goal of clean knowledge
