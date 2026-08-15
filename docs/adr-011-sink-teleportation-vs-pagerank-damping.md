@@ -79,11 +79,20 @@ graphs, facing the choice between sink-only teleportation and full PageRank
   - A user-facing damping factor (`--alpha`) is requested for PageRank
     compatibility.
 
+## Supersession candidate
+
+[[pagerank-foundation-rewrite]] (epic
+https://github.com/stephen-mcelhose/wikigraph/issues/56) proposes replacing
+this ADR’s defaults with full α-damping PageRank, raw-edge display via
+`NodeMass`, and an `analyze` section revisit. Until that proposal is accepted
+and a successor ADR is written, this decision remains in force.
+
 ## Sources
 
 - [[teleportation-ergodicity]] — mathematical background
 - [[sink-page]] — sink detection and reporting
 - [[stationary-distribution]] — requires ergodic chain
+- [[pagerank-foundation-rewrite]] — proposed supersession (epic #56)
 - Wikipedia: PageRank — https://en.wikipedia.org/wiki/PageRank
 - Page, L., Brin, S., Motwani, R., & Winograd, T. (1999). *The PageRank
   Citation Ranking: Bringing Order to the Web*. Stanford InfoLab. http://ilpubs.stanford.edu:8090/422/

@@ -21,8 +21,8 @@ import (
 // docsWikiExpected holds the expected values for the docs/ wiki.
 // Update these whenever a page is added, removed, or significantly relinked.
 const (
-	docsWantPages   = 38
-	docsWantEdges   = 193 // P[i][j] > 1e-10 entries in the transition matrix
+	docsWantPages   = 39
+	docsWantEdges   = 201 // P[i][j] > 1e-10 entries in the transition matrix
 	docsWantClasses = 1
 	docsWantCentral = "analyze"            // slug with the highest stationary probability
 	docsWantLowestPi = "adr-009-wiki-gen-make-vs-buy" // slug with the lowest stationary probability

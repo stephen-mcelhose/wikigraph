@@ -140,3 +140,12 @@ in [[index]]. Closes https://github.com/stephen-mcelhose/wikigraph/issues/6.
 - Testing-runbook: updated to 35 pages, 176 edges, entropy 2.41 bits, new orphan/central values
 - Advisory (not fixed): graphs/*.md in subdirectory violate flat layout — provisional pending #42; low π on graph-topologies (0.005), graph-models (0.004), adr-009 (0.002) accepted per ADR-003
 - Final state: 35 pages, 176 edges, 1 recurrent class, 0 sinks, entropy 2.41 bits
+
+## [2026-08-15] ingest | pagerank-foundation-rewrite (epic #56)
+- New proposal: [[pagerank-foundation-rewrite]] — foundation rewrite to full α-damping PageRank as default math; raw edges + NodeMass for clean viz; sink-only demoted to pedagogical footnote; analyze raw-vs-math section revisit; supersedes [[adr-011-sink-teleportation-vs-pagerank-damping]] when accepted as ADR-012
+- Propagated: [[adr-011-sink-teleportation-vs-pagerank-damping]], [[teleportation-ergodicity]]
+- index.md updated
+- Re-baselined wiki_integration_test.go + [[testing-runbook]] (39 pages, 201 edges, entropy ~2.36 bits)
+
+## [2026-08-15] amend | pagerank-foundation-rewrite + epic #56
+- Fixed epic/proposal “out of scope”: changing default adjacency / π for analyze and export is **in scope** for the foundation rewrite; out of scope is only semantic goals, PPR-only goal, and permanent dual-math

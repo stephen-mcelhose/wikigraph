@@ -68,7 +68,10 @@ correct approach is to build two separate adjacency representations:
 - **Raw adjacency** — real links only, zero rows for sinks; used for display
 - **Math adjacency** — teleportation rows added for sinks; passed to catrace for π, MFPT, and class computation
 
-See [[adr-011-sink-teleportation-vs-pagerank-damping]] for the architectural decision.
+See [[adr-011-sink-teleportation-vs-pagerank-damping]] for the architectural decision
+currently in force. [[pagerank-foundation-rewrite]] proposes moving the product
+default to full α-damping (PageRank) while teaching dangling-node handling
+*inside* that model rather than as a competing walk.
 
 ## Related Concepts
 
@@ -77,10 +80,12 @@ See [[adr-011-sink-teleportation-vs-pagerank-damping]] for the architectural dec
 - [[mfpt]] — Mean first passage time is undefined on non-ergodic chains
 - [[communicating-classes]] — Sink pages form transient classes without teleportation
 - [[markov-model]] — The full pipeline from wikilinks to P
-- [[adr-011-sink-teleportation-vs-pagerank-damping]] — Decision record
+- [[adr-011-sink-teleportation-vs-pagerank-damping]] — Decision record (current)
+- [[pagerank-foundation-rewrite]] — Proposed PageRank foundation rewrite (epic #56)
 
 ## Sources
 
 - Wikipedia: PageRank — https://en.wikipedia.org/wiki/PageRank
 - Page, L., Brin, S., Motwani, R., & Winograd, T. (1999). *The PageRank Citation Ranking: Bringing Order to the Web*. Stanford InfoLab Technical Report. http://ilpubs.stanford.edu:8090/422/
 - Brin, S., & Page, L. (1998). *The Anatomy of a Large-Scale Hypertextual Web Search Engine*. Computer Networks and ISDN Systems, 30(1–7), 107–117. https://doi.org/10.1016/S0169-7552(98)00110-X
+- [[pagerank-foundation-rewrite]] — planning capture for epic #56
