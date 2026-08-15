@@ -195,10 +195,13 @@ func loadPages(dir string, recursive bool, exclude map[string]bool) ([]string, m
 	return pages, idx, paths, nil
 }
 
+// defaultTeleportAlpha is the PageRank teleport probability (α). Link-following
+// weight is (1−α). Matches catrace / firehose convention (not Google's d=0.85).
+const defaultTeleportAlpha = 0.15
+
 // buildAdjacency reads each page and extracts [[wikilinks]], returning a square
-// adjacency matrix and the slugs of sink pages.
-// Sink pages (no outgoing links) get uniform weight across all pages so the
-// Markov kernel stays well-defined and the stationary distribution can be computed.
+// raw adjacency matrix (real links only) and the slugs of sink pages.
+// Sink rows are left as zeros; ergodicity comes from the teleporting kernel.
 func buildAdjacency(pages []string, idx map[string]int, paths map[string]string) (*mat.Dense, []string, error) {
 	return buildAdjacencyWithOpts(pages, idx, paths, false, "")
 }
@@ -262,11 +265,8 @@ func buildAdjacencyWithOpts(pages []string, idx map[string]int, paths map[string
 			}
 		}
 		if len(linked) == 0 {
-			// Sink node: teleport uniformly to avoid a zero row.
 			sinks = append(sinks, slug)
-			for j := 0; j < n; j++ {
-				adj.Set(i, j, 1.0)
-			}
+			// Leave the row as zeros — teleporting kernel handles sinks via restart.
 		} else {
 			for j := range linked {
 				adj.Set(i, j, 1.0)
@@ -276,10 +276,62 @@ func buildAdjacencyWithOpts(pages []string, idx map[string]int, paths map[string
 	return adj, sinks, nil
 }
 
-// buildKernel builds a Markov kernel from the wiki directory.
-// Returns the kernel, transition matrix, sorted page slugs, sink slugs, and any error.
+// restartDistribution builds a probability vector over pages. With no seeds it
+// is uniform (global PageRank). With seeds it concentrates mass equally on the
+// named slugs (Personalized PageRank).
+func restartDistribution(pages []string, seeds []string) ([]float64, error) {
+	n := len(pages)
+	v := make([]float64, n)
+	if len(seeds) == 0 {
+		u := 1.0 / float64(n)
+		for i := range v {
+			v[i] = u
+		}
+		return v, nil
+	}
+	idx := make(map[string]int, n)
+	for i, p := range pages {
+		idx[p] = i
+	}
+	seen := make(map[int]bool, len(seeds))
+	var seedIdxs []int
+	for _, s := range seeds {
+		i, ok := idx[s]
+		if !ok {
+			return nil, fmt.Errorf("unknown --seed slug %q", s)
+		}
+		if !seen[i] {
+			seen[i] = true
+			seedIdxs = append(seedIdxs, i)
+		}
+	}
+	mass := 1.0 / float64(len(seedIdxs))
+	for _, i := range seedIdxs {
+		v[i] = mass
+	}
+	return v, nil
+}
+
+// rawEdgeCount returns the number of directed wikilinks in the raw adjacency
+// (entries > 0). Prefer this over counting nonzeros in the teleporting P.
+func rawEdgeCount(adj *mat.Dense) int {
+	r, c := adj.Dims()
+	count := 0
+	for i := 0; i < r; i++ {
+		for j := 0; j < c; j++ {
+			if adj.At(i, j) > 0 {
+				count++
+			}
+		}
+	}
+	return count
+}
+
+// buildKernel builds a teleporting Markov kernel from the wiki directory using
+// default α and a uniform restart (global PageRank).
+// Returns the math kernel, raw adjacency, sorted page slugs, sink slugs, and any error.
 func buildKernel(wikiDir string, recursive bool, exclude map[string]bool) (*catrace.Kernel, *mat.Dense, []string, []string, error) {
-	return buildKernelWithOpts(wikiDir, recursive, exclude, false)
+	return buildKernelWithOpts(wikiDir, recursive, exclude, false, defaultTeleportAlpha, nil)
 }
 
 // buildKernelWithOpts is like buildKernel but optionally enables parsing of
@@ -287,7 +339,11 @@ func buildKernel(wikiDir string, recursive bool, exclude map[string]bool) (*catr
 // [[wikilinks]]. When relativeLinks is true, traversal is always recursive
 // regardless of the recursive argument, since relative paths (e.g. ../sibling)
 // commonly cross subdirectory boundaries.
-func buildKernelWithOpts(wikiDir string, recursive bool, exclude map[string]bool, relativeLinks bool) (*catrace.Kernel, *mat.Dense, []string, []string, error) {
+//
+// alpha is the teleport probability; seeds (page slugs) personalize the restart
+// distribution. The returned adjacency is raw (no sink pre-fill); the kernel is
+// NewTeleportingKernelFromAdj over that adj.
+func buildKernelWithOpts(wikiDir string, recursive bool, exclude map[string]bool, relativeLinks bool, alpha float64, seeds []string) (*catrace.Kernel, *mat.Dense, []string, []string, error) {
 	if relativeLinks {
 		recursive = true
 	}
@@ -299,23 +355,13 @@ func buildKernelWithOpts(wikiDir string, recursive bool, exclude map[string]bool
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
-	k, err := catrace.NewRandomWalkKernel(adj, pages)
+	restart, err := restartDistribution(pages, seeds)
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("building kernel: %w", err)
+		return nil, nil, nil, nil, err
 	}
-	// Row-normalize adj to create transition matrix P
-	n := len(pages)
-	P := mat.NewDense(n, n, nil)
-	for i := 0; i < n; i++ {
-		rowSum := 0.0
-		for j := 0; j < n; j++ {
-			rowSum += adj.At(i, j)
-		}
-		if rowSum > 0 {
-			for j := 0; j < n; j++ {
-				P.Set(i, j, adj.At(i, j)/rowSum)
-			}
-		}
+	k, err := catrace.NewTeleportingKernelFromAdj(adj, restart, alpha, pages)
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("building teleporting kernel: %w", err)
 	}
-	return k, P, pages, sinkPages, nil
+	return k, adj, pages, sinkPages, nil
 }

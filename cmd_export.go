@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/stephen-mcelhose/catrace"
+	"gonum.org/v1/gonum/mat"
 )
 
 var (
@@ -19,12 +19,15 @@ var (
 var exportCmd = &cobra.Command{
 	Use:   "export <wiki-dir>",
 	Short: "Export the wiki graph as JSON, CSV, or DOT",
-	Long: `export writes the wiki's Markov kernel to a file for use in external tools.
+	Long: `export writes the wiki's raw link graph plus PageRank π for use in external tools.
 
 Formats:
   json (default)  node-link JSON compatible with D3/Observable
   csv             two files: <out>_nodes.csv and <out>_edges.csv
-  dot             Graphviz DOT digraph`,
+  dot             Graphviz DOT digraph
+
+Nodes carry PageRank π (teleporting kernel; --alpha / --seed).
+Edges are raw directed wikilinks (value 1.0), not teleportation mass.`,
 
 	Args: cobra.ExactArgs(1),
 	RunE: runExport,
@@ -33,14 +36,14 @@ Formats:
 func init() {
 	exportCmd.Flags().StringVar(&flagExportFormat, "format", "json", "output format: json, csv, or dot")
 	exportCmd.Flags().StringVarP(&flagExportOut, "out", "o", "wiki_graph", "output file base name")
-	exportCmd.Flags().Float64VarP(&flagExportMinEdge, "min-edge", "m", 0.005, "omit edges below this probability")
+	exportCmd.Flags().Float64VarP(&flagExportMinEdge, "min-edge", "m", 0.005, "omit raw edges below this weight (raw edges are 1.0)")
 }
 
 func runExport(cmd *cobra.Command, args []string) error {
 	wikiDir := args[0]
 	exclude := makeExcludeMap(flagExclude)
 
-	kern, _, pages, _, err := buildKernelWithOpts(wikiDir, flagRecursive, exclude, flagRelativeLinks)
+	kern, rawAdj, pages, _, err := buildKernelWithOpts(wikiDir, flagRecursive, exclude, flagRelativeLinks, flagAlpha, flagSeed)
 	if err != nil {
 		return err
 	}
@@ -48,7 +51,6 @@ func runExport(cmd *cobra.Command, args []string) error {
 
 	n := len(pages)
 
-	// Stationary distribution (uniform fallback if chain is reducible).
 	pi, err := kern.Stationary(1e-12, 5000)
 	if err != nil {
 		pi = make([]float64, n)
@@ -58,26 +60,25 @@ func runExport(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Map each state to its recurrent class index; -1 means transient.
+	// Map each state to its raw digraph SCC index; prefer closed components for
+	// stable class ids (open components still get an index).
 	classOf := make([]int, n)
 	for i := range classOf {
 		classOf[i] = -1
 	}
-	if cd, err := kern.Classes(1e-10); err == nil {
-		for classNum, comp := range cd.Recurrent {
-			for _, state := range comp {
-				classOf[state] = classNum
-			}
+	for classNum, scc := range rawSCCs(rawAdj) {
+		for _, state := range scc.Members {
+			classOf[state] = classNum
 		}
 	}
 
 	switch flagExportFormat {
 	case "json":
-		return doExportJSON(kern, pages, pi, classOf, n)
+		return doExportJSON(rawAdj, pages, pi, classOf, n)
 	case "csv":
-		return doExportCSV(kern, pages, pi, classOf, n)
+		return doExportCSV(rawAdj, pages, pi, classOf, n)
 	case "dot":
-		return doExportDOT(kern, pages, pi, n)
+		return doExportDOT(rawAdj, pages, pi, n)
 	default:
 		return fmt.Errorf("unknown format %q: choose json, csv, or dot", flagExportFormat)
 	}
@@ -102,7 +103,7 @@ type jsonGraph struct {
 	Links []jsonLink `json:"links"`
 }
 
-func doExportJSON(kern *catrace.Kernel, pages []string, pi []float64, classOf []int, n int) error {
+func doExportJSON(rawAdj *mat.Dense, pages []string, pi []float64, classOf []int, n int) error {
 	g := jsonGraph{
 		Nodes: make([]jsonNode, n),
 		Links: make([]jsonLink, 0),
@@ -112,7 +113,7 @@ func doExportJSON(kern *catrace.Kernel, pages []string, pi []float64, classOf []
 	}
 	for i := 0; i < n; i++ {
 		for j := 0; j < n; j++ {
-			v := kern.P.At(i, j)
+			v := rawAdj.At(i, j)
 			if v < flagExportMinEdge {
 				continue
 			}
@@ -133,7 +134,7 @@ func doExportJSON(kern *catrace.Kernel, pages []string, pi []float64, classOf []
 
 // --- CSV ---
 
-func doExportCSV(kern *catrace.Kernel, pages []string, pi []float64, classOf []int, n int) error {
+func doExportCSV(rawAdj *mat.Dense, pages []string, pi []float64, classOf []int, n int) error {
 	nodesFile := flagExportOut + "_nodes.csv"
 	var nb strings.Builder
 	nb.WriteString("slug,pi,class\n")
@@ -147,10 +148,10 @@ func doExportCSV(kern *catrace.Kernel, pages []string, pi []float64, classOf []i
 
 	edgesFile := flagExportOut + "_edges.csv"
 	var eb strings.Builder
-	eb.WriteString("source,target,probability\n")
+	eb.WriteString("source,target,weight\n")
 	for i := 0; i < n; i++ {
 		for j := 0; j < n; j++ {
-			v := kern.P.At(i, j)
+			v := rawAdj.At(i, j)
 			if v < flagExportMinEdge {
 				continue
 			}
@@ -166,7 +167,7 @@ func doExportCSV(kern *catrace.Kernel, pages []string, pi []float64, classOf []i
 
 // --- DOT ---
 
-func doExportDOT(kern *catrace.Kernel, pages []string, pi []float64, n int) error {
+func doExportDOT(rawAdj *mat.Dense, pages []string, pi []float64, n int) error {
 	var b strings.Builder
 	b.WriteString("digraph wiki {\n")
 	for i, p := range pages {
@@ -174,7 +175,7 @@ func doExportDOT(kern *catrace.Kernel, pages []string, pi []float64, n int) erro
 	}
 	for i := 0; i < n; i++ {
 		for j := 0; j < n; j++ {
-			v := kern.P.At(i, j)
+			v := rawAdj.At(i, j)
 			if v < flagExportMinEdge {
 				continue
 			}

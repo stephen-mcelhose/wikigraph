@@ -19,12 +19,15 @@ var analyzeCmd = &cobra.Command{
 	Short: "Print a wiki health report",
 	Long: `analyze prints six sections about the wiki's graph structure:
 
-  1. Overview          — page count, edge count, entropy rate, class count
-  2. Communicating classes — pages per class; transient classes flagged
-  3. Orphan pages      — low stationary-distribution pages (add inbound links)
+  1. Overview          — page count, raw edge count, entropy rate, raw SCC count
+  2. Communicating classes — SCCs of the raw wikilink digraph (authoring signal)
+  3. Orphan pages      — low PageRank π pages (add inbound links)
   4. Sink pages        — pages with no outgoing links (add outbound links)
-  5. Most central      — top 5 by stationary distribution
-  6. Suggested links   — unlinked pairs with low commute time (skip with --suggest-top 0)
+  5. Most central      — top 5 by PageRank π
+  6. Suggested links   — unlinked pairs with low commute time on the teleporting walk
+
+π, entropy, commute, and MFPT use the teleporting kernel (--alpha / --seed).
+Edge count and communicating classes use the raw wikilink digraph.
 
 Performance note:
   Sections 1–5 run in well under a second even for large wikis (O(n²) matrix ops).
@@ -62,14 +65,14 @@ func runAnalyze(cmd *cobra.Command, args []string) error {
 	wikiDir := args[0]
 	exclude := makeExcludeMap(flagExclude)
 
-	kern, _, pages, sinkPages, err := buildKernelWithOpts(wikiDir, flagRecursive, exclude, flagRelativeLinks)
+	kern, rawAdj, pages, sinkPages, err := buildKernelWithOpts(wikiDir, flagRecursive, exclude, flagRelativeLinks, flagAlpha, flagSeed)
 	if err != nil {
 		return err
 	}
 
 	n := len(pages)
 
-	// Stationary distribution.
+	// PageRank / PPR stationary distribution.
 	pi, statErr := kern.Stationary(1e-12, 5000)
 	if statErr != nil {
 		pi = make([]float64, n)
@@ -79,55 +82,31 @@ func runAnalyze(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Class decomposition.
-	cd, err := kern.Classes(1e-10)
-	if err != nil {
-		return fmt.Errorf("class decomposition: %w", err)
-	}
+	// Raw digraph SCCs (authoring signal).
+	sccs := rawSCCs(rawAdj)
 
-	// Edge count: all (i,j) pairs where p > 0.
-	edgeCount := 0
-	for i := 0; i < n; i++ {
-		for j := 0; j < n; j++ {
-			if kern.P.At(i, j) > 1e-10 {
-				edgeCount++
-			}
-		}
-	}
+	edgeCount := rawEdgeCount(rawAdj)
 
-	// Entropy rate (bits per step).
+	// Entropy rate on the teleporting walk (bits per step).
 	entropyRate, _ := kern.EntropyRate(2)
-
-	// Transient state set.
-	transientSet := make(map[int]bool, len(cd.Transient))
-	for _, t := range cd.Transient {
-		transientSet[t] = true
-	}
 
 	// === 1. Overview ===
 	fmt.Printf("=== Overview ===\n")
 	fmt.Printf("Pages:        %d\n", n)
 	fmt.Printf("Edges:        %d\n", edgeCount)
 	fmt.Printf("Entropy rate: %.4f bits\n", entropyRate)
-	fmt.Printf("Classes:      %d\n", len(cd.SCCs))
+	fmt.Printf("Classes:      %d\n", len(sccs))
 	fmt.Println()
 
-	// === 2. Communicating classes ===
-	fmt.Printf("=== Communicating classes ===\n")
-	for i, comp := range cd.SCCs {
-		recurrent := true
-		for _, state := range comp {
-			if transientSet[state] {
-				recurrent = false
-				break
-			}
+	// === 2. Communicating classes (raw digraph) ===
+	fmt.Printf("=== Communicating classes (raw wikilink digraph) ===\n")
+	for i, comp := range sccs {
+		label := "closed"
+		if !comp.Closed {
+			label = "open — add links out of this class"
 		}
-		label := "recurrent"
-		if !recurrent {
-			label = "transient — add links out of this class"
-		}
-		fmt.Printf("Class %d (%s): %d page(s)\n", i+1, label, len(comp))
-		for _, state := range comp {
+		fmt.Printf("Class %d (%s): %d page(s)\n", i+1, label, len(comp.Members))
+		for _, state := range comp.Members {
 			fmt.Printf("  %s\n", pages[state])
 		}
 	}
@@ -155,7 +134,7 @@ func runAnalyze(cmd *cobra.Command, args []string) error {
 	}
 	sort.Slice(orphans, func(a, b int) bool { return orphans[a].pi < orphans[b].pi })
 
-	fmt.Printf("=== Orphan pages (bottom %.0f%% by stationary distribution) ===\n",
+	fmt.Printf("=== Orphan pages (bottom %.0f%% by PageRank π) ===\n",
 		flagAnalyzeOrphanPct*100)
 	if len(orphans) == 0 {
 		fmt.Println("  (none)")
@@ -192,7 +171,7 @@ func runAnalyze(cmd *cobra.Command, args []string) error {
 	if top5 > n {
 		top5 = n
 	}
-	fmt.Printf("=== Most central (top %d by stationary distribution) ===\n", top5)
+	fmt.Printf("=== Most central (top %d by PageRank π) ===\n", top5)
 	for i := 0; i < top5; i++ {
 		fmt.Printf("  %d. %-40s  π=%.6f\n", i+1, ranked[i].slug, ranked[i].pi)
 	}
@@ -215,8 +194,8 @@ func runAnalyze(cmd *cobra.Command, args []string) error {
 			if i == j {
 				continue
 			}
-			if kern.P.At(i, j) > 1e-10 {
-				continue // already linked
+			if rawAdj.At(i, j) > 0 {
+				continue // already has a raw wikilink
 			}
 			ct, err := kern.CommuteTime(i, j)
 			if err != nil || ct < flagAnalyzeMinCommute {
